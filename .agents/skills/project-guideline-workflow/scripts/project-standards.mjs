@@ -9,6 +9,7 @@ import {
   realpath,
   rename,
   rm,
+  rmdir,
   stat,
   writeFile,
 } from 'node:fs/promises'
@@ -36,10 +37,6 @@ function option(name) {
   const equalsValue = process.argv.find(value => value.startsWith(`${name}=`))
   return equalsValue?.slice(name.length + 1)
     ?? (directIndex >= 0 ? process.argv[directIndex + 1] : undefined)
-}
-
-function hasFlag(name) {
-  return process.argv.includes(name)
 }
 
 function sha256(value) {
@@ -142,8 +139,7 @@ async function sourcePackage() {
   }
   if (sourceErrors.length > 0) throw new Error(sourceErrors.join('; '))
 
-  const skillPaths = await collectFiles(skillRoot)
-  return { metadata, projectPaths, skillPaths }
+  return { metadata, projectPaths }
 }
 
 async function canonicalDirectory(input, label, create = false) {
@@ -247,30 +243,56 @@ function lockEntries(entries) {
   return entries.map(({ path, sha256: digest }) => ({ path, sha256: digest }))
 }
 
+function validateLockEntries(lock, field, errors) {
+  if (!Array.isArray(lock[field])) {
+    errors.push(`lock ${field} must be an array`)
+    return
+  }
+  const paths = new Set()
+  for (const entry of lock[field]) {
+    if (
+      typeof entry?.path !== 'string'
+      || entry.path.startsWith('/')
+      || entry.path.split('/').includes('..')
+      || !/^[a-f0-9]{64}$/u.test(entry?.sha256 ?? '')
+    ) {
+      errors.push(`lock ${field} contains an invalid entry`)
+      continue
+    }
+    if (paths.has(entry.path)) errors.push(`lock ${field} repeats ${entry.path}`)
+    paths.add(entry.path)
+  }
+}
+
 function validateLock(lock) {
   const errors = []
-  if (lock.schema_version !== 1) errors.push('lock schema_version must be 1')
+  if (![1, 2].includes(lock.schema_version)) {
+    errors.push('lock schema_version must be 1 or 2')
+  }
   if (lock.name !== 'doxanh-project-standards') errors.push('lock name is invalid')
   if (!/^\d+\.\d+\.\d+$/u.test(lock.version ?? '')) errors.push('lock version is invalid')
   if (typeof lock.repository_root !== 'string') errors.push('lock repository_root is invalid')
-  for (const field of ['project_files', 'repository_skill_files']) {
-    if (!Array.isArray(lock[field])) {
-      errors.push(`lock ${field} must be an array`)
-      continue
+  if (!/^[a-f0-9]{64}$/u.test(lock.project_template_sha256 ?? '')) {
+    errors.push('lock project_template_sha256 is invalid')
+  }
+  validateLockEntries(lock, 'project_files', errors)
+  if (lock.schema_version === 1) {
+    validateLockEntries(lock, 'repository_skill_files', errors)
+    if (!/^[a-f0-9]{64}$/u.test(lock.skill_contract_sha256 ?? '')) {
+      errors.push('schema 1 lock skill_contract_sha256 is invalid')
     }
-    const paths = new Set()
-    for (const entry of lock[field]) {
-      if (
-        typeof entry?.path !== 'string'
-        || entry.path.startsWith('/')
-        || entry.path.split('/').includes('..')
-        || !/^[a-f0-9]{64}$/u.test(entry?.sha256 ?? '')
-      ) {
-        errors.push(`lock ${field} contains an invalid entry`)
-        continue
-      }
-      if (paths.has(entry.path)) errors.push(`lock ${field} repeats ${entry.path}`)
-      paths.add(entry.path)
+  }
+  if (lock.schema_version === 2) {
+    if (lock.repository_skill_files !== undefined) {
+      errors.push('schema 2 lock must not contain repository_skill_files')
+    }
+    if (
+      lock.skill?.name !== 'project-guideline-workflow'
+      || lock.skill?.distribution !== 'user-scope'
+      || lock.skill?.repository_path !== repoSkillPath
+      || !/^[a-f0-9]{64}$/u.test(lock.skill?.contract_sha256 ?? '')
+    ) {
+      errors.push('lock skill distribution metadata is invalid')
     }
   }
   if (errors.length > 0) throw new Error(errors.join('; '))
@@ -304,27 +326,28 @@ async function resolveRoots(existingLock) {
   return { projectRoot, repositoryRoot }
 }
 
-async function desiredEntries(packageData, includeRepoSkill) {
+async function desiredEntries(packageData) {
   const projectEntries = await sourceEntries(templateRoot, packageData.projectPaths)
-  const repositorySkillEntries = includeRepoSkill
-    ? await sourceEntries(skillRoot, packageData.skillPaths, repoSkillPath)
-    : []
-  return { projectEntries, repositorySkillEntries }
+  return { projectEntries }
 }
 
 async function writeLock(projectRoot, repositoryRoot, packageData, entries) {
   const repositoryRootRelative = normalizePath(relative(projectRoot, repositoryRoot) || '.')
   const lock = {
-    schema_version: 1,
+    schema_version: 2,
     name: packageData.metadata.name,
     version: packageData.metadata.version,
     repository: packageData.metadata.repository,
     installed_at: new Date().toISOString(),
     repository_root: repositoryRootRelative,
     project_template_sha256: packageData.metadata.project_template_sha256,
-    skill_contract_sha256: packageData.metadata.skill_contract_sha256,
+    skill: {
+      name: 'project-guideline-workflow',
+      distribution: 'user-scope',
+      repository_path: repoSkillPath,
+      contract_sha256: packageData.metadata.skill_contract_sha256,
+    },
     project_files: lockEntries(entries.projectEntries),
-    repository_skill_files: lockEntries(entries.repositorySkillEntries),
   }
   const content = Buffer.from(`${JSON.stringify(lock, null, 2)}\n`)
   await writeAtomic(projectRoot, {
@@ -341,21 +364,20 @@ async function install(packageData) {
     throw new Error(`${lockFilename} already exists; use check or update`)
   }
   const roots = await resolveRoots(null)
-  const includeRepoSkill = !hasFlag('--without-repo-skill')
-  const entries = await desiredEntries(packageData, includeRepoSkill)
-  const errors = [
-    ...await preflightInstall(roots.projectRoot, entries.projectEntries, 'project standard'),
-    ...await preflightInstall(roots.repositoryRoot, entries.repositorySkillEntries, 'repository skill'),
-  ]
+  const entries = await desiredEntries(packageData)
+  const errors = await preflightInstall(
+    roots.projectRoot,
+    entries.projectEntries,
+    'project standard',
+  )
   if (errors.length > 0) throw new Error(errors.join('; '))
 
   await writeEntries(roots.projectRoot, entries.projectEntries)
-  await writeEntries(roots.repositoryRoot, entries.repositorySkillEntries)
   await writeLock(roots.projectRoot, roots.repositoryRoot, packageData, entries)
   console.log(
     `Installed ${packageData.metadata.name} ${packageData.metadata.version}: `
-    + `${entries.projectEntries.length} project files and `
-    + `${entries.repositorySkillEntries.length} repository skill files.`,
+    + `${entries.projectEntries.length} project files; `
+    + 'the Codex skill remains user-scoped.',
   )
 }
 
@@ -364,20 +386,62 @@ async function checkInstalled(packageData) {
   const projectRoot = await canonicalDirectory(targetInput, 'project root')
   const lock = await readLock(projectRoot)
   const roots = await resolveRoots(lock)
+  const legacySkillEntries = lock.schema_version === 1
+    ? lock.repository_skill_files
+    : []
   const errors = [
     ...await verifyEntries(roots.projectRoot, lock.project_files, 'project standard'),
-    ...await verifyEntries(roots.repositoryRoot, lock.repository_skill_files, 'repository skill'),
+    ...await verifyEntries(roots.repositoryRoot, legacySkillEntries, 'legacy repository skill'),
   ]
   if (lock.version !== packageData.metadata.version) {
     errors.push(
       `installed version ${lock.version} differs from available version ${packageData.metadata.version}; run update`,
     )
   }
+  if (
+    lock.version === packageData.metadata.version
+    && lock.project_template_sha256 !== packageData.metadata.project_template_sha256
+  ) {
+    errors.push('installed project fingerprint differs from the available release')
+  }
+  const installedSkillFingerprint = lock.schema_version === 1
+    ? lock.skill_contract_sha256
+    : lock.skill.contract_sha256
+  if (
+    lock.version === packageData.metadata.version
+    && installedSkillFingerprint !== packageData.metadata.skill_contract_sha256
+  ) {
+    errors.push('installed skill contract differs from the available release')
+  }
   if (errors.length > 0) throw new Error(errors.join('; '))
   console.log(
-    `Verified ${lock.name} ${lock.version}: ${lock.project_files.length} project files and `
-    + `${lock.repository_skill_files.length} repository skill files.`,
+    `Verified ${lock.name} ${lock.version}: ${lock.project_files.length} project files`
+    + `${legacySkillEntries.length === 0
+      ? ' and a user-scoped skill contract.'
+      : ` and ${legacySkillEntries.length} legacy repository skill files.`}`,
   )
+}
+
+async function pruneLegacySkillDirectories(repositoryRoot, entries) {
+  const boundary = resolve(repositoryRoot, repoSkillPath)
+  const directories = new Set()
+  for (const entry of entries) {
+    let cursor = dirname(resolve(repositoryRoot, entry.path))
+    while (isWithin(boundary, cursor)) {
+      directories.add(cursor)
+      if (cursor === boundary) break
+      cursor = dirname(cursor)
+    }
+  }
+  const deepestFirst = [...directories].sort((left, right) => right.length - left.length)
+  for (const directory of deepestFirst) {
+    try {
+      await rmdir(directory)
+    }
+    catch (error) {
+      if (!['ENOENT', 'ENOTEMPTY'].includes(error?.code)) throw error
+    }
+  }
 }
 
 async function update(packageData) {
@@ -385,38 +449,37 @@ async function update(packageData) {
   const projectRoot = await canonicalDirectory(targetInput, 'project root')
   const lock = await readLock(projectRoot)
   const roots = await resolveRoots(lock)
-  const includeRepoSkill = lock.repository_skill_files.length > 0
-  const desired = await desiredEntries(packageData, includeRepoSkill)
+  const legacySkillEntries = lock.schema_version === 1
+    ? lock.repository_skill_files
+    : []
+  const desired = await desiredEntries(packageData)
   const errors = [
     ...await verifyEntries(roots.projectRoot, lock.project_files, 'installed project standard'),
-    ...await verifyEntries(roots.repositoryRoot, lock.repository_skill_files, 'installed repository skill'),
+    ...await verifyEntries(
+      roots.repositoryRoot,
+      legacySkillEntries,
+      'installed legacy repository skill',
+    ),
   ]
 
   const oldProjectPaths = new Set(lock.project_files.map(entry => entry.path))
-  const oldSkillPaths = new Set(lock.repository_skill_files.map(entry => entry.path))
   errors.push(...await preflightInstall(
     roots.projectRoot,
     desired.projectEntries.filter(entry => !oldProjectPaths.has(entry.path)),
     'new project standard',
   ))
-  errors.push(...await preflightInstall(
-    roots.repositoryRoot,
-    desired.repositorySkillEntries.filter(entry => !oldSkillPaths.has(entry.path)),
-    'new repository skill',
-  ))
   if (errors.length > 0) throw new Error(errors.join('; '))
 
   await writeEntries(roots.projectRoot, desired.projectEntries)
-  await writeEntries(roots.repositoryRoot, desired.repositorySkillEntries)
 
   const newProjectPaths = new Set(desired.projectEntries.map(entry => entry.path))
-  const newSkillPaths = new Set(desired.repositorySkillEntries.map(entry => entry.path))
   for (const entry of lock.project_files.filter(item => !newProjectPaths.has(item.path))) {
     await rm(await assertSafeTarget(roots.projectRoot, entry.path))
   }
-  for (const entry of lock.repository_skill_files.filter(item => !newSkillPaths.has(item.path))) {
+  for (const entry of legacySkillEntries) {
     await rm(await assertSafeTarget(roots.repositoryRoot, entry.path))
   }
+  await pruneLegacySkillDirectories(roots.repositoryRoot, legacySkillEntries)
 
   await writeLock(roots.projectRoot, roots.repositoryRoot, packageData, desired)
   console.log(

@@ -107,7 +107,9 @@ for (const markdownPath of localMarkdownFiles) {
 }
 
 for (const script of [
+  resolve(skillRoot, 'scripts/manage-user-skill.mjs'),
   resolve(skillRoot, 'scripts/project-standards.mjs'),
+  resolve(templateRoot, 'scripts/docs/check-installed-standards.mjs'),
   resolve(templateRoot, 'scripts/docs/manage-guideline.mjs'),
 ]) {
   const result = spawnSync(process.execPath, ['--check', script], { encoding: 'utf8' })

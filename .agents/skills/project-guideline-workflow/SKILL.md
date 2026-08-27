@@ -10,19 +10,30 @@ and applies that contract; it does not replace project truth or verification.
 
 ## Bootstrap or update
 
-When the project does not yet contain `docs/guidelines/README.md`, use the
-bundled dependency-free installer:
+The GitHub standards repository is the only editable skill and guideline
+source. A consuming project contains hash-locked guideline artifacts, never a
+second repository-scoped copy of this skill. The user-level skill is a symlink
+to the selected standards checkout so same-named skills are not duplicated.
+
+When the project does not yet contain `docs/guidelines/README.md`, run from a
+released standards checkout:
 
 ```bash
-node <skill-root>/scripts/project-standards.mjs install \
-  --target <application-workspace> \
-  --repo-root <git-repository-root>
+make install \
+  PROJECT_ROOT=<application-workspace> \
+  REPO_ROOT=<git-repository-root>
+make skill-sync
 ```
 
 For an existing locked installation, use `check` before work and `update` only
 when the user has approved adopting the currently available standard version.
 The updater must refuse locally divergent managed files. Never bypass that
 guard by copying assets manually or forcing an overwrite.
+
+Use the consuming repository's `make standards-sync` facade when present. It
+must refresh a dedicated clean cache from the approved GitHub repository/ref,
+then call this package's `make sync`. Do not point the user skill at a mutable
+application repository or retain a same-named repository skill alongside it.
 
 After first installation, materialize
 `docs/guidelines/AGENTS.template.md` as root `AGENTS.md`, resolve every

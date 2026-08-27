@@ -6,7 +6,7 @@ baseline used to start and govern new projects. It packages:
 - a modular project guideline with profile and capability selection;
 - strict UI/UX, API, data, security, observability, testing, and operations
   contracts;
-- a repository-scoped Codex skill that makes the workflow discoverable;
+- one user-scoped Codex skill sourced from this repository;
 - a dependency-free installer with drift-safe install, update, and integrity
   checks.
 
@@ -21,26 +21,10 @@ decisions in its project book.
 - pnpm 11.24.0 through Corepack for developing this repository
 - Codex for skill-assisted workflows (optional for human-only use)
 
-## Install the Codex skill
+## Quick start
 
-Install the skill for your user directly from this public repository:
-
-```bash
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
-  --repo hungdh1405/doxanh-project-standards \
-  --path .agents/skills/project-guideline-workflow
-```
-
-Restart Codex after installation so the new skill is discovered. The installed
-skill is available as `$project-guideline-workflow`.
-
-If `CODEX_HOME` is not set, its usual value is `~/.codex`. The installer
-refuses to overwrite an existing skill directory; remove or rename an older
-personal installation deliberately before reinstalling.
-
-## Apply the standard to a project
-
-Clone this repository, then run the installer from its root:
+Clone one clean standards checkout and use it for both the project artifacts
+and the user-level Codex skill:
 
 ```bash
 git clone https://github.com/hungdh1405/doxanh-project-standards.git
@@ -48,18 +32,32 @@ cd doxanh-project-standards
 make install \
   PROJECT_ROOT=/absolute/path/to/project \
   REPO_ROOT=/absolute/path/to/repository
+make skill-sync
 ```
 
+`make skill-sync` creates one user-level symlink at
+`${CODEX_HOME:-$HOME/.codex}/skills/project-guideline-workflow`. The link points
+to this checkout, so the skill is never copied into every application
+repository. Restart Codex after the first installation so
+`$project-guideline-workflow` is discovered.
+
+An existing recognized Doxanh skill directory is not replaced implicitly. For
+the one-time migration from a copied installation, run
+`make skill-sync REPLACE_SKILL=1`. Unknown directories and symlinks are always
+preserved and rejected.
+
+## Apply the standard to a project
+
 `PROJECT_ROOT` is the application workspace that owns `docs/` and `scripts/`.
-`REPO_ROOT` is the Git repository root that should receive the repository-scoped
-skill. They are normally the same directory; a monorepo may place the project
-under the repository root.
+`REPO_ROOT` is the Git repository root used to resolve nested application
+workspaces and migrate old repository-scoped installations. They are normally
+the same directory; a monorepo may place the project under the repository root.
 
 Installation adds:
 
 - `docs/guidelines/` and the stable `docs/new-project-guideline.md` reference;
 - `scripts/docs/manage-guideline.mjs`;
-- `.agents/skills/project-guideline-workflow/` at the repository root;
+- `scripts/docs/check-installed-standards.mjs` for offline integrity checks;
 - `.doxanh-project-standards.json` at the project root, containing the installed
   version and SHA-256 digest of every managed file.
 
@@ -87,7 +85,7 @@ Read every returned module completely. Capabilities that are not selected must
 still receive the explicit not-applicable decision and activation trigger
 required by the project-book contract.
 
-## Check or update an installation
+## Check or synchronize an installation
 
 Verify the installed version and every managed digest:
 
@@ -97,10 +95,11 @@ make installed-check \
   REPO_ROOT=/absolute/path/to/repository
 ```
 
-After pulling a newer tagged release of this repository, update a consumer:
+After selecting a newer released checkout, synchronize the project and user
+skill together:
 
 ```bash
-make update \
+make sync \
   PROJECT_ROOT=/absolute/path/to/project \
   REPO_ROOT=/absolute/path/to/repository
 ```
@@ -110,6 +109,17 @@ refuses to proceed if any managed consumer file changed locally. Make a generic
 improvement here and release it, or keep a project-specific decision in the
 consumer's project book; do not silently fork the reusable modules.
 
+The first synchronization from version 1.0 verifies and removes its old
+repository-scoped skill copy, writes the version-2 project-only lock, and links
+the user skill to the selected standards checkout. Later synchronization only
+updates the clean checkout, project artifacts, and the same link.
+
+Consuming repositories should expose a small `make standards-sync` facade that
+refreshes a dedicated cache from this GitHub repository and calls `make sync`.
+The application does not own or edit the cached skill. Pin `STANDARDS_REF` to a
+release tag when a project requires explicit upgrade approval; use `main` only
+where the repository policy guarantees that `main` is always releasable.
+
 ## Repository layout
 
 ```text
@@ -118,7 +128,9 @@ consumer's project book; do not silently fork the reusable modules.
 │   ├── SKILL.md
 │   ├── agents/openai.yaml
 │   ├── assets/project-template/
-│   └── scripts/project-standards.mjs
+│   └── scripts/
+│       ├── manage-user-skill.mjs
+│       └── project-standards.mjs
 ├── test/project-standards.test.mjs
 ├── AGENTS.md
 ├── CHANGELOG.md
@@ -126,9 +138,10 @@ consumer's project book; do not silently fork the reusable modules.
 └── package.json
 ```
 
-The skill asset tree is the single distributable source. Consumer copies are
-versioned materializations verified by their lock file, not additional upstream
-owners.
+The skill asset tree is the single distributable source. Consumer guideline
+copies are generated artifacts verified by their lock file, not additional
+upstream owners. The skill itself is linked once at user scope and is never
+materialized into consumers.
 
 ## Develop and release
 
