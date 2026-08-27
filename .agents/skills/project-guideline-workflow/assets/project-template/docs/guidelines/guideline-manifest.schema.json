@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "title",
+    "entry_path",
+    "entry_template_path",
+    "reference_entry_path",
+    "reference_entry_template_path",
+    "agent_instructions_template_path",
+    "semantic_baseline",
+    "profiles",
+    "capabilities",
+    "critical_contracts",
+    "modules"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema_version": { "const": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "entry_path": { "const": "docs/guidelines/README.md" },
+    "entry_template_path": {
+      "const": "docs/guidelines/entry-template.md"
+    },
+    "reference_entry_path": { "const": "docs/new-project-guideline.md" },
+    "reference_entry_template_path": {
+      "const": "docs/guidelines/reference-template.md"
+    },
+    "agent_instructions_template_path": {
+      "const": "docs/guidelines/AGENTS.template.md"
+    },
+    "semantic_baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "bytes", "lines", "meaning"],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "lines": { "type": "integer", "minimum": 1 },
+        "meaning": { "type": "string", "minLength": 1 }
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "optional"],
+      "properties": {
+        "required": { "$ref": "#/$defs/uniqueStrings" },
+        "optional": { "$ref": "#/$defs/uniqueStrings" }
+      }
+    },
+    "capabilities": { "$ref": "#/$defs/uniqueStrings" },
+    "critical_contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "api_response_envelope",
+        "ui_choice_controls",
+        "ui_copy",
+        "ui_density"
+      ],
+      "properties": {
+        "api_response_envelope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "top_level_fields",
+            "endpoint_specific_field",
+            "success_code",
+            "handled_http_status",
+            "unexpected_http_status",
+            "extra_top_level_fields"
+          ],
+          "properties": {
+            "top_level_fields": {
+              "type": "array",
+              "prefixItems": [
+                { "const": "success" },
+                { "const": "code" },
+                { "const": "message" },
+                { "const": "data" },
+                { "const": "request_id" }
+              ],
+              "items": false,
+              "minItems": 5,
+              "maxItems": 5
+            },
+            "endpoint_specific_field": { "const": "data" },
+            "success_code": { "const": 0 },
+            "handled_http_status": { "const": 200 },
+            "unexpected_http_status": { "const": 500 },
+            "extra_top_level_fields": { "const": "forbidden" }
+          }
+        },
+        "ui_choice_controls": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "select_max_options",
+            "combobox_min_options",
+            "combobox_for_remote_catalogs",
+            "combobox_for_name_or_code_lookup"
+          ],
+          "properties": {
+            "rule_id": { "const": "UI-CONTROL-001" },
+            "select_max_options": { "const": 9 },
+            "combobox_min_options": { "const": 10 },
+            "combobox_for_remote_catalogs": { "const": true },
+            "combobox_for_name_or_code_lookup": { "const": true }
+          }
+        },
+        "ui_copy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "implementation_details_forbidden",
+            "policy_narration_forbidden_by_default",
+            "complete_rendered_copy_review"
+          ],
+          "properties": {
+            "rule_id": { "const": "UI-COPY-001" },
+            "implementation_details_forbidden": { "const": true },
+            "policy_narration_forbidden_by_default": { "const": true },
+            "complete_rendered_copy_review": { "const": true }
+          }
+        },
+        "ui_density": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "default_density",
+            "phone_touch_target_min_css_px",
+            "adjacent_target_separation_min_css_px",
+            "desktop_action_width"
+          ],
+          "properties": {
+            "rule_id": { "const": "UI-DENSITY-001" },
+            "default_density": { "const": "compact" },
+            "phone_touch_target_min_css_px": { "const": 44 },
+            "adjacent_target_separation_min_css_px": { "const": 8 },
+            "desktop_action_width": { "const": "natural" }
+          }
+        }
+      }
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "path",
+          "title",
+          "activation",
+          "start_marker",
+          "end_before"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^GDL-[0-9]{3}$" },
+          "path": { "type": "string", "pattern": "^docs/guidelines/modules/.+\\.md$" },
+          "title": { "type": "string", "minLength": 1 },
+          "activation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "values"],
+            "properties": {
+              "kind": {
+                "enum": ["always", "profile-any", "capability-any"]
+              },
+              "values": { "$ref": "#/$defs/uniqueStrings" }
+            }
+          },
+          "start_marker": { "type": ["string", "null"] },
+          "end_before": { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "uniqueStrings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

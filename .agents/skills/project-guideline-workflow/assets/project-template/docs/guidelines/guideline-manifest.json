@@ -1,0 +1,322 @@
+{
+  "$schema": "./guideline-manifest.schema.json",
+  "schema_version": 1,
+  "title": "New Project Guideline",
+  "entry_path": "docs/guidelines/README.md",
+  "entry_template_path": "docs/guidelines/entry-template.md",
+  "reference_entry_path": "docs/new-project-guideline.md",
+  "reference_entry_template_path": "docs/guidelines/reference-template.md",
+  "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
+  "semantic_baseline": {
+    "sha256": "b242a88e0334a1fbc74033994c5c06f622793c7c881eac1be978bdf51465a9d6",
+    "bytes": 494552,
+    "lines": 8875,
+    "meaning": "Approved complete guideline with required root AGENTS bootstrap, planned-path and actual-worktree verification, canonical guideline entry, and mandatory executable web UI rules for visual consistency, compact touch-safe density, audience, actions, copy, controls, collections, responsive behavior, states, and accessibility on 2026-08-27."
+  },
+  "profiles": {
+    "required": [
+      "shared",
+      "nuxt-web"
+    ],
+    "optional": [
+      "flutter-native"
+    ]
+  },
+  "capabilities": [
+    "commercial-access",
+    "shareable-entry",
+    "payments",
+    "printing",
+    "cache",
+    "queue",
+    "scheduler",
+    "realtime",
+    "files"
+  ],
+  "critical_contracts": {
+    "api_response_envelope": {
+      "top_level_fields": [
+        "success",
+        "code",
+        "message",
+        "data",
+        "request_id"
+      ],
+      "endpoint_specific_field": "data",
+      "success_code": 0,
+      "handled_http_status": 200,
+      "unexpected_http_status": 500,
+      "extra_top_level_fields": "forbidden"
+    },
+    "ui_choice_controls": {
+      "rule_id": "UI-CONTROL-001",
+      "select_max_options": 9,
+      "combobox_min_options": 10,
+      "combobox_for_remote_catalogs": true,
+      "combobox_for_name_or_code_lookup": true
+    },
+    "ui_copy": {
+      "rule_id": "UI-COPY-001",
+      "implementation_details_forbidden": true,
+      "policy_narration_forbidden_by_default": true,
+      "complete_rendered_copy_review": true
+    },
+    "ui_density": {
+      "rule_id": "UI-DENSITY-001",
+      "default_density": "compact",
+      "phone_touch_target_min_css_px": 44,
+      "adjacent_target_separation_min_css_px": 8,
+      "desktop_action_width": "natural"
+    }
+  },
+  "modules": [
+    {
+      "id": "GDL-000",
+      "path": "docs/guidelines/modules/00-authority-and-principles.md",
+      "title": "Authority and principles",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": null,
+      "end_before": "## 3. Approved technology baseline"
+    },
+    {
+      "id": "GDL-010",
+      "path": "docs/guidelines/modules/10-approved-stack.md",
+      "title": "Approved technology baseline",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 3. Approved technology baseline",
+      "end_before": "## 4. Project book and document-generation system"
+    },
+    {
+      "id": "GDL-020",
+      "path": "docs/guidelines/modules/20-project-book-system.md",
+      "title": "Project-book system",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 4. Project book and document-generation system",
+      "end_before": "### 4.7 Minimum content contracts: orientation and product"
+    },
+    {
+      "id": "GDL-021",
+      "path": "docs/guidelines/modules/21-product-document-contracts.md",
+      "title": "Product document contracts",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "### 4.7 Minimum content contracts: orientation and product",
+      "end_before": "When pricing, trials, plans, feature entitlements, quotas, seats, devices, or"
+    },
+    {
+      "id": "GDL-022",
+      "path": "docs/guidelines/modules/22-commercial-access-capability.md",
+      "title": "Commercial-access capability",
+      "activation": { "kind": "capability-any", "values": ["commercial-access"] },
+      "start_marker": "When pricing, trials, plans, feature entitlements, quotas, seats, devices, or",
+      "end_before": "### 4.8 Minimum content contracts: experience design"
+    },
+    {
+      "id": "GDL-023",
+      "path": "docs/guidelines/modules/23-experience-document-contracts.md",
+      "title": "Experience document contracts",
+      "activation": { "kind": "profile-any", "values": ["nuxt-web", "flutter-native"] },
+      "start_marker": "### 4.8 Minimum content contracts: experience design",
+      "end_before": "### 4.9 Minimum content contracts: architecture and system contracts"
+    },
+    {
+      "id": "GDL-024",
+      "path": "docs/guidelines/modules/24-system-document-contracts.md",
+      "title": "Architecture and system document contracts",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "### 4.9 Minimum content contracts: architecture and system contracts",
+      "end_before": "### 4.10 Minimum content contracts: engineering and quality"
+    },
+    {
+      "id": "GDL-025",
+      "path": "docs/guidelines/modules/25-quality-delivery-and-generation.md",
+      "title": "Quality, delivery, and generation contracts",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "### 4.10 Minimum content contracts: engineering and quality",
+      "end_before": "## 5. Project discovery and delivery workflow"
+    },
+    {
+      "id": "GDL-030",
+      "path": "docs/guidelines/modules/30-discovery-and-architecture.md",
+      "title": "Discovery and reference architecture",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 5. Project discovery and delivery workflow",
+      "end_before": "## 7. Nuxt and Vue engineering rules"
+    },
+    {
+      "id": "GDL-040",
+      "path": "docs/guidelines/modules/40-nuxt-vue-foundations.md",
+      "title": "Nuxt and Vue foundations",
+      "activation": { "kind": "profile-any", "values": ["nuxt-web"] },
+      "start_marker": "## 7. Nuxt and Vue engineering rules",
+      "end_before": "### 7.8.2 Shareable application entry points when required"
+    },
+    {
+      "id": "GDL-041",
+      "path": "docs/guidelines/modules/41-shareable-entry-capability.md",
+      "title": "Shareable-entry capability",
+      "activation": { "kind": "capability-any", "values": ["shareable-entry"] },
+      "start_marker": "### 7.8.2 Shareable application entry points when required",
+      "end_before": "### 7.9 Day.js and Lodash"
+    },
+    {
+      "id": "GDL-042",
+      "path": "docs/guidelines/modules/42-nuxt-runtime-contracts.md",
+      "title": "Nuxt runtime and TypeScript contracts",
+      "activation": { "kind": "profile-any", "values": ["nuxt-web"] },
+      "start_marker": "### 7.9 Day.js and Lodash",
+      "end_before": "## 8. Nuxt web UI and UX system"
+    },
+    {
+      "id": "GDL-050",
+      "path": "docs/guidelines/modules/50-web-ui-foundations.md",
+      "title": "Web UI foundations",
+      "activation": { "kind": "profile-any", "values": ["nuxt-web"] },
+      "start_marker": "## 8. Nuxt web UI and UX system",
+      "end_before": "### 8.7 Master layouts, master page, and application shell"
+    },
+    {
+      "id": "GDL-051",
+      "path": "docs/guidelines/modules/51-web-layouts-and-screens.md",
+      "title": "Web layouts and screen contracts",
+      "activation": { "kind": "profile-any", "values": ["nuxt-web"] },
+      "start_marker": "### 8.7 Master layouts, master page, and application shell",
+      "end_before": "### 8.10 UI copy and content"
+    },
+    {
+      "id": "GDL-052",
+      "path": "docs/guidelines/modules/52-web-interaction-and-verification.md",
+      "title": "Web interaction and verification",
+      "activation": { "kind": "profile-any", "values": ["nuxt-web"] },
+      "start_marker": "### 8.10 UI copy and content",
+      "end_before": "## 9. Flutter native-mobile companion standard"
+    },
+    {
+      "id": "GDL-053",
+      "path": "docs/guidelines/modules/53-flutter-native-profile.md",
+      "title": "Flutter native profile",
+      "activation": { "kind": "profile-any", "values": ["flutter-native"] },
+      "start_marker": "## 9. Flutter native-mobile companion standard",
+      "end_before": "## 10. Server, API, and data rules"
+    },
+    {
+      "id": "GDL-060",
+      "path": "docs/guidelines/modules/60-api-contract.md",
+      "title": "API contract",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 10. Server, API, and data rules",
+      "end_before": "### 10.2 PostgreSQL and Drizzle"
+    },
+    {
+      "id": "GDL-061",
+      "path": "docs/guidelines/modules/61-data-foundations.md",
+      "title": "Data foundations",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "### 10.2 PostgreSQL and Drizzle",
+      "end_before": "Country-aware payment materialization:"
+    },
+    {
+      "id": "GDL-062",
+      "path": "docs/guidelines/modules/62-payments-and-printing-capability.md",
+      "title": "Payments and printing capability",
+      "activation": { "kind": "capability-any", "values": ["payments", "printing"] },
+      "start_marker": "Country-aware payment materialization:",
+      "end_before": "Tenancy, authorization, and roles:"
+    },
+    {
+      "id": "GDL-063",
+      "path": "docs/guidelines/modules/63-data-integrity-and-concurrency.md",
+      "title": "Data integrity and concurrency",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "Tenancy, authorization, and roles:",
+      "end_before": "### 10.3 Cache Redis"
+    },
+    {
+      "id": "GDL-064",
+      "path": "docs/guidelines/modules/64-redis-roles-capability.md",
+      "title": "Redis roles capability",
+      "activation": { "kind": "capability-any", "values": ["cache", "queue", "realtime"] },
+      "start_marker": "### 10.3 Cache Redis",
+      "end_before": "### 10.5 BullMQ queues and workers"
+    },
+    {
+      "id": "GDL-065",
+      "path": "docs/guidelines/modules/65-jobs-and-schedulers-capability.md",
+      "title": "Jobs and schedulers capability",
+      "activation": { "kind": "capability-any", "values": ["queue", "scheduler"] },
+      "start_marker": "### 10.5 BullMQ queues and workers",
+      "end_before": "### 10.8 Realtime"
+    },
+    {
+      "id": "GDL-066",
+      "path": "docs/guidelines/modules/66-realtime-capability.md",
+      "title": "Realtime capability",
+      "activation": { "kind": "capability-any", "values": ["realtime"] },
+      "start_marker": "### 10.8 Realtime",
+      "end_before": "### 10.9 Files and media"
+    },
+    {
+      "id": "GDL-067",
+      "path": "docs/guidelines/modules/67-files-and-media-capability.md",
+      "title": "Files and media capability",
+      "activation": { "kind": "capability-any", "values": ["files"] },
+      "start_marker": "### 10.9 Files and media",
+      "end_before": "## 11. Authentication, authorization, and security"
+    },
+    {
+      "id": "GDL-070",
+      "path": "docs/guidelines/modules/70-authentication-authorization-security.md",
+      "title": "Authentication, authorization, and security",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 11. Authentication, authorization, and security",
+      "end_before": "## 12. Logging, observability, and audit structure"
+    },
+    {
+      "id": "GDL-071",
+      "path": "docs/guidelines/modules/71-logging-observability-audit.md",
+      "title": "Logging, observability, and audit",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 12. Logging, observability, and audit structure",
+      "end_before": "## 13. Testing and verification"
+    },
+    {
+      "id": "GDL-080",
+      "path": "docs/guidelines/modules/80-testing-and-verification.md",
+      "title": "Testing and verification",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 13. Testing and verification",
+      "end_before": "## 14. Development, CI, and operations"
+    },
+    {
+      "id": "GDL-090",
+      "path": "docs/guidelines/modules/90-development-ci-operations.md",
+      "title": "Development, CI, and operations",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 14. Development, CI, and operations",
+      "end_before": "## 15. Ready and done checklists"
+    },
+    {
+      "id": "GDL-100",
+      "path": "docs/guidelines/modules/100-readiness-and-build-order.md",
+      "title": "Readiness and build order",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 15. Ready and done checklists",
+      "end_before": "## 17. AI agent operating rules"
+    },
+    {
+      "id": "GDL-110",
+      "path": "docs/guidelines/modules/110-ai-agent-rules.md",
+      "title": "AI agent operating rules",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 17. AI agent operating rules",
+      "end_before": "## 18. Official references"
+    },
+    {
+      "id": "GDL-120",
+      "path": "docs/guidelines/modules/120-references-and-practical-rule.md",
+      "title": "References and practical rule",
+      "activation": { "kind": "always", "values": [] },
+      "start_marker": "## 18. Official references",
+      "end_before": null
+    }
+  ]
+}

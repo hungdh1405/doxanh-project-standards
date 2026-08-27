@@ -1,0 +1,20 @@
+{
+  "name": "doxanh-project-standards",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reusable Doxanh project standards and Codex workflow skill",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node test/check-package.mjs && node --test test/project-standards.test.mjs",
+    "test": "node --test test/project-standards.test.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hungdh1405/doxanh-project-standards.git"
+  }
+}
