@@ -470,6 +470,17 @@ async function update(packageData) {
   ))
   if (errors.length > 0) throw new Error(errors.join('; '))
 
+  const desiredProjectLockEntries = lockEntries(desired.projectEntries)
+  const alreadyCurrent = lock.schema_version === 2
+    && lock.version === packageData.metadata.version
+    && lock.project_template_sha256 === packageData.metadata.project_template_sha256
+    && lock.skill.contract_sha256 === packageData.metadata.skill_contract_sha256
+    && JSON.stringify(lock.project_files) === JSON.stringify(desiredProjectLockEntries)
+  if (alreadyCurrent) {
+    console.log(`${packageData.metadata.name} ${lock.version} is already current.`)
+    return
+  }
+
   await writeEntries(roots.projectRoot, desired.projectEntries)
 
   const newProjectPaths = new Set(desired.projectEntries.map(entry => entry.path))

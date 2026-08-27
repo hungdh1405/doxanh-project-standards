@@ -105,6 +105,13 @@ test('installs and verifies a clean standalone project', async () => {
     )
     assert.equal(offlineChecked.status, 0, offlineChecked.stderr)
     assert.match(offlineChecked.stdout, /user-scoped skill contract/u)
+
+    const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
+    const lockBeforeUpdate = await readFile(lockPath, 'utf8')
+    const updated = run('update', roots.projectRoot, roots.repositoryRoot)
+    assert.equal(updated.status, 0, updated.stderr)
+    assert.match(updated.stdout, /is already current/u)
+    assert.equal(await readFile(lockPath, 'utf8'), lockBeforeUpdate)
   }
   finally {
     await rm(roots.repositoryRoot, { recursive: true, force: true })

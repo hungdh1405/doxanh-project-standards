@@ -3,6 +3,13 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.0.1] - 2026-08-27
+
+### Fixed
+
+- Repeated synchronization of an already-current project leaves its lock and
+  worktree unchanged.
+
 ## [2.0.0] - 2026-08-27
 
 ### Added
