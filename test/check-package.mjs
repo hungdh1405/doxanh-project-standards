@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { cp, mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -109,7 +109,6 @@ for (const markdownPath of localMarkdownFiles) {
 for (const script of [
   resolve(skillRoot, 'scripts/manage-user-skill.mjs'),
   resolve(skillRoot, 'scripts/project-standards.mjs'),
-  resolve(templateRoot, 'scripts/docs/check-installed-standards.mjs'),
   resolve(templateRoot, 'scripts/docs/manage-guideline.mjs'),
 ]) {
   const result = spawnSync(process.execPath, ['--check', script], { encoding: 'utf8' })
@@ -119,11 +118,6 @@ for (const script of [
 const fixtureRoot = await mkdtemp(resolve(tmpdir(), 'doxanh-standards-check-'))
 try {
   await cp(templateRoot, fixtureRoot, { recursive: true })
-  await mkdir(resolve(fixtureRoot, 'docs'), { recursive: true })
-  await writeFile(
-    resolve(fixtureRoot, 'docs/README.md'),
-    '# Project book\n\nSee the [project guideline](./guidelines/README.md).\n',
-  )
   const result = spawnSync(
     process.execPath,
     [resolve(fixtureRoot, 'scripts/docs/manage-guideline.mjs'), 'check'],
@@ -142,6 +136,6 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Package check passed: version ${metadata.version}, ${projectPaths.length} project files, `
+  `Package check passed: version ${metadata.version}, ${projectPaths.length} guideline package files, `
   + `${manifest.modules.length} guideline modules, ${complete.byteLength} baseline bytes.`,
 )

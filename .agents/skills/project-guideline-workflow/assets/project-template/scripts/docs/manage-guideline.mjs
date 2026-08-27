@@ -69,12 +69,6 @@ function validateManifestShape() {
   if (manifest.entry_template_path !== 'docs/guidelines/entry-template.md') {
     errors.push('entry_template_path must be docs/guidelines/entry-template.md')
   }
-  if (manifest.reference_entry_path !== 'docs/new-project-guideline.md') {
-    errors.push('reference_entry_path must be docs/new-project-guideline.md')
-  }
-  if (manifest.reference_entry_template_path !== 'docs/guidelines/reference-template.md') {
-    errors.push('reference_entry_template_path must be docs/guidelines/reference-template.md')
-  }
   if (manifest.agent_instructions_template_path !== 'docs/guidelines/AGENTS.template.md') {
     errors.push('agent_instructions_template_path must be docs/guidelines/AGENTS.template.md')
   }
@@ -267,19 +261,8 @@ async function writeEntry() {
     resolve(projectRoot, manifest.entry_template_path),
     'utf8',
   )
-  const referenceTemplate = await readFile(
-    resolve(projectRoot, manifest.reference_entry_template_path),
-    'utf8',
-  )
   await writeFile(resolve(projectRoot, manifest.entry_path), template)
-  await writeFile(
-    resolve(projectRoot, manifest.reference_entry_path),
-    referenceTemplate,
-  )
-  console.log(
-    `Generated guideline entry at ${manifest.entry_path} and reference at `
-    + `${manifest.reference_entry_path}.`,
-  )
+  console.log(`Generated guideline entry at ${manifest.entry_path}.`)
 }
 
 function markerOffsets(source) {
@@ -441,14 +424,6 @@ async function check() {
     resolve(projectRoot, manifest.entry_template_path),
     'utf8',
   )
-  const referenceEntry = await readFile(
-    resolve(projectRoot, manifest.reference_entry_path),
-    'utf8',
-  )
-  const referenceEntryTemplate = await readFile(
-    resolve(projectRoot, manifest.reference_entry_template_path),
-    'utf8',
-  )
   const agentInstructionsTemplate = await readFile(
     resolve(projectRoot, manifest.agent_instructions_template_path),
     'utf8',
@@ -456,18 +431,9 @@ async function check() {
   if (entry !== entryTemplate) {
     errors.push(`${manifest.entry_path} differs from ${manifest.entry_template_path}`)
   }
-  if (referenceEntry !== referenceEntryTemplate) {
-    errors.push(
-      `${manifest.reference_entry_path} differs from `
-      + `${manifest.reference_entry_template_path}`,
-    )
-  }
-  if (referenceEntry === entry) {
-    errors.push('reference entry must link to, not duplicate, the canonical guideline entry')
-  }
   const requiredAgentTemplateTokens = [
     'root `AGENTS.md`',
-    'docs/guidelines/README.md',
+    'installed `project-guideline-workflow`',
     '<rules-plan-command>',
     '<changed-verification-command>',
     '<verification-freshness-command>',
@@ -480,25 +446,6 @@ async function check() {
     if (!agentInstructionsTemplate.includes(token)) {
       errors.push(`${manifest.agent_instructions_template_path} is missing ${token}`)
     }
-  }
-  const referenceTarget = `./${relative(
-    dirname(manifest.reference_entry_path),
-    manifest.entry_path,
-  ).replaceAll('\\', '/')}`
-  if (!referenceEntry.includes(`](${referenceTarget})`)) {
-    errors.push(
-      `${manifest.reference_entry_path} must link to the canonical entry at `
-      + referenceTarget,
-    )
-  }
-  const projectBookPath = 'docs/README.md'
-  const projectBook = await readFile(resolve(projectRoot, projectBookPath), 'utf8')
-  const projectBookTarget = `./${relative(
-    dirname(projectBookPath),
-    manifest.entry_path,
-  ).replaceAll('\\', '/')}`
-  if (!projectBook.includes(`](${projectBookTarget})`)) {
-    errors.push(`${projectBookPath} must link to the canonical guideline at ${projectBookTarget}`)
   }
   const expectedPaths = manifest.modules.map(module => module.path).sort()
   const actualPaths = await moduleFiles()
@@ -539,7 +486,6 @@ async function check() {
   errors.push(...validateUiCopyAndDensityContracts(complete))
   const genericSources = [
     [manifest.entry_path, entry],
-    [manifest.reference_entry_path, referenceEntry],
     [manifest.agent_instructions_template_path, agentInstructionsTemplate],
     ['complete modular guideline', complete],
   ]

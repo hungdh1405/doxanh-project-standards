@@ -3,6 +3,17 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.0.0] - 2026-08-27
+
+### Changed
+
+- Consuming repositories now keep only a reference lock and their
+  project-specific documents; reusable guideline modules stay in this skill.
+- Version-1 and version-2 updates verify copied files before removing them and
+  refuse migration when local divergence would be lost.
+- Profile planning, package checking, and `AGENTS.md` materialization resolve
+  from the selected external standards checkout.
+
 ## [2.0.1] - 2026-08-27
 
 ### Fixed

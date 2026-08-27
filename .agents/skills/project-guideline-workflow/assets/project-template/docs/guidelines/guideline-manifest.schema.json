@@ -8,8 +8,6 @@
     "title",
     "entry_path",
     "entry_template_path",
-    "reference_entry_path",
-    "reference_entry_template_path",
     "agent_instructions_template_path",
     "semantic_baseline",
     "profiles",
@@ -24,10 +22,6 @@
     "entry_path": { "const": "docs/guidelines/README.md" },
     "entry_template_path": {
       "const": "docs/guidelines/entry-template.md"
-    },
-    "reference_entry_path": { "const": "docs/new-project-guideline.md" },
-    "reference_entry_template_path": {
-      "const": "docs/guidelines/reference-template.md"
     },
     "agent_instructions_template_path": {
       "const": "docs/guidelines/AGENTS.template.md"

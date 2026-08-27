@@ -14,12 +14,13 @@ import {
   writeFile,
 } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { dirname, resolve } from 'node:path'
+import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const skillRoot = resolve(root, '.agents/skills/project-guideline-workflow')
+const templateRoot = resolve(skillRoot, 'assets/project-template')
 const cli = resolve(skillRoot, 'scripts/project-standards.mjs')
 const userSkillCli = resolve(skillRoot, 'scripts/manage-user-skill.mjs')
 const metadata = JSON.parse(
@@ -65,7 +66,57 @@ async function fixture(nested = false) {
   return { repositoryRoot, projectRoot }
 }
 
-test('installs and verifies a clean standalone project', async () => {
+async function materialize(sourceRoot, destinationRoot) {
+  for (const path of await collectFiles(sourceRoot)) {
+    const destination = resolve(destinationRoot, path)
+    await mkdir(dirname(destination), { recursive: true })
+    await cp(resolve(sourceRoot, path), destination)
+  }
+}
+
+async function writeLegacyInstallation(roots, schemaVersion) {
+  await materialize(templateRoot, roots.projectRoot)
+  const projectFiles = []
+  for (const path of await collectFiles(templateRoot)) {
+    projectFiles.push({ path, sha256: sha256(await readFile(resolve(templateRoot, path))) })
+  }
+  const lock = {
+    schema_version: schemaVersion,
+    name: metadata.name,
+    version: '2.0.1',
+    repository: metadata.repository,
+    installed_at: new Date().toISOString(),
+    repository_root: relative(roots.projectRoot, roots.repositoryRoot) || '.',
+    project_template_sha256: metadata.project_template_sha256,
+    project_files: projectFiles,
+  }
+  if (schemaVersion === 1) {
+    const destination = resolve(roots.repositoryRoot, '.agents/skills/project-guideline-workflow')
+    await materialize(skillRoot, destination)
+    lock.skill_contract_sha256 = metadata.skill_contract_sha256
+    lock.repository_skill_files = []
+    for (const path of await collectFiles(skillRoot)) {
+      lock.repository_skill_files.push({
+        path: `.agents/skills/project-guideline-workflow/${path}`,
+        sha256: sha256(await readFile(resolve(skillRoot, path))),
+      })
+    }
+  }
+  else {
+    lock.skill = {
+      name: 'project-guideline-workflow',
+      distribution: 'user-scope',
+      repository_path: '.agents/skills/project-guideline-workflow',
+      contract_sha256: metadata.skill_contract_sha256,
+    }
+  }
+  await writeFile(
+    resolve(roots.projectRoot, '.doxanh-project-standards.json'),
+    `${JSON.stringify(lock, null, 2)}\n`,
+  )
+}
+
+test('installs and verifies a reference-only standalone project', async () => {
   const roots = await fixture()
   try {
     const installed = run('install', roots.projectRoot, roots.repositoryRoot)
@@ -75,9 +126,12 @@ test('installs and verifies a clean standalone project', async () => {
     const lock = JSON.parse(
       await readFile(resolve(roots.projectRoot, '.doxanh-project-standards.json'), 'utf8'),
     )
-    assert.equal(lock.schema_version, 2)
+    assert.equal(lock.schema_version, 3)
     assert.equal(lock.version, metadata.version)
-    assert.ok(lock.project_files.length > 30)
+    assert.equal(lock.consumer_mode, 'reference-only')
+    assert.equal(lock.guideline_package_sha256, metadata.project_template_sha256)
+    assert.equal(lock.project_files, undefined)
+    assert.equal(lock.project_template_sha256, undefined)
     assert.equal(lock.repository_skill_files, undefined)
     assert.deepEqual(lock.skill, {
       name: 'project-guideline-workflow',
@@ -94,17 +148,8 @@ test('installs and verifies a clean standalone project', async () => {
     assert.equal(checked.status, 0, checked.stderr)
     assert.match(checked.stdout, new RegExp(`Verified doxanh-project-standards ${metadata.version.replaceAll('.', '\\.')}`, 'u'))
 
-    const offlineChecked = spawnSync(
-      process.execPath,
-      [
-        resolve(roots.projectRoot, 'scripts/docs/check-installed-standards.mjs'),
-        '--target',
-        roots.projectRoot,
-      ],
-      { encoding: 'utf8' },
-    )
-    assert.equal(offlineChecked.status, 0, offlineChecked.stderr)
-    assert.match(offlineChecked.stdout, /user-scoped skill contract/u)
+    await assert.rejects(readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md')))
+    await assert.rejects(readFile(resolve(roots.projectRoot, 'docs/new-project-guideline.md')))
 
     const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
     const lockBeforeUpdate = await readFile(lockPath, 'utf8')
@@ -118,7 +163,7 @@ test('installs and verifies a clean standalone project', async () => {
   }
 })
 
-test('installs only project artifacts at the correct nested root', async () => {
+test('installs only a reference lock at the correct nested root', async () => {
   const roots = await fixture(true)
   try {
     const installed = run('install', roots.projectRoot, roots.repositoryRoot)
@@ -130,65 +175,72 @@ test('installs only project artifacts at the correct nested root', async () => {
     await assert.rejects(
       readFile(resolve(roots.repositoryRoot, '.agents/skills/project-guideline-workflow/SKILL.md')),
     )
-    assert.match(
-      await readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md'), 'utf8'),
-      /# New Project Guideline/u,
-    )
+    await assert.rejects(readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md')))
   }
   finally {
     await rm(roots.repositoryRoot, { recursive: true, force: true })
   }
 })
 
-test('migrates a verified version-1 repository skill to the user-scope contract', async () => {
+test('migrates verified version-1 copies to the reference-only contract', async () => {
   const roots = await fixture(true)
   try {
-    assert.equal(run('install', roots.projectRoot, roots.repositoryRoot).status, 0)
-    const destination = resolve(
-      roots.repositoryRoot,
-      '.agents/skills/project-guideline-workflow',
-    )
-    await cp(skillRoot, destination, { recursive: true })
-    const repositorySkillFiles = []
-    for (const path of await collectFiles(destination)) {
-      repositorySkillFiles.push({
-        path: `.agents/skills/project-guideline-workflow/${path}`,
-        sha256: sha256(await readFile(resolve(destination, path))),
-      })
-    }
+    await writeLegacyInstallation(roots, 1)
+    const destination = resolve(roots.repositoryRoot, '.agents/skills/project-guideline-workflow')
     const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
-    const lock = JSON.parse(await readFile(lockPath, 'utf8'))
-    lock.schema_version = 1
-    lock.version = '1.0.0'
-    lock.skill_contract_sha256 = lock.skill.contract_sha256
-    lock.repository_skill_files = repositorySkillFiles
-    delete lock.skill
-    await writeFile(lockPath, `${JSON.stringify(lock, null, 2)}\n`)
 
     const updated = run('update', roots.projectRoot, roots.repositoryRoot)
     assert.equal(updated.status, 0, updated.stderr)
     const migrated = JSON.parse(await readFile(lockPath, 'utf8'))
-    assert.equal(migrated.schema_version, 2)
+    assert.equal(migrated.schema_version, 3)
     assert.equal(migrated.version, metadata.version)
+    assert.equal(migrated.consumer_mode, 'reference-only')
+    assert.equal(migrated.project_files, undefined)
     assert.equal(migrated.repository_skill_files, undefined)
     await assert.rejects(readFile(resolve(destination, 'SKILL.md')))
+    await assert.rejects(readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md')))
   }
   finally {
     await rm(roots.repositoryRoot, { recursive: true, force: true })
   }
 })
 
-test('adopts identical files and installs the remaining package', async () => {
+test('refuses installation when a reusable guideline copy already exists', async () => {
   const roots = await fixture()
   try {
     await mkdir(resolve(roots.projectRoot, 'docs'), { recursive: true })
-    const expected = await readFile(
-      resolve(root, '.agents/skills/project-guideline-workflow/assets/project-template/docs/new-project-guideline.md'),
-    )
-    await writeFile(resolve(roots.projectRoot, 'docs/new-project-guideline.md'), expected)
+    const expected = await readFile(resolve(templateRoot, 'docs/guidelines/README.md'))
+    await mkdir(resolve(roots.projectRoot, 'docs/guidelines'), { recursive: true })
+    await writeFile(resolve(roots.projectRoot, 'docs/guidelines/README.md'), expected)
     const installed = run('install', roots.projectRoot, roots.repositoryRoot)
-    assert.equal(installed.status, 0, installed.stderr)
-    assert.ok(await readFile(resolve(roots.projectRoot, '.doxanh-project-standards.json')))
+    assert.notEqual(installed.status, 0)
+    assert.match(installed.stderr, /reference-only consumer must not contain/u)
+    await assert.rejects(readFile(resolve(roots.projectRoot, '.doxanh-project-standards.json')))
+  }
+  finally {
+    await rm(roots.repositoryRoot, { recursive: true, force: true })
+  }
+})
+
+test('refuses installation when a retired reusable reference remains', async () => {
+  const roots = await fixture()
+  try {
+    await mkdir(resolve(roots.projectRoot, 'docs'), { recursive: true })
+    await writeFile(
+      resolve(roots.projectRoot, 'docs/new-project-guideline.md'),
+      '# Retired local copy\n',
+    )
+
+    const installed = run('install', roots.projectRoot, roots.repositoryRoot)
+
+    assert.notEqual(installed.status, 0)
+    assert.match(
+      installed.stderr,
+      /reference-only consumer must not contain reusable standard file: docs\/new-project-guideline\.md/u,
+    )
+    await assert.rejects(
+      readFile(resolve(roots.projectRoot, '.doxanh-project-standards.json')),
+    )
   }
   finally {
     await rm(roots.repositoryRoot, { recursive: true, force: true })
@@ -199,14 +251,14 @@ test('refuses a conflicting install before writing managed content', async () =>
   const roots = await fixture()
   try {
     await mkdir(resolve(roots.projectRoot, 'docs'), { recursive: true })
-    await writeFile(resolve(roots.projectRoot, 'docs/new-project-guideline.md'), 'local contract\n')
+    await mkdir(resolve(roots.projectRoot, 'docs/guidelines'), { recursive: true })
+    await writeFile(resolve(roots.projectRoot, 'docs/guidelines/README.md'), 'local contract\n')
     const installed = run('install', roots.projectRoot, roots.repositoryRoot)
     assert.notEqual(installed.status, 0)
-    assert.match(installed.stderr, /conflicts with existing file/u)
+    assert.match(installed.stderr, /reference-only consumer must not contain/u)
     await assert.rejects(readFile(resolve(roots.projectRoot, '.doxanh-project-standards.json')))
-    await assert.rejects(readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md')))
     assert.equal(
-      await readFile(resolve(roots.projectRoot, 'docs/new-project-guideline.md'), 'utf8'),
+      await readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md'), 'utf8'),
       'local contract\n',
     )
   }
@@ -215,16 +267,16 @@ test('refuses a conflicting install before writing managed content', async () =>
   }
 })
 
-test('refuses check and update after local managed-file drift', async () => {
+test('refuses migration after local managed-file drift', async () => {
   const roots = await fixture()
   try {
-    assert.equal(run('install', roots.projectRoot, roots.repositoryRoot).status, 0)
+    await writeLegacyInstallation(roots, 2)
     const target = resolve(roots.projectRoot, 'docs/guidelines/README.md')
     await writeFile(target, 'locally changed\n')
 
     const checked = run('check', roots.projectRoot, roots.repositoryRoot)
     assert.notEqual(checked.status, 0)
-    assert.match(checked.stderr, /project standard file diverged/u)
+    assert.match(checked.stderr, /legacy project standard file diverged/u)
 
     const updated = run('update', roots.projectRoot, roots.repositoryRoot)
     assert.notEqual(updated.status, 0)
@@ -241,8 +293,8 @@ test('rejects a symlink at a managed target', async () => {
   try {
     const external = resolve(roots.repositoryRoot, 'external.md')
     await writeFile(external, 'external\n')
-    await mkdir(resolve(roots.projectRoot, 'docs'), { recursive: true })
-    await symlink(external, resolve(roots.projectRoot, 'docs/new-project-guideline.md'))
+    await mkdir(resolve(roots.projectRoot, 'docs/guidelines'), { recursive: true })
+    await symlink(external, resolve(roots.projectRoot, 'docs/guidelines/README.md'))
 
     const installed = run('install', roots.projectRoot, roots.repositoryRoot)
     assert.notEqual(installed.status, 0)

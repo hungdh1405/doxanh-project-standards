@@ -10,9 +10,8 @@ order, and review chapters in dependency order. Mark conditional documents as
 
 | Document | Status | Canonical responsibility |
 | --- | --- | --- |
-| root `AGENTS.md` | Required repository control | Concise automatically discovered bootstrap, rule-selection, change-safety, verification, and honest-completion protocol materialized from `docs/guidelines/AGENTS.template.md`; it links to canonical owners instead of duplicating their rules. |
-| `docs/guidelines/README.md` | Required governance source | Canonical reusable rules for generating and governing the project book; it is not project-specific product truth. |
-| `docs/new-project-guideline.md` | Required stable reference | Compatibility entry that links to the canonical governance source without duplicating its rules. |
+| root `AGENTS.md` | Required repository control | Concise automatically discovered bootstrap, rule-selection, change-safety, verification, and honest-completion protocol materialized from the installed standards skill template; it links to canonical owners instead of duplicating their rules. |
+| `.doxanh-project-standards.json` | Required standards reference | Reference-only lock naming the selected external guideline release and skill contract. It contains no copied guideline files. |
 | `docs/book-manifest.yaml` | Required | Machine-readable chapter order, paths, profiles, activation rules, owners, dependencies, lifecycle, and implementation status. |
 | `docs/book-manifest.schema.json` | Required | Machine-readable validation contract for the manifest structure and allowed values. |
 | `docs/README.md` | Required | Human-readable book cover, reading paths, document map, owners, statuses, and canonical sources. |
@@ -67,10 +66,12 @@ contract from Section 4.15. The implementation may live under `scripts/docs/`
 or another documented tooling directory, but it is maintained source, not an
 unreviewed one-off AI script.
 
-Every generated project must materialize `docs/guidelines/AGENTS.template.md`
-as root `AGENTS.md` before broad design or implementation. Replace its
-placeholders with exact repository paths and commands, keep it short enough to
-load for every task, and register it as maintained policy input. The executable
+Every generated project must materialize the installed standards skill asset
+`assets/project-template/docs/guidelines/AGENTS.template.md` as root
+`AGENTS.md` before broad design or implementation. Replace its placeholders
+with exact repository paths and commands, keep it short enough to load for
+every task, and register it as maintained policy input. Do not copy the
+remaining reusable guideline files into the application repository. The executable
 `contract:check` must reject a missing file, unresolved placeholder, missing
 canonical link, missing preflight/final verification instruction, or an
 unregistered nested `AGENTS.md`. Nested instruction files are allowed only when
@@ -234,7 +235,7 @@ Minimum manifest shape:
 
 ```yaml
 schema_version: 1
-generated_from: docs/guidelines/README.md
+generated_from: doxanh-project-standards@<version>
 
 book:
   title: "<Project name> Project Book"
@@ -342,7 +343,6 @@ Recommended chapter assignment:
 
 | ID | Path |
 | --- | --- |
-| `GOV-00` | `docs/new-project-guideline.md` (stable project-book reference to the canonical `docs/guidelines/README.md`; governance remains outside the project-specific reading sequence) |
 | `00` | `docs/README.md` |
 | `01` | root `README.md` |
 | `10` | `docs/product-spec.md` |

@@ -9,12 +9,14 @@
 > Last reviewed: 2026-08-25
 > Canonical for: Human and AI entry into the modular new-project standard
 > Depends on: None
-> Produces: `docs/guidelines/guideline-manifest.json`, `docs/guidelines/AGENTS.template.md`, active guideline module plan, and the generated project-book contract
+> Produces: External guideline manifest, `AGENTS.md` template, active module plan, and the generated project-book contract
 > Evidence: Modular complete edition is checked byte-for-byte against the approved 2026-08-25 semantic baseline
 
-This is the required human and AI entry point. The detailed rules are maintained
-as ordered modules under `docs/guidelines/modules/`. Do not load or duplicate the
-complete 65,000-word standard for every task.
+This is the required human and AI entry point inside the installed standards
+skill. The detailed rules are maintained as ordered modules under its
+`docs/guidelines/modules/` asset path. Do not copy the package into each
+application repository or load the complete 65,000-word standard for every
+task.
 
 The ordered modules are the normative complete edition. Concatenating every
 module in manifest order must reproduce the current approved semantic baseline
@@ -44,9 +46,11 @@ document catalog, templates, checks, and release impact.
 Humans and AI agents must:
 
 1. read this entry
-2. read `docs/guidelines/guideline-manifest.json`
+2. read the adjacent `docs/guidelines/guideline-manifest.json` in the installed
+   standards skill
 3. determine active profiles and capabilities from approved project truth
-4. run `pnpm docs:guideline:plan` with those selections
+4. run the consuming repository's `make standards-plan` facade with those
+   selections
 5. read every returned module completely, in returned order
 6. resolve material unknowns through the clarification protocol before design
    or implementation
@@ -60,9 +64,9 @@ by the project-book modules.
 Example:
 
 ```bash
-pnpm docs:guideline:plan -- \
-  --profiles nuxt-web \
-  --capabilities cache,queue,realtime,shareable-entry
+make standards-plan \
+  PROFILES=nuxt-web \
+  CAPABILITIES=cache,queue,realtime,shareable-entry
 ```
 
 The plan is an applicability index, not permission to ignore a cross-cutting
@@ -139,16 +143,16 @@ its machine-verifiable invariant, not endpoint behavior.
 
 ## 6. Commands
 
-Run from the application workspace that owns these `package.json` commands and
-the selected JavaScript lockfile. Record that exact workspace in the root
+Run project-book commands from the application workspace and standards-package
+commands through its Make facade. Record both exact locations in the root
 `README.md` and `docs/engineering-standards.md`:
 
 | Command | Purpose |
 | --- | --- |
-| `pnpm docs:guideline:plan -- --profiles <profiles> --capabilities <capabilities>` | Print the exact ordered modules an AI or human must read. |
-| `pnpm docs:guideline:check` | Validate manifest/module structure, byte equivalence, genericity, and the API envelope invariant. |
-| `pnpm docs:book:generate` | Generate the existing project-book derived outputs; it first checks the guideline contract. |
-| `pnpm docs:check` | Run guideline equivalence plus the existing project-book checks. |
+| `make standards-plan PROFILES=<profiles> CAPABILITIES=<capabilities>` | Print the exact ordered external modules an AI or human must read. |
+| `make standards-check` | Validate the selected external package, reference lock, and user-level skill. |
+| `pnpm docs:book:generate` | Generate the existing project-book derived outputs without copying reusable guideline files. |
+| `pnpm docs:check` | Run the project-book checks. |
 | `pnpm rules:plan -- --files <comma-separated-project-paths>` | Before editing, merge anticipated paths with maintained changes and print applicable stable rules and commands; omit `--files` after editing to plan from the actual worktree. |
 | `pnpm verify:changed` | Run the actual changed-scope rule plan and verification. |
 
@@ -173,8 +177,9 @@ For an intentional rule change:
 - update the semantic-baseline hash only after approval
 - record why output behavior changed
 
-Do not edit this generated entry directly. Edit
-`docs/guidelines/entry-template.md`, then run the entry-generation command.
+Do not edit this generated entry in a consuming project. Change the owning
+template in the standards repository, then release and synchronize the new
+version.
 
 ## 8. Practical rule
 

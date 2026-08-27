@@ -20,12 +20,14 @@ Use this order when instructions differ:
 
 1. the user's current approved requirement
 2. approved project-specific documents and ADRs
-3. active modules selected from `docs/guidelines/README.md`
+3. active modules selected from the installed `project-guideline-workflow`
+   skill
 4. framework and library defaults
 
-Read the canonical guideline entry, `docs/README.md`, and the actual owning
-documents, source, schema, tests, and runtime configuration for the requested
-scope. Conversation memory and summaries are not implementation evidence.
+Read the canonical guideline entry from the installed standards skill,
+`docs/README.md`, and the actual owning documents, source, schema, tests, and
+runtime configuration for the requested scope. Conversation memory and
+summaries are not implementation evidence.
 
 Do not duplicate technical or product rules in this file. It is the mandatory
 bootstrap and completion protocol; canonical documents own detail.
@@ -41,8 +43,8 @@ Before editing or giving a source-grounded review:
 4. Read every selected canonical rule source and turn its stable IDs into the
    acceptance and verification plan.
 5. For new-project generation or reusable-guideline changes, also run the
-   profile/capability plan from `docs/guidelines/README.md` and read every
-   returned module completely.
+   installed standards profile/capability plan and read every returned module
+   completely.
 
 During implementation:
 
@@ -91,7 +93,7 @@ regenerated, checked, and proved idempotent.
 
 ## Generic guideline protection
 
-The reusable guideline is generic. Change it only for an approved cross-project
-rule. Keep exact actors, brands, routes, prices, countries, providers, and state
-names in project-specific documents. Keep any historical guideline path as a
-non-duplicating reference to `docs/guidelines/README.md`.
+The reusable guideline is generic and external to the application repository.
+Change it only in its standards repository for an approved cross-project rule.
+Keep exact actors, brands, routes, prices, countries, providers, and state names
+in project-specific documents. Do not copy guideline modules into the project.

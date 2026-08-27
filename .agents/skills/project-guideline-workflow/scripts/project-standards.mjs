@@ -23,6 +23,11 @@ const templateRoot = resolve(assetsRoot, 'project-template')
 const metadataPath = resolve(assetsRoot, 'project-standards.json')
 const lockFilename = '.doxanh-project-standards.json'
 const repoSkillPath = '.agents/skills/project-guideline-workflow'
+const retiredConsumerPaths = [
+  'docs/guidelines/reference-template.md',
+  'docs/new-project-guideline.md',
+  'scripts/docs/check-installed-standards.mjs',
+]
 const command = process.argv[2]
 
 function fail(message) {
@@ -167,18 +172,6 @@ async function assertSafeTarget(root, path) {
   return absolute
 }
 
-async function sourceEntries(sourceRoot, paths, destinationPrefix = '') {
-  const entries = []
-  for (const path of paths) {
-    const source = resolve(sourceRoot, path)
-    const content = await readFile(source)
-    const mode = (await stat(source)).mode & 0o777
-    const destination = normalizePath(destinationPrefix ? `${destinationPrefix}/${path}` : path)
-    entries.push({ path: destination, content, sha256: sha256(content), mode })
-  }
-  return entries
-}
-
 async function currentDigest(root, path) {
   const target = await assertSafeTarget(root, path)
   if (!await exists(target)) return null
@@ -194,22 +187,6 @@ async function verifyEntries(root, entries, label) {
       const actual = await currentDigest(root, entry.path)
       if (actual === null) errors.push(`${label} file is missing: ${entry.path}`)
       else if (actual !== entry.sha256) errors.push(`${label} file diverged: ${entry.path}`)
-    }
-    catch (error) {
-      errors.push(error.message)
-    }
-  }
-  return errors
-}
-
-async function preflightInstall(root, entries, label) {
-  const errors = []
-  for (const entry of entries) {
-    try {
-      const actual = await currentDigest(root, entry.path)
-      if (actual !== null && actual !== entry.sha256) {
-        errors.push(`${label} conflicts with existing file: ${entry.path}`)
-      }
     }
     catch (error) {
       errors.push(error.message)
@@ -235,14 +212,6 @@ async function writeAtomic(root, entry) {
   }
 }
 
-async function writeEntries(root, entries) {
-  for (const entry of entries) await writeAtomic(root, entry)
-}
-
-function lockEntries(entries) {
-  return entries.map(({ path, sha256: digest }) => ({ path, sha256: digest }))
-}
-
 function validateLockEntries(lock, field, errors) {
   if (!Array.isArray(lock[field])) {
     errors.push(`lock ${field} must be an array`)
@@ -266,25 +235,27 @@ function validateLockEntries(lock, field, errors) {
 
 function validateLock(lock) {
   const errors = []
-  if (![1, 2].includes(lock.schema_version)) {
-    errors.push('lock schema_version must be 1 or 2')
+  if (![1, 2, 3].includes(lock.schema_version)) {
+    errors.push('lock schema_version must be 1, 2, or 3')
   }
   if (lock.name !== 'doxanh-project-standards') errors.push('lock name is invalid')
   if (!/^\d+\.\d+\.\d+$/u.test(lock.version ?? '')) errors.push('lock version is invalid')
   if (typeof lock.repository_root !== 'string') errors.push('lock repository_root is invalid')
-  if (!/^[a-f0-9]{64}$/u.test(lock.project_template_sha256 ?? '')) {
-    errors.push('lock project_template_sha256 is invalid')
+  if ([1, 2].includes(lock.schema_version)) {
+    if (!/^[a-f0-9]{64}$/u.test(lock.project_template_sha256 ?? '')) {
+      errors.push('lock project_template_sha256 is invalid')
+    }
+    validateLockEntries(lock, 'project_files', errors)
   }
-  validateLockEntries(lock, 'project_files', errors)
   if (lock.schema_version === 1) {
     validateLockEntries(lock, 'repository_skill_files', errors)
     if (!/^[a-f0-9]{64}$/u.test(lock.skill_contract_sha256 ?? '')) {
       errors.push('schema 1 lock skill_contract_sha256 is invalid')
     }
   }
-  if (lock.schema_version === 2) {
+  if ([2, 3].includes(lock.schema_version)) {
     if (lock.repository_skill_files !== undefined) {
-      errors.push('schema 2 lock must not contain repository_skill_files')
+      errors.push('schema 2 or 3 lock must not contain repository_skill_files')
     }
     if (
       lock.skill?.name !== 'project-guideline-workflow'
@@ -293,6 +264,17 @@ function validateLock(lock) {
       || !/^[a-f0-9]{64}$/u.test(lock.skill?.contract_sha256 ?? '')
     ) {
       errors.push('lock skill distribution metadata is invalid')
+    }
+  }
+  if (lock.schema_version === 3) {
+    if (lock.consumer_mode !== 'reference-only') {
+      errors.push('schema 3 lock consumer_mode must be reference-only')
+    }
+    if (!/^[a-f0-9]{64}$/u.test(lock.guideline_package_sha256 ?? '')) {
+      errors.push('schema 3 lock guideline_package_sha256 is invalid')
+    }
+    if (lock.project_files !== undefined || lock.project_template_sha256 !== undefined) {
+      errors.push('schema 3 lock must not contain copied project files')
     }
   }
   if (errors.length > 0) throw new Error(errors.join('; '))
@@ -326,28 +308,23 @@ async function resolveRoots(existingLock) {
   return { projectRoot, repositoryRoot }
 }
 
-async function desiredEntries(packageData) {
-  const projectEntries = await sourceEntries(templateRoot, packageData.projectPaths)
-  return { projectEntries }
-}
-
-async function writeLock(projectRoot, repositoryRoot, packageData, entries) {
+async function writeLock(projectRoot, repositoryRoot, packageData) {
   const repositoryRootRelative = normalizePath(relative(projectRoot, repositoryRoot) || '.')
   const lock = {
-    schema_version: 2,
+    schema_version: 3,
     name: packageData.metadata.name,
     version: packageData.metadata.version,
     repository: packageData.metadata.repository,
     installed_at: new Date().toISOString(),
     repository_root: repositoryRootRelative,
-    project_template_sha256: packageData.metadata.project_template_sha256,
+    consumer_mode: 'reference-only',
+    guideline_package_sha256: packageData.metadata.project_template_sha256,
     skill: {
       name: 'project-guideline-workflow',
       distribution: 'user-scope',
       repository_path: repoSkillPath,
       contract_sha256: packageData.metadata.skill_contract_sha256,
     },
-    project_files: lockEntries(entries.projectEntries),
   }
   const content = Buffer.from(`${JSON.stringify(lock, null, 2)}\n`)
   await writeAtomic(projectRoot, {
@@ -364,20 +341,17 @@ async function install(packageData) {
     throw new Error(`${lockFilename} already exists; use check or update`)
   }
   const roots = await resolveRoots(null)
-  const entries = await desiredEntries(packageData)
-  const errors = await preflightInstall(
+  const errors = await referenceOnlyErrors(
     roots.projectRoot,
-    entries.projectEntries,
-    'project standard',
+    [...packageData.projectPaths, ...retiredConsumerPaths],
   )
   if (errors.length > 0) throw new Error(errors.join('; '))
 
-  await writeEntries(roots.projectRoot, entries.projectEntries)
-  await writeLock(roots.projectRoot, roots.repositoryRoot, packageData, entries)
+  await writeLock(roots.projectRoot, roots.repositoryRoot, packageData)
   console.log(
     `Installed ${packageData.metadata.name} ${packageData.metadata.version}: `
-    + `${entries.projectEntries.length} project files; `
-    + 'the Codex skill remains user-scoped.',
+    + 'reference-only consumer lock; reusable guidelines and the Codex skill '
+    + 'remain outside the application repository.',
   )
 }
 
@@ -386,13 +360,20 @@ async function checkInstalled(packageData) {
   const projectRoot = await canonicalDirectory(targetInput, 'project root')
   const lock = await readLock(projectRoot)
   const roots = await resolveRoots(lock)
+  const legacyProjectEntries = lock.schema_version <= 2 ? lock.project_files : []
   const legacySkillEntries = lock.schema_version === 1
     ? lock.repository_skill_files
     : []
   const errors = [
-    ...await verifyEntries(roots.projectRoot, lock.project_files, 'project standard'),
+    ...await verifyEntries(roots.projectRoot, legacyProjectEntries, 'legacy project standard'),
     ...await verifyEntries(roots.repositoryRoot, legacySkillEntries, 'legacy repository skill'),
   ]
+  if (lock.schema_version === 3) {
+    errors.push(...await referenceOnlyErrors(
+      roots.projectRoot,
+      [...packageData.projectPaths, ...retiredConsumerPaths],
+    ))
+  }
   if (lock.version !== packageData.metadata.version) {
     errors.push(
       `installed version ${lock.version} differs from available version ${packageData.metadata.version}; run update`,
@@ -400,7 +381,9 @@ async function checkInstalled(packageData) {
   }
   if (
     lock.version === packageData.metadata.version
-    && lock.project_template_sha256 !== packageData.metadata.project_template_sha256
+    && (lock.schema_version === 3
+      ? lock.guideline_package_sha256
+      : lock.project_template_sha256) !== packageData.metadata.project_template_sha256
   ) {
     errors.push('installed project fingerprint differs from the available release')
   }
@@ -414,19 +397,14 @@ async function checkInstalled(packageData) {
     errors.push('installed skill contract differs from the available release')
   }
   if (errors.length > 0) throw new Error(errors.join('; '))
-  console.log(
-    `Verified ${lock.name} ${lock.version}: ${lock.project_files.length} project files`
-    + `${legacySkillEntries.length === 0
-      ? ' and a user-scoped skill contract.'
-      : ` and ${legacySkillEntries.length} legacy repository skill files.`}`,
-  )
+  console.log(`Verified ${lock.name} ${lock.version}: reference-only consumer lock and user-scoped skill contract.`)
 }
 
-async function pruneLegacySkillDirectories(repositoryRoot, entries) {
-  const boundary = resolve(repositoryRoot, repoSkillPath)
+async function pruneManagedDirectories(root, entries, boundaryPath = '.') {
+  const boundary = resolve(root, boundaryPath)
   const directories = new Set()
   for (const entry of entries) {
-    let cursor = dirname(resolve(repositoryRoot, entry.path))
+    let cursor = dirname(resolve(root, entry.path))
     while (isWithin(boundary, cursor)) {
       directories.add(cursor)
       if (cursor === boundary) break
@@ -444,17 +422,32 @@ async function pruneLegacySkillDirectories(repositoryRoot, entries) {
   }
 }
 
+async function referenceOnlyErrors(projectRoot, paths) {
+  const errors = []
+  for (const path of paths) {
+    try {
+      if (await currentDigest(projectRoot, path) !== null) {
+        errors.push(`reference-only consumer must not contain reusable standard file: ${path}`)
+      }
+    }
+    catch (error) {
+      errors.push(error.message)
+    }
+  }
+  return errors
+}
+
 async function update(packageData) {
   const targetInput = option('--target') ?? process.cwd()
   const projectRoot = await canonicalDirectory(targetInput, 'project root')
   const lock = await readLock(projectRoot)
   const roots = await resolveRoots(lock)
+  const legacyProjectEntries = lock.schema_version <= 2 ? lock.project_files : []
   const legacySkillEntries = lock.schema_version === 1
     ? lock.repository_skill_files
     : []
-  const desired = await desiredEntries(packageData)
   const errors = [
-    ...await verifyEntries(roots.projectRoot, lock.project_files, 'installed project standard'),
+    ...await verifyEntries(roots.projectRoot, legacyProjectEntries, 'installed project standard'),
     ...await verifyEntries(
       roots.repositoryRoot,
       legacySkillEntries,
@@ -462,37 +455,33 @@ async function update(packageData) {
     ),
   ]
 
-  const oldProjectPaths = new Set(lock.project_files.map(entry => entry.path))
-  errors.push(...await preflightInstall(
-    roots.projectRoot,
-    desired.projectEntries.filter(entry => !oldProjectPaths.has(entry.path)),
-    'new project standard',
-  ))
+  if (lock.schema_version === 3) {
+    errors.push(...await referenceOnlyErrors(
+      roots.projectRoot,
+      [...packageData.projectPaths, ...retiredConsumerPaths],
+    ))
+  }
   if (errors.length > 0) throw new Error(errors.join('; '))
 
-  const desiredProjectLockEntries = lockEntries(desired.projectEntries)
-  const alreadyCurrent = lock.schema_version === 2
+  const alreadyCurrent = lock.schema_version === 3
     && lock.version === packageData.metadata.version
-    && lock.project_template_sha256 === packageData.metadata.project_template_sha256
+    && lock.guideline_package_sha256 === packageData.metadata.project_template_sha256
     && lock.skill.contract_sha256 === packageData.metadata.skill_contract_sha256
-    && JSON.stringify(lock.project_files) === JSON.stringify(desiredProjectLockEntries)
   if (alreadyCurrent) {
     console.log(`${packageData.metadata.name} ${lock.version} is already current.`)
     return
   }
 
-  await writeEntries(roots.projectRoot, desired.projectEntries)
-
-  const newProjectPaths = new Set(desired.projectEntries.map(entry => entry.path))
-  for (const entry of lock.project_files.filter(item => !newProjectPaths.has(item.path))) {
+  for (const entry of legacyProjectEntries) {
     await rm(await assertSafeTarget(roots.projectRoot, entry.path))
   }
   for (const entry of legacySkillEntries) {
     await rm(await assertSafeTarget(roots.repositoryRoot, entry.path))
   }
-  await pruneLegacySkillDirectories(roots.repositoryRoot, legacySkillEntries)
+  await pruneManagedDirectories(roots.projectRoot, legacyProjectEntries)
+  await pruneManagedDirectories(roots.repositoryRoot, legacySkillEntries, repoSkillPath)
 
-  await writeLock(roots.projectRoot, roots.repositoryRoot, packageData, desired)
+  await writeLock(roots.projectRoot, roots.repositoryRoot, packageData)
   console.log(
     `Updated ${packageData.metadata.name} from ${lock.version} to ${packageData.metadata.version}.`,
   )

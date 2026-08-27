@@ -404,9 +404,9 @@ meanings. Mark replaced IDs as superseded and link to the replacement.
 - Timestamped evidence links must resolve or be explicitly archived.
 - `docs/README.md` separates canonical, supporting, generated, evidence,
   archived, and external-reference material.
-- `docs/README.md` links to the canonical `docs/guidelines/README.md` governance
-  entry. A retained `docs/new-project-guideline.md` compatibility page links to
-  that entry and must not duplicate its rules.
+- `docs/README.md` identifies the selected external standards release and the
+  repository command that resolves its installed entry. Reusable guideline
+  modules and compatibility pages are not copied into the project book.
 - Root and app-local docs identify which source is canonical when both exist.
 - Generated regions are visibly marked and may be regenerated. Authored product
   prose must never be overwritten merely because a generator reruns.
@@ -485,10 +485,10 @@ When asked to create a new project book, AI must:
 4. produce the preservation matrix
 5. create the clarification register and ask blocking questions using Section
    4.18
-6. materialize root `AGENTS.md` from
-   `docs/guidelines/AGENTS.template.md`, replace every placeholder with exact
-   project paths and commands, and register it in the executable project
-   contract
+6. materialize root `AGENTS.md` from the installed standards skill asset
+   `assets/project-template/docs/guidelines/AGENTS.template.md`, replace every
+   placeholder with exact project paths and commands, and register it in the
+   executable project contract without copying the remaining reusable package
 7. create the manifest, manifest schema, documentation command skeleton, and
    every required or conditional chapter skeleton
 8. generate chapters in the gate order from Section 4.12

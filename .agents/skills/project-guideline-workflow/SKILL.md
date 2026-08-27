@@ -11,12 +11,13 @@ and applies that contract; it does not replace project truth or verification.
 ## Bootstrap or update
 
 The GitHub standards repository is the only editable skill and guideline
-source. A consuming project contains hash-locked guideline artifacts, never a
-second repository-scoped copy of this skill. The user-level skill is a symlink
-to the selected standards checkout so same-named skills are not duplicated.
+source. A consuming project contains only a reference-only version lock, never
+copied guideline modules or a repository-scoped copy of this skill. The
+user-level skill is a symlink to the selected standards checkout so same-named
+skills are not duplicated.
 
-When the project does not yet contain `docs/guidelines/README.md`, run from a
-released standards checkout:
+For a project without `.doxanh-project-standards.json`, run from a released
+standards checkout:
 
 ```bash
 make install \
@@ -27,29 +28,32 @@ make skill-sync
 
 For an existing locked installation, use `check` before work and `update` only
 when the user has approved adopting the currently available standard version.
-The updater must refuse locally divergent managed files. Never bypass that
-guard by copying assets manually or forcing an overwrite.
+The updater verifies old copied files before removing them during migration and
+must refuse local divergence. Never bypass that guard by deleting or copying
+assets manually.
 
 Use the consuming repository's `make standards-sync` facade when present. It
 must refresh a dedicated clean cache from the approved GitHub repository/ref,
 then call this package's `make sync`. Do not point the user skill at a mutable
 application repository or retain a same-named repository skill alongside it.
 
-After first installation, materialize
-`docs/guidelines/AGENTS.template.md` as root `AGENTS.md`, resolve every
-placeholder from approved project truth, and register the project's executable
-rule gates. Do not overwrite an existing `AGENTS.md` automatically.
+After first installation, materialize the installed skill asset
+`assets/project-template/docs/guidelines/AGENTS.template.md` as root
+`AGENTS.md`, resolve every placeholder from approved project truth, and
+register the project's executable rule gates. Do not overwrite an existing
+`AGENTS.md` automatically and do not copy the remaining guideline package.
 
 ## Workflow
 
 1. Read every applicable `AGENTS.md`, inspect repository status, run the
-   installed-file integrity check when a standards lock exists, and preserve
-   unrelated work.
-2. Read the canonical guideline entry, its manifest, the project-book entry,
-   and the actual owning product/source/test files for the requested scope.
+   reference-lock and user-skill integrity checks, and preserve unrelated work.
+2. Read the canonical guideline entry and manifest from this installed skill,
+   then read the project-book entry and actual owning product/source/test files
+   for the requested scope.
 3. Run the repository rule planner with every anticipated project-relative
    path. For new-project generation or reusable-guideline changes, also run the
-   profile/capability module planner and read every selected module completely.
+   profile/capability module planner from the standards checkout and read every
+   selected module completely.
 4. Turn selected stable rule IDs into acceptance criteria and verification.
    For Nuxt/Vue UI, load the applicable Vue, shadcn-vue, and UI/UX skills and
    apply `UI-CONTROL-001` whenever a choice control is designed, implemented,
@@ -69,7 +73,8 @@ rule gates. Do not overwrite an existing `AGENTS.md` automatically.
   a fallback, role, permission, DTO, or business rule.
 - Do not commit, push, deploy, mutate production data, or expose secrets unless
   the user explicitly authorizes that action.
-- Treat bundled assets as distribution input, not as proof that a consuming
-  project's book, source, gates, or evidence are complete.
+- Treat bundled assets as the external reusable source, not as project-book
+  chapters or proof that a consuming project's book, source, gates, or evidence
+  are complete.
 - Report exact passed and untested boundaries. Never claim complete, 100%,
   release-ready, or production-safe from partial or stale evidence.

@@ -4,14 +4,12 @@
   "title": "New Project Guideline",
   "entry_path": "docs/guidelines/README.md",
   "entry_template_path": "docs/guidelines/entry-template.md",
-  "reference_entry_path": "docs/new-project-guideline.md",
-  "reference_entry_template_path": "docs/guidelines/reference-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "b242a88e0334a1fbc74033994c5c06f622793c7c881eac1be978bdf51465a9d6",
-    "bytes": 494552,
+    "sha256": "766a887618dd29294360dc5c4a9d4017edf57cd32418659025ed6241c6ccf940",
+    "bytes": 494497,
     "lines": 8875,
-    "meaning": "Approved complete guideline with required root AGENTS bootstrap, planned-path and actual-worktree verification, canonical guideline entry, and mandatory executable web UI rules for visual consistency, compact touch-safe density, audience, actions, copy, controls, collections, responsive behavior, states, and accessibility on 2026-08-27."
+    "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, planned-path and actual-worktree verification, and mandatory executable web UI rules for visual consistency, compact touch-safe density, audience, actions, copy, controls, collections, responsive behavior, states, and accessibility on 2026-08-27."
   },
   "profiles": {
     "required": [

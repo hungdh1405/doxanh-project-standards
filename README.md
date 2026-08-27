@@ -7,8 +7,8 @@ baseline used to start and govern new projects. It packages:
 - strict UI/UX, API, data, security, observability, testing, and operations
   contracts;
 - one user-scoped Codex skill sourced from this repository;
-- a dependency-free installer with drift-safe install, update, and integrity
-  checks.
+- a dependency-free reference-lock installer with drift-safe migration from
+  older copied packages.
 
 The standard is generic. A consuming project still owns its product truth,
 actors, permissions, routes, commercial rules, data model, and deployment
@@ -23,8 +23,8 @@ decisions in its project book.
 
 ## Quick start
 
-Clone one clean standards checkout and use it for both the project artifacts
-and the user-level Codex skill:
+Clone one clean standards checkout and use it for the project reference lock
+and user-level Codex skill:
 
 ```bash
 git clone https://github.com/hungdh1405/doxanh-project-standards.git
@@ -53,30 +53,25 @@ preserved and rejected.
 workspaces and migrate old repository-scoped installations. They are normally
 the same directory; a monorepo may place the project under the repository root.
 
-Installation adds:
-
-- `docs/guidelines/` and the stable `docs/new-project-guideline.md` reference;
-- `scripts/docs/manage-guideline.mjs`;
-- `scripts/docs/check-installed-standards.mjs` for offline integrity checks;
-- `.doxanh-project-standards.json` at the project root, containing the installed
-  version and SHA-256 digest of every managed file.
-
-Existing identical files are adopted. A conflicting file, symlink, or existing
-installation lock stops the operation before managed content is written. The
-installer never overwrites root `AGENTS.md` or project-specific documents.
+Installation adds only `.doxanh-project-standards.json` at the project root.
+The lock records the selected version, guideline-package fingerprint, and
+user-skill contract; reusable guideline files remain in this checkout. A
+conflicting legacy guideline path, symlink, or existing installation lock stops
+the operation before the lock is written. The installer never overwrites root
+`AGENTS.md` or project-specific documents.
 
 After installation, materialize
-`docs/guidelines/AGENTS.template.md` as the repository's root `AGENTS.md`,
-replace every placeholder with approved project truth, and create the project
-book described by the selected modules.
+`.agents/skills/project-guideline-workflow/assets/project-template/docs/guidelines/AGENTS.template.md`
+as the consuming repository's root `AGENTS.md`, replace every placeholder with
+approved project truth, and create only the project-specific book described by
+the selected modules.
 
 ## Plan the project guideline
 
-From the application workspace, expose the guideline manager through the
-project's selected package manager. The direct command is:
+From this standards checkout, the direct planning command is:
 
 ```bash
-node scripts/docs/manage-guideline.mjs plan \
+node .agents/skills/project-guideline-workflow/assets/project-template/scripts/docs/manage-guideline.mjs plan \
   --profiles nuxt-web \
   --capabilities cache,queue,realtime
 ```
@@ -104,15 +99,16 @@ make sync \
   REPO_ROOT=/absolute/path/to/repository
 ```
 
-Update is deliberately conservative. It first verifies the old lock and
-refuses to proceed if any managed consumer file changed locally. Make a generic
-improvement here and release it, or keep a project-specific decision in the
+Update is deliberately conservative. It first verifies old copied files and
+refuses migration if any changed locally. A successful migration removes only
+verified reusable copies and empty directories, then writes the reference-only
+lock. Make generic improvements here and project-specific decisions in the
 consumer's project book; do not silently fork the reusable modules.
 
-The first synchronization from version 1.0 verifies and removes its old
-repository-scoped skill copy, writes the version-2 project-only lock, and links
-the user skill to the selected standards checkout. Later synchronization only
-updates the clean checkout, project artifacts, and the same link.
+Synchronization from versions 1 or 2 verifies and removes copied guideline and
+repository-skill files, writes the version-3 reference-only lock, and links the
+user skill to the selected standards checkout. Later synchronization updates
+only the clean checkout, lock, and same link.
 
 Consuming repositories should expose a small `make standards-sync` facade that
 refreshes a dedicated cache from this GitHub repository and calls `make sync`.
@@ -138,10 +134,9 @@ where the repository policy guarantees that `main` is always releasable.
 └── package.json
 ```
 
-The skill asset tree is the single distributable source. Consumer guideline
-copies are generated artifacts verified by their lock file, not additional
-upstream owners. The skill itself is linked once at user scope and is never
-materialized into consumers.
+The skill asset tree is the single distributable source. Consumer repositories
+retain no guideline copies; they keep their project book and one version lock.
+The skill is linked once at user scope and is never materialized into consumers.
 
 ## Develop and release
 
