@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.2.1] - 2026-08-28
+
+### Fixed
+
+- Referenced-record impact may load before a confirmation opens or within its
+  initial pending state; replacement resolution must disable commit until valid
+  and does not require a redundant second modal.
+
 ## [3.2.0] - 2026-08-28
 
 ### Added

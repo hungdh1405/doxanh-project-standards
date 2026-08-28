@@ -6,9 +6,9 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "be7dfd56110f284644878eb6658aaf2347933c34e653ffa565a6ef8d930ea684",
-    "bytes": 504742,
-    "lines": 9023,
+    "sha256": "ee4ef662d1a4ac78db97eafc17caadf301ac962cf9b20810bbe81b23afd717d3",
+    "bytes": 504993,
+    "lines": 9026,
     "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, risk-scoped planned-path and actual-worktree verification, objective full-regression triggers, mandatory executable web UI rules, and referenced-record lifecycle impact, replacement, atomicity, history, and recovery rules on 2026-08-28."
   },
   "profiles": {

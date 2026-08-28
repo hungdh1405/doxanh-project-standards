@@ -115,17 +115,20 @@ Referenced-record lifecycle contract:
   deletion is available only when the documented retention and reference policy
   permits it. Do not silently cascade business, financial, security, or audit
   history to make a delete succeed.
-- Before a user confirms a lifecycle command, resolve an authorization-protected
-  server impact/preflight contract. Return only scope-safe counts, bounded safe
+- Before a user can confirm a lifecycle command, resolve an authorization-
+  protected server impact/preflight contract or a documented equivalent
+  authoritative relationship projection. It may load before the confirmation
+  opens or as that surface's initial pending state, but commit stays disabled
+  until the impact is current. Return only scope-safe counts, bounded safe
   labels, movable dependency groups, blocking reasons, eligible replacement
   choices or choice-query metadata, and the revisions required by the command.
   The client must not discover policy by attempting the destructive write or
-  decide dependency behavior from a locally filtered list.
+  infer complete impact from a visible, paginated, or locally filtered subset.
 - The UI names the target and consequence, shows every affected dependency
   group, distinguishes movable current records from preserved history and hard
   blockers, and requires a valid replacement for each `move-current` group
-  before opening the final shared confirmation dialog. Use the approved
-  searchable choice control when a replacement catalog meets
+  before enabling the final commit in the shared confirmation dialog. Use the
+  approved searchable choice control when a replacement catalog meets
   `UI-CONTROL-001`; never render an unbounded option list. A blocker provides a
   direct recovery action when one exists and never offers a misleading confirm
   button.
