@@ -3,6 +3,20 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.1.0] - 2026-08-28
+
+### Added
+
+- `VERIFY-SCOPE-001` requires risk-scoped verification, explicit inclusion and
+  exclusion reasons, and objective full-regression triggers.
+- Unknown-path safe fallbacks are unresolved review states and cannot
+  mechanically launch unrelated broad suites.
+
+### Changed
+
+- The skill workflow and generated `AGENTS.md` template now require impact
+  classification before tests and evidence-driven expansion of test scope.
+
 ## [3.0.0] - 2026-08-27
 
 ### Changed

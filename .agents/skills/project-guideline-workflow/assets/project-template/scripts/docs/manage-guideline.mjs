@@ -157,6 +157,25 @@ function validateManifestShape() {
   ) {
     errors.push('critical_contracts.ui_density differs from the fixed contract')
   }
+  const expectedVerificationScope = {
+    rule_id: 'VERIFY-SCOPE-001',
+    default_mode: 'risk-scoped',
+    safe_fallback_requires_review: true,
+    unrelated_suites_forbidden: true,
+    full_regression_triggers: [
+      'explicit-request',
+      'release-candidate',
+      'cross-cutting-change',
+      'systemic-evidence',
+      'unbounded-impact',
+    ],
+  }
+  if (
+    JSON.stringify(manifest.critical_contracts?.verification_scope)
+    !== JSON.stringify(expectedVerificationScope)
+  ) {
+    errors.push('critical_contracts.verification_scope differs from the fixed contract')
+  }
   if (!Array.isArray(manifest.modules) || manifest.modules.length === 0) {
     errors.push('modules must be a non-empty array')
     return errors
@@ -417,6 +436,30 @@ function validateUiCopyAndDensityContracts(source) {
   return errors
 }
 
+function validateVerificationScopeContract(source) {
+  const errors = []
+  const sectionStart = source.indexOf('#### 13.7.2 Risk-scoped verification selection')
+  const sectionEnd = source.indexOf('### 13.8 Docker and Make verification')
+  if (sectionStart < 0 || sectionEnd < 0) {
+    return ['risk-scoped verification section is missing']
+  }
+  const section = source.slice(sectionStart, sectionEnd)
+  for (const token of [
+    '`VERIFY-SCOPE-001`',
+    '**risk-scoped** verification',
+    'selected commands and evidence with a reason',
+    'Full regression is required only when',
+    'safe full-rule\nfallback',
+    '`verify:changed` must refuse to execute',
+    '`full_regression_required`',
+  ]) {
+    if (!section.includes(token)) {
+      errors.push(`verification-scope contract is missing ${token}`)
+    }
+  }
+  return errors
+}
+
 async function check() {
   const errors = []
   const entry = await readFile(resolve(projectRoot, manifest.entry_path), 'utf8')
@@ -441,6 +484,9 @@ async function check() {
     '`UI-COPY-001`',
     '`UI-CONTROL-001`',
     '`UI-DENSITY-001`',
+    '`VERIFY-SCOPE-001`',
+    'safe full-rule fallback',
+    'objective full-regression trigger',
   ]
   for (const token of requiredAgentTemplateTokens) {
     if (!agentInstructionsTemplate.includes(token)) {
@@ -484,6 +530,7 @@ async function check() {
   errors.push(...validateApiContract(complete))
   errors.push(...validateUiChoiceControlContract(complete))
   errors.push(...validateUiCopyAndDensityContracts(complete))
+  errors.push(...validateVerificationScopeContract(complete))
   const genericSources = [
     [manifest.entry_path, entry],
     [manifest.agent_instructions_template_path, agentInstructionsTemplate],

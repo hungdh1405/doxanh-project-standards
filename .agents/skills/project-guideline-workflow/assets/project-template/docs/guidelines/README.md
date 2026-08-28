@@ -153,8 +153,8 @@ commands through its Make facade. Record both exact locations in the root
 | `make standards-check` | Validate the selected external package, reference lock, and user-level skill. |
 | `pnpm docs:book:generate` | Generate the existing project-book derived outputs without copying reusable guideline files. |
 | `pnpm docs:check` | Run the project-book checks. |
-| `pnpm rules:plan -- --files <comma-separated-project-paths>` | Before editing, merge anticipated paths with maintained changes and print applicable stable rules and commands; omit `--files` after editing to plan from the actual worktree. |
-| `pnpm verify:changed` | Run the actual changed-scope rule plan and verification. |
+| `pnpm rules:plan -- --files <comma-separated-project-paths>` | Before editing, merge anticipated paths with maintained changes and print the risk-scoped classification, affected boundaries, applicable rules, selected/excluded commands with reasons, full-regression decision, and unresolved safe fallback; omit `--files` after editing to plan from the actual worktree. |
+| `pnpm verify:changed` | Run the reviewed changed-scope plan; refuse an unresolved safe full-rule fallback. |
 
 ## 7. Safe editing contract
 

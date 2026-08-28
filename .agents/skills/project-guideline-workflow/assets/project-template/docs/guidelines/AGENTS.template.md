@@ -39,10 +39,12 @@ Before editing or giving a source-grounded review:
 1. Inspect repository status, exact target files, and existing user changes.
 2. Identify actor, scope, capability, affected documents, and durable outcome.
    Ask when a missing decision could materially change the result.
-3. Run `<rules-plan-command> FILES="<comma-separated-planned-paths>"`.
-4. Read every selected canonical rule source and turn its stable IDs into the
+3. Classify the change, affected boundaries, realistic regression risks, and
+   whether an objective full-regression trigger applies.
+4. Run `<rules-plan-command> FILES="<comma-separated-planned-paths>"`.
+5. Read every selected canonical rule source and turn its stable IDs into the
    acceptance and verification plan.
-5. For new-project generation or reusable-guideline changes, also run the
+6. For new-project generation or reusable-guideline changes, also run the
    installed standards profile/capability plan and read every returned module
    completely.
 
@@ -59,10 +61,14 @@ During implementation:
 After the final maintained-file edit:
 
 1. Run `<rules-plan-command>` again against the actual worktree.
-2. Run `<changed-verification-command>` plus focused live evidence required by
+2. Review the `VERIFY-SCOPE-001` decision, command reasons, exclusions, and
+   unmatched paths. If a safe full-rule fallback remains unresolved, stop and
+   correct the mapping or obtain an explicit full-regression decision; do not
+   mechanically execute the fallback.
+3. Run `<changed-verification-command>` plus focused live evidence required by
    every selected rule.
-3. Run `<verification-freshness-command>` before claiming evidence is current.
-4. Report what passed, what was not tested, and every external/manual boundary.
+4. Run `<verification-freshness-command>` before claiming evidence is current.
+5. Report what passed, what was not tested, and every external/manual boundary.
    Never claim `100%`, release-ready, or production-safe from partial, stale,
    mocked, screenshot-only, or lower-level evidence.
 
@@ -70,6 +76,11 @@ Documentation-only work still runs changed-scope verification, but its
 registered rules should select the exact documentation and contract commands,
 not unrelated browser or production testing. Generated output must be
 regenerated, checked, and proved idempotent.
+
+Full regression is required only for an explicit request, a release candidate,
+a demonstrated cross-cutting blast radius, systemic focused-test evidence, or
+impact that remains unbounded after investigation. “Continue,” “test
+carefully,” habit, or subjective confidence does not broaden test scope.
 
 ## Scope-specific mandatory gates
 

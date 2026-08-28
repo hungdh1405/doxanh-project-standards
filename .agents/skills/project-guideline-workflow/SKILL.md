@@ -54,14 +54,19 @@ register the project's executable rule gates. Do not overwrite an existing
    path. For new-project generation or reusable-guideline changes, also run the
    profile/capability module planner from the standards checkout and read every
    selected module completely.
-4. Turn selected stable rule IDs into acceptance criteria and verification.
+4. Apply `VERIFY-SCOPE-001`: record the change classification, affected
+   boundaries and risks, selected and excluded evidence with reasons, and the
+   objective full-regression decision. A safe full-rule fallback is an
+   unresolved mapping state; do not execute it until the mapping is fixed or an
+   explicit full-regression trigger is recorded.
+5. Turn selected stable rule IDs into acceptance criteria and verification.
    For Nuxt/Vue UI, load the applicable Vue, shadcn-vue, and UI/UX skills and
    apply `UI-CONTROL-001` whenever a choice control is designed, implemented,
    or reviewed.
-5. Change each rule or product decision in its single canonical owner. Link
+6. Change each rule or product decision in its single canonical owner. Link
    from secondary documents, update traceability, and materialize applicable
    rules in the project's machine-readable gate manifest with real evidence.
-6. Regenerate derived artifacts and prove idempotence. Run the final rule plan
+7. Regenerate derived artifacts and prove idempotence. Run the final rule plan
    against the actual worktree, changed-scope verification, focused live proof
    selected by the rules, and the verification-freshness check.
 
@@ -78,3 +83,7 @@ register the project's executable rule gates. Do not overwrite an existing
   are complete.
 - Report exact passed and untested boundaries. Never claim complete, 100%,
   release-ready, or production-safe from partial or stale evidence.
+- Start with the smallest complete risk-scoped evidence set. Run full regression
+  only for an explicit request, release candidate, demonstrated cross-cutting
+  impact, systemic focused evidence, or impact that remains unbounded after
+  investigation; “continue” or “test carefully” alone does not broaden scope.

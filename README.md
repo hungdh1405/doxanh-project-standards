@@ -150,6 +150,11 @@ fixtures, JSON files, documentation links, and skill structure. Before a
 release, update the semantic version and changelog, run the complete check, make
 one coherent commit, and create an annotated `v<version>` tag.
 
+Generated projects use `VERIFY-SCOPE-001` to select the smallest complete
+risk-scoped evidence set for ordinary changes. Full regression is reserved for
+an explicit request, release candidate, demonstrated cross-cutting impact,
+systemic evidence, or impact that remains unbounded after investigation.
+
 ## Security and support boundaries
 
 - The installer performs local file operations only; it does not contact

@@ -12,6 +12,15 @@ AI working under this standard must:
   implementation or review, use its stable rule IDs to form the acceptance
   plan, then run it again against the actual worktree after the final edit;
   stop when an applicable material rule has no implementation or evidence path
+- apply `VERIFY-SCOPE-001` before starting test commands: record the change
+  classification, affected boundaries and risks, selected and excluded suites
+  with reasons, and the objective full-regression decision
+- start with focused evidence that crosses every changed boundary and expand
+  only when dependency analysis or evidence demonstrates wider impact; run full
+  regression only for a Section 13.7.2 trigger
+- treat a safe full-rule fallback caused by unknown or uncovered paths as an
+  unresolved mapping state; inspect and correct the mapping or obtain an
+  explicit full-regression decision before executing its broad command set
 - follow the clarification protocol in Section 4.18, ask when a material
   requirement is missing or ambiguous, and never invent an answer merely to
   complete every chapter
@@ -134,6 +143,13 @@ AI must not:
   current task
 - let a planned-path preflight replace the final actual-worktree rule plan, or
   let either plan replace the required verification commands and live evidence
+- run unrelated browser, API, database, actor, capability, or production suites
+  for a reusable-standard, skill, or documentation-only change with no runtime
+  contract impact
+- treat “continue,” “test carefully,” habit, elapsed time, or subjective
+  confidence as authorization for full regression
+- mechanically execute the safe full-rule fallback before resolving its
+  unmatched paths and recording an objective decision
 - remove substantial existing requirements without a preservation action and
   reason
 - copy a reference project's actors, routes, hostnames, prices, country/provider

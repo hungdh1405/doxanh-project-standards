@@ -405,6 +405,7 @@ row maps to automated/manual evidence; a conditional row may be
 | `AUTH-SESSION-001` | Exact per-actor credential, session/device counting, replacement, recovery, revocation, isolation, and race behavior. |
 | `ENTRY-SHARE-001` | Conditional canonical entry registry, locator/proof separation, host trust, revocation, and share/open/QR proof. |
 | `COMMERCIAL-001` | Conditional offering-versus-assignment model, effective period/status/limits, versioning, authorization, and audit. |
+| `VERIFY-SCOPE-001` | Risk-scoped verification records change impact, selected and excluded evidence with reasons, safe-fallback review, stepwise expansion, and objective full-regression triggers. |
 
 `contract:check` must reject a missing applicable baseline row, a duplicate ID,
 an active capability marked N/A, a web `UI-*` baseline rule below blocking
@@ -474,6 +475,70 @@ targets, accessibility, and relevant states. Any protected API/data change
 must select envelope, validation, authorization, persistence, activity, and
 isolation gates. The full release gate always runs the complete active command
 set.
+
+#### 13.7.2 Risk-scoped verification selection
+
+`VERIFY-SCOPE-001` makes **risk-scoped** verification the default for ordinary
+work. Before a test command starts, the rule plan and changed-scope report must
+record:
+
+- the change classification and exact changed behavior or contract
+- affected actors, surfaces, capabilities, trust boundaries, and downstream
+  consumers
+- realistic regression risks, selected commands and evidence with a reason for
+  each, and materially related suites deliberately excluded with a reason
+- whether full regression is required and the exact trigger when it is
+
+Begin with the smallest complete evidence set that crosses every affected
+boundary. Expand only when shared ownership, dependency analysis, a focused
+failure, or new evidence demonstrates a wider blast radius. Running every test
+must never substitute for impact analysis, and passing unrelated suites must
+never compensate for missing focused proof.
+
+Use these minimum classifications:
+
+| Change classification | Required verification scope |
+| --- | --- |
+| Reusable standard, skill, or documentation only, with no application-runtime contract change | Package syntax/schema, frozen baseline or digest, links, generation idempotence, and focused documentation/contract fixtures. Do not select consumer UI, API, database, actor, or production suites. |
+| Localized UI or copy | Static/component checks plus the affected rendered workflow, responsive/theme/accessibility states, and durable result when the action mutates state. Do not select unrelated actors or modules. |
+| API or domain route | Focused unit/integration/direct-request contract proof plus the affected rendered workflow when user-visible. |
+| Database, migration, authorization, or concurrency | Affected schema, constraints, isolation, race, integration, activity, and consuming API/workflow proof. |
+| Queue, scheduler, cache, realtime, files, payment, or printing | The owning capability's affected happy path and failure/recovery contract, plus affected consumers. |
+| Shared runtime, security, data foundation, toolchain, or dependency | Every demonstrably affected consumer; escalate to full regression only when an objective trigger below applies. |
+| Release candidate | Complete active automated verification followed by candidate-bound manual evidence. |
+
+Full regression is required only when at least one of these objective triggers
+is recorded:
+
+1. the user or accountable owner explicitly requests it
+2. the work is a release candidate or protected release merge
+3. a shared runtime, security, data-foundation, toolchain, dependency, profile,
+   or capability change has a demonstrated cross-module blast radius
+4. focused evidence reveals systemic impact beyond the original scope
+5. impact remains unbounded after inspecting ownership, dependencies, changed
+   paths, and focused failures
+
+“Continue,” “test carefully,” elapsed time, habit, or subjective confidence is
+not a full-regression trigger. The report must name the concrete trigger; when
+none applies, `full_regression_required` is `false`.
+
+Unknown or uncovered maintained paths may still select the **safe full-rule
+fallback**, but that result is an unresolved review state, not permission to
+run every command. The plan must list every unmatched path and why mapping
+failed. `verify:changed` must refuse to execute the broad fallback command set
+until one of these resolutions is recorded:
+
+- the path-to-rule mapping is corrected and the focused plan is regenerated
+- analysis confirms a cross-cutting change and records an objective
+  full-regression trigger
+- the user or accountable owner explicitly directs full regression
+
+Planner and report output must expose the change classification, affected
+boundaries, selected commands with reasons, excluded related commands with
+reasons, `full_regression_required`, its trigger or reason, unmatched paths,
+and safe-fallback state. `contract:check` must reject a planner or report schema
+that omits this decision record, and it must reject a missing applicable
+`VERIFY-SCOPE-001` gate row.
 
 Manual checklists must not contain pre-checked claims without evidence.
 Automatable status is generated from commands; manual status is approved by the
