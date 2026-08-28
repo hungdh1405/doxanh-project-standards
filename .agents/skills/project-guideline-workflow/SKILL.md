@@ -62,7 +62,10 @@ register the project's executable rule gates. Do not overwrite an existing
 5. Turn selected stable rule IDs into acceptance criteria and verification.
    For Nuxt/Vue UI, load the applicable Vue, shadcn-vue, and UI/UX skills and
    apply `UI-CONTROL-001` whenever a choice control is designed, implemented,
-   or reviewed.
+   or reviewed. Apply `DATA-REFERENCE-001` whenever a retire, archive, disable,
+   restore, or permanent-delete command can affect referenced durable records;
+   require the documented dependency classification, server impact preflight,
+   atomic enforcement, rendered resolution/recovery, and focused proof.
 6. Change each rule or product decision in its single canonical owner. Link
    from secondary documents, update traceability, and materialize applicable
    rules in the project's machine-readable gate manifest with real evidence.

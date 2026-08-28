@@ -402,6 +402,7 @@ row maps to automated/manual evidence; a conditional row may be
 | `UI-STATE-001` | Loading, empty, populated, denied, expired, conflict, unexpected-failure, destructive, pending, and recovery states are designed and exercised where applicable. |
 | `UI-ACCESS-001` | WCAG 2.2 AA semantics, names, focus, keyboard, reflow, contrast, live regions, touch, reduced motion, component evidence, and rendered accessibility evidence. |
 | `DATA-CONCURRENCY-001` | Scoped revision predicate, handled stale result, winning-only effects, UI recovery, and independent-client race proof. |
+| `DATA-REFERENCE-001` | Referenced-record lifecycle analysis, explicit move/preserve/block/cascade classification, authoritative preflight, valid replacement resolution, atomic revalidation and mutation, preserved history, winning-only effects, and rendered recovery proof. |
 | `AUTH-SESSION-001` | Exact per-actor credential, session/device counting, replacement, recovery, revocation, isolation, and race behavior. |
 | `ENTRY-SHARE-001` | Conditional canonical entry registry, locator/proof separation, host trust, revocation, and share/open/QR proof. |
 | `COMMERCIAL-001` | Conditional offering-versus-assignment model, effective period/status/limits, versioning, authorization, and audit. |

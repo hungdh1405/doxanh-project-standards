@@ -99,6 +99,67 @@ loser, final persisted state/revision, no duplicate child/effect rows, activity
 and outbox only for the winner, safe client recovery, and wrong-scope denial.
 Sequential calls from one client are not concurrency evidence.
 
+Referenced-record lifecycle contract:
+
+- Apply `DATA-REFERENCE-001` to every retire, archive, disable, restore, or
+  permanent-delete command whose target can be referenced by another durable
+  record. A foreign-key error after confirmation is not the designed workflow.
+- In `docs/database-schema.md`, register every inbound relationship and classify
+  its lifecycle behavior as `move-current`, `preserve-history`, `block`, or an
+  explicitly approved `cascade`. Name the current-versus-historical predicate,
+  allowed replacement type/state/scope, database constraint or transaction
+  enforcement, activity evidence, and restore/permanent-delete behavior. Never
+  infer this policy from `ON DELETE` alone.
+- Keep retirement and permanent deletion separate. Retirement removes a record
+  from new selection while preserving approved historical references. Permanent
+  deletion is available only when the documented retention and reference policy
+  permits it. Do not silently cascade business, financial, security, or audit
+  history to make a delete succeed.
+- Before a user confirms a lifecycle command, resolve an authorization-protected
+  server impact/preflight contract. Return only scope-safe counts, bounded safe
+  labels, movable dependency groups, blocking reasons, eligible replacement
+  choices or choice-query metadata, and the revisions required by the command.
+  The client must not discover policy by attempting the destructive write or
+  decide dependency behavior from a locally filtered list.
+- The UI names the target and consequence, shows every affected dependency
+  group, distinguishes movable current records from preserved history and hard
+  blockers, and requires a valid replacement for each `move-current` group
+  before opening the final shared confirmation dialog. Use the approved
+  searchable choice control when a replacement catalog meets
+  `UI-CONTROL-001`; never render an unbounded option list. A blocker provides a
+  direct recovery action when one exists and never offers a misleading confirm
+  button.
+- Treat preflight data as advisory evidence, not authorization. On confirmation,
+  the server revalidates actor, scope, capability, target state and revision,
+  every current inbound reference, and every replacement. A replacement must
+  exist in the same authorized scope, have the required active state and type,
+  differ from the source, and satisfy any ownership or hierarchy invariant.
+- Execute all dependency moves and the target lifecycle transition in one short
+  transaction. Lock or atomically predicate the target, applicable current
+  dependents, and replacements in a deterministic order. Move only records
+  classified `move-current`; preserve immutable/history references exactly as
+  documented. Any changed dependency, stale revision, new blocker, invalid
+  replacement, or concurrent winner rolls back the complete command and returns
+  a registered handled non-zero result with refresh/review recovery.
+- Only the winning commit emits lifecycle and dependency activity, outbox/job/
+  notification intent, cache invalidation, and realtime publication. Activity
+  must identify the trusted actor, scope, target, command, before/after state,
+  dependency group counts, replacement identifiers, request/origin context, and
+  one correlation or batch identifier without copying sensitive child payloads.
+- Restore behavior must be explicit: restoring a parent never silently restores
+  moved, deleted, or independently retired dependents. The project book states
+  whether the restored record becomes eligible for new references and which
+  follow-up action, if any, can move dependents back.
+
+Proof for `DATA-REFERENCE-001` covers: no-reference success; each dependency
+classification; mixed movable/history/blocking groups; missing, inactive,
+self, wrong-type, and wrong-scope replacement denial; stale preflight and stale
+revision; a new dependent created between preflight and confirmation; two
+independent concurrent commands with one winner; complete rollback; preserved
+history; winning-only activity and downstream effects; scope-safe errors; and
+the rendered preflight, blocked recovery, cancel, confirm-once, refresh, and
+durable-result workflows.
+
 Migrations and data changes:
 
 - Generate SQL migrations with Drizzle Kit and review the SQL, lock behavior,

@@ -3,6 +3,15 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.2.0] - 2026-08-28
+
+### Added
+
+- `DATA-REFERENCE-001` requires an explicit lifecycle policy for every inbound
+  durable reference, an authorized impact preflight, replacement resolution
+  before confirmation, atomic server revalidation, preserved history,
+  winning-only effects, and focused API/UI/concurrency proof.
+
 ## [3.1.0] - 2026-08-28
 
 ### Added
