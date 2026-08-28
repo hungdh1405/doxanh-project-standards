@@ -132,6 +132,15 @@ Referenced-record lifecycle contract:
   `UI-CONTROL-001`; never render an unbounded option list. A blocker provides a
   direct recovery action when one exists and never offers a misleading confirm
   button.
+- When no suitable replacement exists, the same confirmation surface gives one
+  concise, localized recovery step: cancel, create or reactivate an approved
+  holding/default/uncategorized record when the product domain permits one,
+  then reopen the lifecycle action and select it. The project book must name
+  the exact safe record type and later review/reassignment behavior; financial,
+  security, identity, or other sensitive references must direct the actor to
+  create the correct real target instead of a placeholder. Never auto-create,
+  auto-select, or silently treat an arbitrary existing record as the fallback,
+  and do not open a second confirmation dialog for this guidance.
 - Treat preflight data as advisory evidence, not authorization. On confirmation,
   the server revalidates actor, scope, capability, target state and revision,
   every current inbound reference, and every replacement. A replacement must
@@ -160,8 +169,8 @@ self, wrong-type, and wrong-scope replacement denial; stale preflight and stale
 revision; a new dependent created between preflight and confirmation; two
 independent concurrent commands with one winner; complete rollback; preserved
 history; winning-only activity and downstream effects; scope-safe errors; and
-the rendered preflight, blocked recovery, cancel, confirm-once, refresh, and
-durable-result workflows.
+the rendered preflight, no-suitable-target guidance, blocked recovery, cancel,
+confirm-once, refresh, and durable-result workflows.
 
 Migrations and data changes:
 

@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.2.2] - 2026-08-28
+
+### Fixed
+
+- Referenced-record confirmation dialogs now require concise recovery guidance
+  when no suitable replacement exists, without auto-creating, auto-selecting,
+  or opening a second confirmation dialog.
+
 ## [3.2.1] - 2026-08-28
 
 ### Fixed
