@@ -29,7 +29,8 @@
   boundary, 24-hour and 12-hour presets, month/minute token regression,
   invalid IANA zone and format denial, date-only non-conversion, system/scope
   precedence, SSR hydration equality, authorized setting changes with activity
-  evidence, and DST gap/overlap cases for any supported DST zone.
+  evidence, DST gap/overlap cases for any supported DST zone, and localized
+  formatter-failure behavior that never reveals a raw temporal value.
 - Mock at external boundaries, not the unit under test.
 - Prefer factories and fixtures over large snapshots.
 - Use fake timers only when time behavior is the subject of the test; advance
@@ -337,7 +338,7 @@ script surface:
 | `test:a11y` | Playwright plus `@axe-core/playwright` automated accessibility suite. |
 | `deps:check` | Validate the Section 3.8 approved-dependency registry, selected lockfile, deprecated/forbidden/duplicate-concern packages, license/security policy, and unused direct dependencies. |
 | `i18n:check` | Validate locale catalogs, supported/default locale policy, missing/extra keys, placeholder parity, and project-specific locale-source contracts. |
-| `standards:check` | Enforce stack exclusivity, layer/import boundaries, forbidden client/server crossings, Tailwind application allowlist, generated-code drift, focused-test/TODO exception format, and other machine-checkable project rules. |
+| `standards:check` | Enforce stack exclusivity, layer/import boundaries, forbidden client/server crossings, temporal-presentation boundary/raw-fallback rules, Tailwind application allowlist, generated-code drift, focused-test/TODO exception format, and other machine-checkable project rules. |
 | `docs:book:generate` | Idempotently create missing skeletons and update marked manifest-derived regions. |
 | `docs:book:check` | Enforce the complete lifecycle, minimum-content, manifest, schema, header, evidence, ordering, placeholder, and navigation contract from Section 4.15. |
 | `docs:links:check` | Validate repository-relative documentation and evidence links. |
@@ -394,13 +395,14 @@ row maps to automated/manual evidence; a conditional row may be
 | `UI-VISUAL-001` | Default approved component system, semantic tokens, light/dark/system themes, layout-only utility CSS, icon/image rules, and no page-local visual system. |
 | `UI-DENSITY-001` | Compact readable visual density, natural-width desktop actions, deliberate mobile width, at least 44×44 CSS-pixel phone targets, and at least 8 CSS pixels between adjacent targets where accidental activation is possible. |
 | `UI-AUDIENCE-001` | Correct audience/surface, route/layout, permission projection, and no cross-audience controls. |
-| `UI-ACTION-001` | Every important rendered action and overlay close path has a real outcome and interaction proof; form/overlay footers use the shared action-only composition, deterministic safe-to-commit DOM/tab/visual order, and responsive touch-safe geometry from Section 8.11.2. |
+| `UI-ACTION-001` | Every important rendered action and overlay close path has a real outcome and interaction proof; form/overlay footers use the shared action-only composition and deterministic safe-to-commit order from Section 8.11.2; actionable feedback uses the content-led icon/body plus separate responsive action-only composition from Section 8.11.3. |
 | `UI-COPY-001` | User-task copy, localized product nouns, effective-value wording, and no implementation details, policy narration, internal rationale, developer instructions, or dummy content on any released surface. |
 | `UI-CONTROL-001` | Choice controls follow Section 8.12: `Select` is limited to at most nine short, bounded, easily scanned choices; ten or more choices, remote catalogs, or name/code lookup use the searchable default `Combobox` with loading, empty, disabled, clear, keyboard, touch, component, and rendered workflow proof. |
 | `UI-COLLECTION-001` | Search/group/filter/sort/pagination, stable item anatomy, restoration, and uneven-data proof for growing collections. |
 | `UI-RESP-001` | Phone-first continuous reflow, bounded scroll ownership, theme, zoom, keyboard, touch, and required viewport evidence. |
 | `UI-STATE-001` | Loading, empty, populated, denied, expired, conflict, unexpected-failure, destructive, pending, and recovery states are designed and exercised where applicable. |
 | `UI-ACCESS-001` | WCAG 2.2 AA semantics, names, focus, keyboard, reflow, contrast, live regions, touch, reduced motion, component evidence, and rendered accessibility evidence. |
+| `TIME-PRESENTATION-001` | UTC instant storage/transport, canonical local mutation values, server-authoritative scope/system IANA resolution, one shared client presentation context and formatter, no browser-local formatting or raw display fallback, localized invalid state, and executable source/component/API evidence. |
 | `DATA-CONCURRENCY-001` | Scoped revision predicate, handled stale result, winning-only effects, UI recovery, and independent-client race proof. |
 | `DATA-REFERENCE-001` | Referenced-record lifecycle analysis, explicit move/preserve/block/cascade classification, authoritative preflight, valid replacement resolution, concise no-suitable-target recovery guidance without an invented fallback, atomic revalidation and mutation, preserved history, winning-only effects, and rendered recovery proof. |
 | `AUTH-SESSION-001` | Exact per-actor credential, session/device counting, replacement, recovery, revocation, isolation, and race behavior. |

@@ -3,6 +3,18 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.3.0] - 2026-08-29
+
+### Added
+
+- `TIME-PRESENTATION-001` is now a reserved blocking generated-project rule
+  requiring one authoritative scope/system presentation context, shared
+  formatter boundaries, localized invalid output, and executable rejection of
+  browser/local formatting and raw temporal display fallbacks.
+- `UI-ACTION-001` now requires a shared content-led actionable-feedback
+  composition for notifications, alert cards, banners, inbox items, and
+  pop-ups, with a separate responsive action region and long-localization proof.
+
 ## [3.2.2] - 2026-08-28
 
 ### Fixed

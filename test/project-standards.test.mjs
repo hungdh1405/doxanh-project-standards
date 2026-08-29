@@ -163,6 +163,57 @@ test('installs and verifies a reference-only standalone project', async () => {
   }
 })
 
+test('requires executable temporal presentation rules in generated projects', async () => {
+  const runtimeContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/42-nuxt-runtime-contracts.md',
+  ), 'utf8')
+  const testingContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/80-testing-and-verification.md',
+  ), 'utf8')
+  const agentTemplate = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/AGENTS.template.md',
+  ), 'utf8')
+  const skillContract = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
+
+  for (const source of [
+    runtimeContract,
+    testingContract,
+    agentTemplate,
+    skillContract,
+  ]) {
+    assert.match(source, /TIME-PRESENTATION-001/u)
+  }
+  assert.match(runtimeContract, /never expose the raw API, database, ISO/u)
+  assert.match(runtimeContract, /standards:check.*reject direct rendered temporal fields/su)
+})
+
+test('requires readable responsive composition for actionable feedback', async () => {
+  const interactionContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/52-web-interaction-and-verification.md',
+  ), 'utf8')
+  const testingContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/80-testing-and-verification.md',
+  ), 'utf8')
+  const agentTemplate = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/AGENTS.template.md',
+  ), 'utf8')
+  const skillContract = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
+
+  for (const source of [interactionContract, testingContract, agentTemplate, skillContract]) {
+    assert.match(source, /UI-ACTION-001/u)
+    assert.match(source, /actionable.feedback|notifications?/iu)
+  }
+  assert.match(interactionContract, /separate action-only region below the content/u)
+  assert.match(interactionContract, /icon\/content\/action three-column row/u)
+  assert.match(interactionContract, /longest supported localized/u)
+})
+
 test('installs only a reference lock at the correct nested root', async () => {
   const roots = await fixture(true)
   try {

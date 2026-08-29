@@ -66,6 +66,15 @@ register the project's executable rule gates. Do not overwrite an existing
    restore, or permanent-delete command can affect referenced durable records;
    require the documented dependency classification, server impact preflight,
    atomic enforcement, rendered resolution/recovery, and focused proof.
+   Apply `TIME-PRESENTATION-001` whenever temporal data is rendered, edited,
+   transported, exported, printed, or reviewed; require the authoritative
+   scope/system presentation context, shared formatter/input boundaries, no raw
+   display fallback, and executable source plus focused rendered proof.
+   Apply `UI-ACTION-001` whenever a form, overlay, actionable notification,
+   alert card, banner, inbox item, or pop-up exposes an action; keep message
+   content in its own readable region and actions in a separate responsive
+   action-only region, then prove long localized content at phone and desktop
+   widths.
 6. Change each rule or product decision in its single canonical owner. Link
    from secondary documents, update traceability, and materialize applicable
    rules in the project's machine-readable gate manifest with real evidence.

@@ -30,6 +30,9 @@
   success, and destructive states, including the decision between global
   blocking activity and local/background loading
 - dialog, alert-dialog, sheet, drawer, toast, banner, and inline feedback choices
+- shared actionable-feedback anatomy for notifications, alert cards, banners,
+  inbox items, and pop-ups: optional leading icon plus readable content, a
+  separate action-only region, and responsive long-copy behavior
 - overlay open/close/focus/pending behavior and proof that every rendered action
   has an authorized, observable outcome
 - a shareable entry-point registry when the product exposes public, invitation,

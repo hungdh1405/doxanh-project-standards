@@ -1,6 +1,6 @@
 {
   "name": "doxanh-project-standards",
-  "version": "3.2.2",
+  "version": "3.3.0",
   "private": true,
   "type": "module",
   "description": "Reusable Doxanh project standards and Codex workflow skill",

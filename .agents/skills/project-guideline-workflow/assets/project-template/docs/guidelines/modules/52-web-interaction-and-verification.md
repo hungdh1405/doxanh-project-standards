@@ -204,6 +204,52 @@ Maintain this inventory for important workflows:
 | Trigger | Actor/state | Surface | Message/action | Persistence | Accessibility announcement | Requirement/test |
 | --- | --- | --- | --- | --- | --- | --- |
 
+#### 8.11.3 Responsive actionable-feedback composition
+
+`UI-ACTION-001` also owns the composition of any durable notification, alert
+card, banner, inbox item, or non-critical pop-up that contains an action. Use
+one shared typed composition built from the appropriate default shadcn-vue
+`Item`, `Alert`, `Card`, `Dialog`, or related primitive. Choose the surface by
+Section 8.11 semantics; do not turn every notification into a modal.
+
+The shared composition enforces this anatomy:
+
+- The content region contains an optional leading semantic icon and one
+  `min-width: 0` body region. The body owns the title, concise summary, and
+  necessary metadata in reading order. Do not split title, message, or metadata
+  into competing columns.
+- When the body contains more than one short line or any metadata, place actions
+  in a separate action-only region below the content. Align its compact natural-
+  width action group to the logical inline end on tablet/desktop; use the
+  Section 8.11.2 touch-safe phone arrangement when width is constrained.
+- Never use an icon/content/action three-column row when the trailing action
+  compresses the message into a narrow strip. A trailing inline action is
+  permitted only for a genuinely single-line item whose longest supported
+  localized label and action have rendered proof without truncation, overlap,
+  overflow, or a reduced readable content measure.
+- Keep the icon aligned with the start of the content rather than vertically
+  centering it against a tall message and footer. Mark a decorative icon hidden
+  from assistive technology; when the icon carries unique meaning, give that
+  meaning an accessible text equivalent.
+- Allow titles, messages, safe identifiers, and formatted temporal metadata to
+  wrap. Do not truncate material consequences, recovery information, targets,
+  or dates. Format temporal metadata through `TIME-PRESENTATION-001`.
+- Omit the action region when no useful action exists. An action names and opens
+  its exact authorized destination or command; it must not merely dismiss the
+  notice or repeat a destination already obvious and reachable in context.
+- Preserve default component visuals and use Tailwind only for layout,
+  responsive composition, spacing, and sizing. Keep the surface compact and
+  content-led rather than stretching it to fill unrelated page width.
+
+Generated projects must register one shared actionable-feedback composition in
+`ui-system.md` and the screen contracts that use it. `standards:check` must
+identify action-bearing notification/alert/banner/inbox/pop-up implementations
+outside that registered composition and reject body copy inside its action
+region. Component tests use the longest supported localized content and prove
+content-before-actions DOM/tab/visual order, phone/desktop geometry, wrapping,
+theme, zoom, focus, and accessibility. Playwright opens the real destination or
+executes the real command and verifies the rendered plus durable outcome.
+
 Notification rules:
 
 - Use an in-product notification only when information remains useful after the
@@ -467,6 +513,11 @@ checklist. `UI-STATE-001` owns the complete rendered-state contract below.
 - [ ] Every form and overlay action row uses the shared Section 8.11.2 footer;
   content remains above the action-only footer, and no explanatory-text/action
   split layout remains.
+- [ ] Every actionable notification, alert card, banner, inbox item, and pop-up
+  uses the shared Section 8.11.3 composition: icon plus full readable content
+  first, then a separate action-only region whenever the content exceeds one
+  proven short line; long localized content and formatted metadata wrap without
+  compression, material truncation, overlap, or overflow.
 - [ ] Source, DOM, keyboard, and visual order is safe/cancel first and primary/
   destructive commit last at every breakpoint; no reverse/order utility or
   duplicated responsive action markup changes that sequence.
@@ -506,7 +557,8 @@ checklist. `UI-STATE-001` owns the complete rendered-state contract below.
   `ScrollArea` position.
 - [ ] Every instant is rendered through the shared Day.js presentation
   boundary using the effective IANA zone and approved preset; no component uses
-  browser-local date/time formatting.
+  browser-local date/time formatting or exposes a raw wire/database value when
+  formatting fails.
 - [ ] Public SSR, successful authentication/MFA/session responses, hydration, host
   changes, and logout all resolve the expected presentation context without a
   flash, mismatch, or stale cross-scope value.

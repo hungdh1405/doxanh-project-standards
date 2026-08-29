@@ -101,9 +101,17 @@ source once files exist.
 - blocking-activity controller, request-adapter/interceptor, overlay,
   accessibility, timeout/cancellation, ten-operation concurrency, retry, and
   `noLoading` tests on every active client platform
+- `TIME-PRESENTATION-001` source checks and focused tests covering direct raw
+  rendered temporal values, browser/component-local formatting, raw fallback
+  after formatter failure, scope/system presentation precedence, and localized
+  invalid output
 - create/update/delete confirmation-dialog tests covering validation order,
   exact target/scope copy, cancel/dismiss with no request, one confirmed request,
   focus return, bulk scope, duplicate prevention, and loading handoff
+- `UI-ACTION-001` actionable-feedback component and rendered tests covering
+  icon/content/action anatomy, separate action-only placement, longest supported
+  localized title/summary/metadata, phone and desktop reflow, 200% zoom,
+  light/dark themes, keyboard/focus, and no overflow or material truncation
 - Nitro/API, PostgreSQL, Redis, BullMQ, conditional realtime protocol/gateway,
   and migration integration
 - durable activity-log tag/schema validation, same-transaction persistence,

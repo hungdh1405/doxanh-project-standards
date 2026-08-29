@@ -73,6 +73,10 @@ AI working under this standard must:
 - generate the shared Section 8.11.2 web action-footer composition before
   feature forms and overlays, keep body copy above its action-only region, and
   enforce one safe-to-commit source/DOM/tab/visual order at every breakpoint
+- generate the shared Section 8.11.3 actionable-feedback composition before
+  rendering action-bearing notifications, alert cards, banners, inbox items, or
+  pop-ups; keep icon/content readable above a separate responsive action-only
+  region and test the longest supported localized content
 - apply every applicable stable `UI-*` rule selected by the executable rule
   plan; none of the UI/UX contracts may be treated as optional review advice
 - apply `UI-DENSITY-001` to every component and action: keep visual density
@@ -83,6 +87,9 @@ AI working under this standard must:
 - apply `UI-CONTROL-001` before choosing a form control: inspect the actual
   option cardinality, loading source, and lookup behavior; document and verify
   the resulting `Select` or searchable default shadcn-vue `Combobox` contract
+- apply `TIME-PRESENTATION-001` whenever temporal data is rendered, edited,
+  transported, exported, printed, or reviewed; identify the authoritative
+  scope/system context and run the executable raw-presentation gate
 - create a component map before non-trivial Vue feature work
 - create/update the screen registry before generating UI; use one canonical
   screen contract per important screen and complete every applicable
@@ -171,6 +178,9 @@ AI must not:
 - use Tailwind as a second visual component system
 - use a native/custom select or an unfilterable `Select` for a choice governed
   by the searchable `Combobox` branch of `UI-CONTROL-001`
+- render an instant/date/time field directly, format business time from the
+  browser or component locally, or fall back to a raw API/database/wire value
+  when the shared presentation formatter fails
 - use device detection to replace responsive CSS
 - hand-build a product sidebar, scroll container, or pagination control when
   the corresponding default shadcn-vue component exists

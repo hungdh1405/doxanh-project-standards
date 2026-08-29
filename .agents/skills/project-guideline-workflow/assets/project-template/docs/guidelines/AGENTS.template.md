@@ -89,6 +89,13 @@ carefully,” habit, or subjective confidence does not broaden test scope.
   `UI-COPY-001`, `UI-CONTROL-001`, and `UI-DENSITY-001`; update screen/flow
   contracts, verify responsive/theme states, exercise the rendered workflow as
   the real actor, and verify durable/downstream outcomes.
+- Actionable feedback: enforce `UI-ACTION-001` for notifications, alert cards,
+  banners, inbox items, and pop-ups as well as forms and overlays; preserve a
+  full readable content region, keep body copy out of the action region, and
+  verify long localized content plus action placement on phone and desktop.
+- User-visible temporal values: enforce `TIME-PRESENTATION-001`; resolve the
+  authoritative scope/system context, use the shared formatter, prohibit raw
+  display fallbacks, and run the executable source plus focused rendered proof.
 - API, permission, or data: test validation, the canonical response contract,
   direct-request authorization, scope isolation, constraints, concurrency, and
   activity attribution as applicable.

@@ -1,6 +1,9 @@
 
 ### 7.9 Day.js and Lodash
 
+This section is the canonical contract for `TIME-PRESENTATION-001`. It is a
+blocking rule for every Nuxt project that renders or accepts temporal values.
+
 - Configure Day.js plugins once in a utility/plugin boundary.
 - Enable the Day.js `utc` plugin before the `timezone` plugin. Application
   components must call one shared formatter/composable; they must not import
@@ -40,6 +43,17 @@
   label. Consumers use store getters or `storeToRefs()`; they do not copy
   timezone/format values into page refs, component props chains, local storage,
   or a second `useState` owner.
+- Render every user-visible instant, calendar date, and wall-clock time through
+  the shared presentation boundary with the effective authoritative context.
+  A formatter failure must show a localized unavailable/invalid state; it must
+  never expose the raw API, database, ISO, cursor, or canonical mutation value
+  as a display fallback.
+- Materialize `TIME-PRESENTATION-001` in the generated gate manifest and make
+  `standards:check` reject direct rendered temporal fields, component-local or
+  browser-local date/time formatting, and raw-value fallbacks after a shared
+  formatter fails. Keep an explicit allowlist for non-visible wire/input
+  normalization so the gate does not confuse canonical transport values with
+  presentation.
 - The tracked HTTP adapter must validate an authentication/session
   `presentation_context` with the shared Zod response schema, replace the whole
   Pinia value before resolving the caller, and update the active default locale
@@ -137,7 +151,8 @@ Every generated project book must materialize the date/time contract in:
   scope/system precedence, DST gaps/overlaps, public/login/session projection
   equality, Pinia replacement, invalid formats/zones, SSR/hydration, logout and
   host changes, cross-scope display, permissions, activity, and cache
-  invalidation.
+  invalidation, plus executable rejection of direct/raw rendered temporal
+  values and localized formatter-failure behavior.
 
 ### 7.10 Nuxt application shell and global loading
 
