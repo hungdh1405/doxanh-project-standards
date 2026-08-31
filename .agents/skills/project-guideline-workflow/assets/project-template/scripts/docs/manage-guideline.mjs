@@ -137,6 +137,9 @@ function validateManifestShape() {
     implementation_details_forbidden: true,
     policy_narration_forbidden_by_default: true,
     complete_rendered_copy_review: true,
+    canonical_actor_scope_vocabulary: true,
+    raw_or_humanized_technical_keys_forbidden: true,
+    competing_synonyms_rejected: true,
   }
   if (
     JSON.stringify(manifest.critical_contracts?.ui_copy)
@@ -157,6 +160,22 @@ function validateManifestShape() {
   ) {
     errors.push('critical_contracts.ui_density differs from the fixed contract')
   }
+  const expectedUiAudienceProjection = {
+    rule_id: 'UI-AUDIENCE-001',
+    server_authoritative: true,
+    complete_observable_surface: true,
+    shared_components_permission_neutral: true,
+    filter_options_from_authorized_scope: true,
+    counts_and_facets_scope_projected: true,
+    cross_boundary_identity_default: 'redacted',
+    direct_request_no_leak_tests: true,
+  }
+  if (
+    JSON.stringify(manifest.critical_contracts?.ui_audience_projection)
+    !== JSON.stringify(expectedUiAudienceProjection)
+  ) {
+    errors.push('critical_contracts.ui_audience_projection differs from the fixed contract')
+  }
   const expectedVerificationScope = {
     rule_id: 'VERIFY-SCOPE-001',
     default_mode: 'risk-scoped',
@@ -175,6 +194,20 @@ function validateManifestShape() {
     !== JSON.stringify(expectedVerificationScope)
   ) {
     errors.push('critical_contracts.verification_scope differs from the fixed contract')
+  }
+  const expectedVerificationClaim = {
+    rule_id: 'VERIFY-CLAIM-001',
+    claim_unit: 'declared-finite-scope',
+    binary_lead_required: true,
+    absolute_zero_defect_claim_forbidden: true,
+    scope_complete_requires_zero_open_boundaries: true,
+    incomplete_claim: 'not_verified',
+  }
+  if (
+    JSON.stringify(manifest.critical_contracts?.verification_claim)
+    !== JSON.stringify(expectedVerificationClaim)
+  ) {
+    errors.push('critical_contracts.verification_claim differs from the fixed contract')
   }
   if (!Array.isArray(manifest.modules) || manifest.modules.length === 0) {
     errors.push('modules must be a non-empty array')
@@ -413,6 +446,8 @@ function validateUiCopyAndDensityContracts(source) {
       '`UI-COPY-001`',
       'Product UI is not documentation.',
       'not the policy rationale or system mechanism',
+      'canonical actor, scope, entity, state, and action labels',
+      'Never humanize an unknown',
       'Do not expose database IDs, tokens, queue names, field keys, or internal status',
       'enumerate every rendered localized title',
     ]) {
@@ -431,6 +466,30 @@ function validateUiCopyAndDensityContracts(source) {
       'natural-width desktop actions',
     ]) {
       if (!density.includes(token)) errors.push(`UI density contract is missing ${token}`)
+    }
+  }
+  return errors
+}
+
+function validateUiAudienceProjectionContract(source) {
+  const errors = []
+  const audienceStart = source.indexOf('### 8.8.3 Audience separation and management information architecture')
+  const audienceEnd = source.indexOf('### 8.8.4 Long collections, categorized discovery, and stable item anatomy')
+  if (audienceStart < 0 || audienceEnd < 0) {
+    return ['UI audience-separation section is missing']
+  }
+  const audience = source.slice(audienceStart, audienceEnd)
+  for (const token of [
+    '`UI-AUDIENCE-001`',
+    'Shared presentation components must remain permission-neutral.',
+    'complete observable surface',
+    'same authorized scope\nas the result query',
+    'Cross-boundary accountability may expose a bounded actor category only when',
+    "redact the external actor's ID",
+    'direct requests that substitute filters or identifiers',
+  ]) {
+    if (!audience.includes(token)) {
+      errors.push(`UI audience-projection contract is missing ${token}`)
     }
   }
   return errors
@@ -455,6 +514,32 @@ function validateVerificationScopeContract(source) {
   ]) {
     if (!section.includes(token)) {
       errors.push(`verification-scope contract is missing ${token}`)
+    }
+  }
+  return errors
+}
+
+function validateVerificationClaimContract(source) {
+  const errors = []
+  const sectionStart = source.indexOf('#### 13.7.3 Evidence-scoped completion and readiness claims')
+  const sectionEnd = source.indexOf('### 13.8 Docker and Make verification')
+  if (sectionStart < 0 || sectionEnd < 0) {
+    return ['evidence-scoped completion-claim section is missing']
+  }
+  const section = source.slice(sectionStart, sectionEnd)
+  for (const token of [
+    '`VERIFY-CLAIM-001`',
+    '`No — this is not 100% verified.`',
+    '`Yes — 100% of the declared acceptance scope passed for <candidate> in',
+    'finite acceptance scope',
+    'failed, skipped, stale, pending, flaky-only, not-tested, and open-boundary',
+    'not a\n  guarantee of zero defects or unknown future cases',
+    '`completion_claim`',
+    '`scope_complete` or `not_verified`',
+    '`verification:check`',
+  ]) {
+    if (!section.includes(token)) {
+      errors.push(`verification-claim contract is missing ${token}`)
     }
   }
   return errors
@@ -485,6 +570,7 @@ async function check() {
     '`UI-CONTROL-001`',
     '`UI-DENSITY-001`',
     '`VERIFY-SCOPE-001`',
+    '`VERIFY-CLAIM-001`',
     'safe full-rule fallback',
     'objective full-regression trigger',
   ]
@@ -530,7 +616,9 @@ async function check() {
   errors.push(...validateApiContract(complete))
   errors.push(...validateUiChoiceControlContract(complete))
   errors.push(...validateUiCopyAndDensityContracts(complete))
+  errors.push(...validateUiAudienceProjectionContract(complete))
   errors.push(...validateVerificationScopeContract(complete))
+  errors.push(...validateVerificationClaimContract(complete))
   const genericSources = [
     [manifest.entry_path, entry],
     [manifest.agent_instructions_template_path, agentInstructionsTemplate],

@@ -8,6 +8,17 @@ rendered localized string, not only representative pages or newly edited copy.
 - Use active, consistent action labels: `Save changes`, `Publish`, `Retry`.
 - Keep the same action word through button, confirmation, toast, history, and
   activity-history copy.
+- Use the canonical actor, scope, entity, state, and action labels from the
+  project glossary and closed i18n registries on every screen, filter, badge,
+  confirmation, notification, export, and activity view. The same actor must
+  not receive another improvised title on a different surface. Keep distinct
+  human roles, scoped actors, devices, integrations, and automated-system
+  sources semantically distinct according to that project's actor catalog.
+- Technical keys and stable legacy identifiers may remain in APIs, databases,
+  and durable history when their contracts require stability, but they must
+  map through one canonical presentation registry. Never humanize an unknown
+  role, actor, action, or state key into plausible UI copy; show the localized
+  unavailable state and treat the missing registry entry as a contract defect.
 - Write from the user's perspective, not the implementation's.
 - Speak directly to the person using the current surface. Do not describe that
   person in the third person by repeating their role, such as `Customers start
@@ -450,11 +461,21 @@ checklist. `UI-STATE-001` owns the complete rendered-state contract below.
 - [ ] The screen uses the correct public/self-service/operational/
   administration/device surface and exposes no controls from another audience's
   workflow.
+- [ ] The complete observable surface satisfies `UI-AUDIENCE-001`: records,
+  fields, actions, options, facets, suggestions, counts, summaries, existence
+  states, links, exports, and drill-downs come from the same server-authorized
+  actor/scope projection; cross-boundary identities are redacted unless a
+  separate permission explicitly allows them.
 - [ ] Real product content is used.
 - [ ] No lorem ipsum, dummy metrics, explanation-heavy helper cards, internal wording, or third-person narration of the current user remains.
 - [ ] Effective values are shown without redundant `default` language; policy
   rationale appears only when it is required for informed action or recovery.
 - [ ] The action vocabulary is consistent through the workflow.
+- [ ] Canonical actor, scope, entity, state, and action labels match the
+  glossary and i18n registries across navigation, filters, badges,
+  confirmations, notifications, activity/history, and exports; forbidden
+  synonyms and raw/humanized technical keys are rejected by an executable
+  localization/content check.
 
 #### shadcn-vue and styling
 

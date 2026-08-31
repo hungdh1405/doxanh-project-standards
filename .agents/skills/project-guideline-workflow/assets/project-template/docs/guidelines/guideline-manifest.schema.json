@@ -55,7 +55,9 @@
         "ui_choice_controls",
         "ui_copy",
         "ui_density",
-        "verification_scope"
+        "ui_audience_projection",
+        "verification_scope",
+        "verification_claim"
       ],
       "properties": {
         "api_response_envelope": {
@@ -115,13 +117,19 @@
             "rule_id",
             "implementation_details_forbidden",
             "policy_narration_forbidden_by_default",
-            "complete_rendered_copy_review"
+            "complete_rendered_copy_review",
+            "canonical_actor_scope_vocabulary",
+            "raw_or_humanized_technical_keys_forbidden",
+            "competing_synonyms_rejected"
           ],
           "properties": {
             "rule_id": { "const": "UI-COPY-001" },
             "implementation_details_forbidden": { "const": true },
             "policy_narration_forbidden_by_default": { "const": true },
-            "complete_rendered_copy_review": { "const": true }
+            "complete_rendered_copy_review": { "const": true },
+            "canonical_actor_scope_vocabulary": { "const": true },
+            "raw_or_humanized_technical_keys_forbidden": { "const": true },
+            "competing_synonyms_rejected": { "const": true }
           }
         },
         "ui_density": {
@@ -140,6 +148,30 @@
             "phone_touch_target_min_css_px": { "const": 44 },
             "adjacent_target_separation_min_css_px": { "const": 8 },
             "desktop_action_width": { "const": "natural" }
+          }
+        },
+        "ui_audience_projection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "server_authoritative",
+            "complete_observable_surface",
+            "shared_components_permission_neutral",
+            "filter_options_from_authorized_scope",
+            "counts_and_facets_scope_projected",
+            "cross_boundary_identity_default",
+            "direct_request_no_leak_tests"
+          ],
+          "properties": {
+            "rule_id": { "const": "UI-AUDIENCE-001" },
+            "server_authoritative": { "const": true },
+            "complete_observable_surface": { "const": true },
+            "shared_components_permission_neutral": { "const": true },
+            "filter_options_from_authorized_scope": { "const": true },
+            "counts_and_facets_scope_projected": { "const": true },
+            "cross_boundary_identity_default": { "const": "redacted" },
+            "direct_request_no_leak_tests": { "const": true }
           }
         },
         "verification_scope": {
@@ -170,6 +202,26 @@
               "minItems": 5,
               "maxItems": 5
             }
+          }
+        },
+        "verification_claim": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "claim_unit",
+            "binary_lead_required",
+            "absolute_zero_defect_claim_forbidden",
+            "scope_complete_requires_zero_open_boundaries",
+            "incomplete_claim"
+          ],
+          "properties": {
+            "rule_id": { "const": "VERIFY-CLAIM-001" },
+            "claim_unit": { "const": "declared-finite-scope" },
+            "binary_lead_required": { "const": true },
+            "absolute_zero_defect_claim_forbidden": { "const": true },
+            "scope_complete_requires_zero_open_boundaries": { "const": true },
+            "incomplete_claim": { "const": "not_verified" }
           }
         }
       }

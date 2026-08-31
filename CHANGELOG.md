@@ -3,6 +3,25 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.4.0] - 2026-08-29
+
+### Added
+
+- `UI-AUDIENCE-001` now requires one server-authorized actor, scope,
+  capability, relationship, and record-state projection for the complete
+  observable surface, including records, controls, option/facet catalogs,
+  counts, exports, and drill-downs.
+- Cross-boundary accountability may expose only a bounded actor category when
+  its action affected an authorized scope; identity and unrelated activity are
+  redacted unless a separate permission explicitly allows them.
+- `UI-COPY-001` now requires glossary-owned canonical actor, scope, entity,
+  state, and action labels across every UI surface and locale, with executable
+  rejection of competing synonyms and raw or humanized technical keys.
+- `VERIFY-CLAIM-001` now requires an unambiguous yes/no answer for completion,
+  all-cases, production-readiness, and `100%` questions. A positive claim is
+  limited to a finite declared scope with current candidate-bound evidence and
+  no failed, skipped, stale, pending, not-tested, or open boundary.
+
 ## [3.3.0] - 2026-08-29
 
 ### Added

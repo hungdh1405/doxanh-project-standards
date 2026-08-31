@@ -389,6 +389,43 @@ with different goals or permissions.
   switching deliberate. A route, store, or stale cached selection must not
   silently carry data or mutations into another scope.
 
+Shared presentation components must remain permission-neutral. Reusing a list,
+filter, dashboard, activity viewer, selector, or detail composition never
+authorizes one audience to receive another audience's data or metadata. The
+server must project the response from the authenticated actor, authoritative
+scope, capabilities, relationships, and record state before the component
+renders it. Client-side hiding, filtering, or relabelling is not an
+authorization boundary.
+
+Apply that projection to the complete observable surface, including:
+
+- records and fields
+- actions, destinations, and enabled/disabled states
+- filter options, facets, suggestions, autocomplete values, and saved views
+- counts, totals, status summaries, badges, chart series, and empty/existence
+  messages
+- detail links, exports, downloads, print payloads, and notification targets
+
+Filter, facet, and suggestion catalogs must come from the same authorized scope
+as the result query and must be intersected with a registered safe vocabulary.
+Never send a global enum, identity directory, distinct-value query, or count and
+then rely on a shared component to remove inaccessible values. A value with no
+visible row can still disclose another scope's existence, actor class, state,
+or activity.
+
+Cross-boundary accountability may expose a bounded actor category only when the
+recorded action affected a resource the current actor may inspect. Unless a
+separate permission explicitly allows more, redact the external actor's ID,
+name, memberships, roles, contact details, session/correlation data,
+impersonation context, and unrelated activity. The project book must define the
+exact safe category label, redacted fields, and detail/export behavior; it must
+not infer them from a reusable component.
+
+Permission changes and scope switches must invalidate or refetch the complete
+projection. Tests must exercise the same shared component with different
+actors and scopes, direct requests that substitute filters or identifiers, and
+record, option, count, export, and drill-down no-leak assertions.
+
 Every important screen contract must show where its primary and secondary
 actions live and why. A control is prohibited when its handler, permission,
 result feedback, and test are undefined.

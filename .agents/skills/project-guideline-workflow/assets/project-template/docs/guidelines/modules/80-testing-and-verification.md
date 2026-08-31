@@ -394,9 +394,9 @@ row maps to automated/manual evidence; a conditional row may be
 | --- | --- |
 | `UI-VISUAL-001` | Default approved component system, semantic tokens, light/dark/system themes, layout-only utility CSS, icon/image rules, and no page-local visual system. |
 | `UI-DENSITY-001` | Compact readable visual density, natural-width desktop actions, deliberate mobile width, at least 44×44 CSS-pixel phone targets, and at least 8 CSS pixels between adjacent targets where accidental activation is possible. |
-| `UI-AUDIENCE-001` | Correct audience/surface, route/layout, permission projection, and no cross-audience controls. |
+| `UI-AUDIENCE-001` | Correct audience/surface and server-authorized actor/scope/capability/state projection for records, fields, actions, options, facets, suggestions, counts, summaries, existence signals, links, exports, and drill-downs; bounded cross-boundary accountability with identity redaction; shared components never become authorization boundaries. |
 | `UI-ACTION-001` | Every important rendered action and overlay close path has a real outcome and interaction proof; form/overlay footers use the shared action-only composition and deterministic safe-to-commit order from Section 8.11.2; actionable feedback uses the content-led icon/body plus separate responsive action-only composition from Section 8.11.3. |
-| `UI-COPY-001` | User-task copy, localized product nouns, effective-value wording, and no implementation details, policy narration, internal rationale, developer instructions, or dummy content on any released surface. |
+| `UI-COPY-001` | User-task copy, glossary-owned canonical actor/scope/entity/state/action vocabulary across every surface and locale, registered presentation of technical keys, effective-value wording, and no competing synonyms, raw/humanized keys, implementation details, policy narration, internal rationale, developer instructions, or dummy content on any released surface. |
 | `UI-CONTROL-001` | Choice controls follow Section 8.12: `Select` is limited to at most nine short, bounded, easily scanned choices; ten or more choices, remote catalogs, or name/code lookup use the searchable default `Combobox` with loading, empty, disabled, clear, keyboard, touch, component, and rendered workflow proof. |
 | `UI-COLLECTION-001` | Search/group/filter/sort/pagination, stable item anatomy, restoration, and uneven-data proof for growing collections. |
 | `UI-RESP-001` | Phone-first continuous reflow, bounded scroll ownership, theme, zoom, keyboard, touch, and required viewport evidence. |
@@ -409,6 +409,7 @@ row maps to automated/manual evidence; a conditional row may be
 | `ENTRY-SHARE-001` | Conditional canonical entry registry, locator/proof separation, host trust, revocation, and share/open/QR proof. |
 | `COMMERCIAL-001` | Conditional offering-versus-assignment model, effective period/status/limits, versioning, authorization, and audit. |
 | `VERIFY-SCOPE-001` | Risk-scoped verification records change impact, selected and excluded evidence with reasons, safe-fallback review, stepwise expansion, and objective full-regression triggers. |
+| `VERIFY-CLAIM-001` | Completion and readiness answers lead with an unambiguous scope-bound yes/no; scope-complete requires current candidate and environment evidence with no failed, skipped, stale, pending, not-tested, or open boundary and never implies zero defects. |
 
 `contract:check` must reject a missing applicable baseline row, a duplicate ID,
 an active capability marked N/A, a web `UI-*` baseline rule below blocking
@@ -547,6 +548,53 @@ Manual checklists must not contain pre-checked claims without evidence.
 Automatable status is generated from commands; manual status is approved by the
 named reviewer. Unchecked release-blocking work remains visibly pending and
 prevents `verify` from succeeding.
+
+#### 13.7.3 Evidence-scoped completion and readiness claims
+
+`VERIFY-CLAIM-001` governs answers to questions such as whether work is
+complete, fully tested, production-ready, safe to release, covers all cases, or
+is `100%`. The first sentence must give one unambiguous answer:
+
+- `No — this is not 100% verified.` when any required boundary is missing,
+  failed, skipped, stale, pending, not tested, unresolved, or bound to another
+  candidate or environment.
+- `Yes — 100% of the declared acceptance scope passed for <candidate> in
+  <environment>.` only when the finite declared scope satisfies every condition
+  below. Follow it immediately with the explicit boundary that this is not a
+  guarantee of zero defects or unknown future cases.
+
+A scope-complete answer is permitted only when:
+
+1. the finite acceptance scope is explicitly identified and enumerates the
+   applicable behaviors, actors, permissions, scope-isolation boundaries,
+   states and transitions, material failure/recovery cases, and external
+   dependencies
+2. the exact revision, build, or immutable image and the tested environment are
+   identified
+3. every command and manual/live gate required by that scope has current
+   candidate-bound evidence
+4. the durable result and applicable authorization, isolation, validation,
+   concurrency, activity, downstream, cleanup, and recovery effects are proven
+5. failed, skipped, stale, pending, flaky-only, not-tested, and open-boundary
+   collections are all empty
+6. no unresolved product decision, external dependency, or manual action can
+   change the answer for the declared scope
+
+The answer after the first sentence must state the declared scope and candidate,
+then compactly distinguish passed, failed, skipped/not-tested, stale, and open
+boundaries. When the answer is `No`, end with the smallest evidence or work set
+needed to close the claim. A source review may say `implemented`; local evidence
+may say `locally verified`; neither is production-readiness evidence. Do not use
+`all possible cases`, confidence, test counts alone, screenshots alone, a clean
+build, or a lower-level pass as a substitute for the finite acceptance matrix.
+
+The verification report must expose a machine-readable `completion_claim` with
+`status` (`scope_complete` or `not_verified`), `scope_id`, `scope_total`,
+`scope_passed`, and arrays for `failed`, `skipped`, `stale`, `pending`, and
+`open_boundaries`. `verification:check` or its equivalent must derive and reject
+`scope_complete` unless the candidate, environment, fingerprint, required
+evidence, counts, and empty-boundary conditions above all match. Human wording
+must not override a rejected machine claim.
 
 ### 13.8 Docker and Make verification
 

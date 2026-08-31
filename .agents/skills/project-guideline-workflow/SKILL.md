@@ -62,7 +62,10 @@ register the project's executable rule gates. Do not overwrite an existing
 5. Turn selected stable rule IDs into acceptance criteria and verification.
    For Nuxt/Vue UI, load the applicable Vue, shadcn-vue, and UI/UX skills and
    apply `UI-CONTROL-001` whenever a choice control is designed, implemented,
-   or reviewed. Apply `DATA-REFERENCE-001` whenever a retire, archive, disable,
+   or reviewed. Apply `UI-COPY-001` to the complete rendered-copy inventory and
+   require glossary-owned canonical actor/scope/entity/state/action labels plus
+   executable rejection of competing synonyms and raw/humanized keys. Apply
+   `DATA-REFERENCE-001` whenever a retire, archive, disable,
    restore, or permanent-delete command can affect referenced durable records;
    require the documented dependency classification, server impact preflight,
    atomic enforcement, rendered resolution/recovery, and focused proof.
@@ -75,12 +78,25 @@ register the project's executable rule gates. Do not overwrite an existing
    content in its own readable region and actions in a separate responsive
    action-only region, then prove long localized content at phone and desktop
    widths.
+   Apply `UI-AUDIENCE-001` whenever a surface renders scoped records, fields,
+   actions, filters, options, facets, suggestions, counts, summaries, exports,
+   or drill-downs. Require one server-authorized actor/scope/capability/state
+   projection for the complete observable surface; shared components and
+   client-side filtering are never authorization boundaries.
 6. Change each rule or product decision in its single canonical owner. Link
    from secondary documents, update traceability, and materialize applicable
    rules in the project's machine-readable gate manifest with real evidence.
 7. Regenerate derived artifacts and prove idempotence. Run the final rule plan
    against the actual worktree, changed-scope verification, focused live proof
    selected by the rules, and the verification-freshness check.
+8. Apply `VERIFY-CLAIM-001` whenever the user asks whether work is complete,
+   fully tested, production-ready, safe to release, covers all cases, or is
+   `100%`. Lead with an unambiguous `Yes` or `No`. Say `Yes` only for 100% of an
+   explicitly declared finite acceptance scope bound to the named candidate and
+   environment, with current evidence and no failed, skipped, stale, pending,
+   not-tested, or otherwise open boundary. Otherwise say `No` first, then give
+   the passed scope, open boundaries, and smallest closure plan. Never present a
+   scope-complete claim as a guarantee of zero defects or unknown future cases.
 
 ## Boundaries
 

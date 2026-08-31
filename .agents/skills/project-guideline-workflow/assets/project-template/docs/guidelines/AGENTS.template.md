@@ -71,6 +71,11 @@ After the final maintained-file edit:
 5. Report what passed, what was not tested, and every external/manual boundary.
    Never claim `100%`, release-ready, or production-safe from partial, stale,
    mocked, screenshot-only, or lower-level evidence.
+6. For a completion, readiness, all-cases, or `100%` question, apply
+   `VERIFY-CLAIM-001` and lead with an unambiguous `Yes` or `No`. A `Yes` means
+   100% of the explicitly declared finite scope passed for the named candidate
+   and environment with no failed, skipped, stale, pending, not-tested, or open
+   boundary; it never guarantees zero defects or unknown future cases.
 
 Documentation-only work still runs changed-scope verification, but its
 registered rules should select the exact documentation and contract commands,
@@ -89,6 +94,14 @@ carefully,” habit, or subjective confidence does not broaden test scope.
   `UI-COPY-001`, `UI-CONTROL-001`, and `UI-DENSITY-001`; update screen/flow
   contracts, verify responsive/theme states, exercise the rendered workflow as
   the real actor, and verify durable/downstream outcomes.
+- Canonical product vocabulary: enforce `UI-COPY-001` against the glossary and
+  closed i18n registries for every actor, scope, entity, state, and action
+  label; reject competing synonyms and raw or humanized technical keys.
+- Audience-projected UI: enforce `UI-AUDIENCE-001` on the complete observable
+  surface, including records, fields, actions, options, facets, suggestions,
+  counts, summaries, existence signals, exports, and drill-downs. Use one
+  server-authorized actor/scope/capability/state projection; never treat a
+  shared component or client-side filtering as an authorization boundary.
 - Actionable feedback: enforce `UI-ACTION-001` for notifications, alert cards,
   banners, inbox items, and pop-ups as well as forms and overlays; preserve a
   full readable content region, keep body copy out of the action region, and

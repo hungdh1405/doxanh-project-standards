@@ -40,6 +40,14 @@ or duplicate engineering standard.
 | Term | Definition | Actor-facing label | Allowed abbreviation | Forbidden/ambiguous synonyms | Related IDs/states | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
 
+For every human, device, integration, and automated actor category, the actor
+catalog and glossary must define one canonical user-facing singular label,
+plural label where needed, and label in every supported locale. Record any
+deliberately different public/marketing term as an explicit allowed contextual
+label. Internal role keys, legacy event/tag keys, provider claims, and database
+values are not user-facing synonyms. Every other competing role title is
+forbidden until the product owner adds an explicit mapping.
+
 Domain specifications contain detailed business behavior only. Frameworks,
 ORMs, UI libraries, and deployment choices belong elsewhere.
 

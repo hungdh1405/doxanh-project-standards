@@ -214,6 +214,127 @@ test('requires readable responsive composition for actionable feedback', async (
   assert.match(interactionContract, /longest supported localized/u)
 })
 
+test('requires server-authorized complete-surface audience projection', async () => {
+  const layoutContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/51-web-layouts-and-screens.md',
+  ), 'utf8')
+  const interactionContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/52-web-interaction-and-verification.md',
+  ), 'utf8')
+  const testingContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/80-testing-and-verification.md',
+  ), 'utf8')
+  const manifest = JSON.parse(await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/guideline-manifest.json',
+  ), 'utf8'))
+  const agentTemplate = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/AGENTS.template.md',
+  ), 'utf8')
+  const skillContract = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
+
+  for (const source of [
+    layoutContract,
+    interactionContract,
+    testingContract,
+    agentTemplate,
+    skillContract,
+  ]) {
+    assert.match(source, /UI-AUDIENCE-001/u)
+  }
+  assert.match(layoutContract, /Shared presentation components must remain permission-neutral/u)
+  assert.match(layoutContract, /filter options, facets, suggestions/u)
+  assert.match(layoutContract, /counts, totals, status summaries/u)
+  assert.match(layoutContract, /Cross-boundary accountability/u)
+  assert.match(layoutContract, /redact the external actor's ID/u)
+  assert.deepEqual(manifest.critical_contracts.ui_audience_projection, {
+    rule_id: 'UI-AUDIENCE-001',
+    server_authoritative: true,
+    complete_observable_surface: true,
+    shared_components_permission_neutral: true,
+    filter_options_from_authorized_scope: true,
+    counts_and_facets_scope_projected: true,
+    cross_boundary_identity_default: 'redacted',
+    direct_request_no_leak_tests: true,
+  })
+})
+
+test('requires canonical product vocabulary across rendered surfaces', async () => {
+  const productContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/21-product-document-contracts.md',
+  ), 'utf8')
+  const interactionContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/52-web-interaction-and-verification.md',
+  ), 'utf8')
+  const testingContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/80-testing-and-verification.md',
+  ), 'utf8')
+  const manifest = JSON.parse(await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/guideline-manifest.json',
+  ), 'utf8'))
+  const agentTemplate = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/AGENTS.template.md',
+  ), 'utf8')
+  const skillContract = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
+
+  assert.match(productContract, /one canonical user-facing singular label/u)
+  for (const source of [interactionContract, testingContract, agentTemplate, skillContract]) {
+    assert.match(source, /UI-COPY-001/u)
+    assert.match(source, /canonical actor|canonical product vocabulary/iu)
+  }
+  assert.deepEqual(manifest.critical_contracts.ui_copy, {
+    rule_id: 'UI-COPY-001',
+    implementation_details_forbidden: true,
+    policy_narration_forbidden_by_default: true,
+    complete_rendered_copy_review: true,
+    canonical_actor_scope_vocabulary: true,
+    raw_or_humanized_technical_keys_forbidden: true,
+    competing_synonyms_rejected: true,
+  })
+})
+
+test('requires evidence-scoped binary completion claims', async () => {
+  const testingContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/80-testing-and-verification.md',
+  ), 'utf8')
+  const manifest = JSON.parse(await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/guideline-manifest.json',
+  ), 'utf8'))
+  const agentTemplate = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/AGENTS.template.md',
+  ), 'utf8')
+  const skillContract = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
+
+  for (const source of [testingContract, agentTemplate, skillContract]) {
+    assert.match(source, /VERIFY-CLAIM-001/u)
+    assert.match(source, /unambiguous [`]?Yes[`]? or [`]?No|first sentence must give one unambiguous answer/iu)
+    assert.match(source, /finite (?:declared |acceptance )?scope/iu)
+    assert.match(source, /zero defects/u)
+  }
+  assert.match(testingContract, /failed, skipped, stale, pending, flaky-only, not-tested/iu)
+  assert.match(testingContract, /completion_claim/u)
+  assert.deepEqual(manifest.critical_contracts.verification_claim, {
+    rule_id: 'VERIFY-CLAIM-001',
+    claim_unit: 'declared-finite-scope',
+    binary_lead_required: true,
+    absolute_zero_defect_claim_forbidden: true,
+    scope_complete_requires_zero_open_boundaries: true,
+    incomplete_claim: 'not_verified',
+  })
+})
+
 test('installs only a reference lock at the correct nested root', async () => {
   const roots = await fixture(true)
   try {
