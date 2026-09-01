@@ -191,6 +191,23 @@ comes from, whether it is copied/snapshotted/derived, and what `NULL` means.
 generic names require explicit value semantics; the name alone is not
 documentation. Examples must be synthetic and safe.
 
+The table section must be understandable without opening the migration or
+application source. In particular, operational and security tables such as
+suppression lists, rate-limit counters, inboxes, outboxes, idempotency records,
+leases, locks, and audit history must explain in task language:
+
+- what one row represents and why the product needs it
+- the event or command that creates the row
+- the readers and decisions that use it
+- when and how the row changes, expires, becomes inactive, or is purged
+- the user-visible or operational effect when the row exists
+- what the table deliberately does not store or decide
+- one representative example and one important boundary case
+
+A terse label such as "stores suppressions" or "tracks events" is not a
+purpose contract. Do not require a non-technical reader to infer behavior from
+a table name, state value, foreign key, or implementation path.
+
 Stable business fields, tenant/scope, identifiers, relationships, state,
 authorization inputs, common filters, ordering, uniqueness, money, and
 retention controls belong in typed columns. A `jsonb` column is allowed only
@@ -255,6 +272,13 @@ permissions, transaction IDs, constraints, and activity tags:
 
 | State ID/value | Business meaning | Enter from / trigger | Exit to | Permission/precondition | Database enforcement | TX ID | Activity tag | Tests |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+The registry covers every persisted state value, not only the unusual or
+failure state. For each value, state who or what enters it, whether it grants or
+removes any benefit, what the operator or end user can do next, its legal next
+states, and what happens to dependent records and side effects. A secondary
+workflow chapter may provide a longer narrative, but it must link back to the
+same complete registry and may not redefine the meanings.
 
 For reference/lookup data, distinguish schema migration rows, idempotent
 reference-data seeding, administrator-managed data, and test/demo fixtures.

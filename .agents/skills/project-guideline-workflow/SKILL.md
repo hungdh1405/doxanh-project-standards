@@ -60,6 +60,17 @@ register the project's executable rule gates. Do not overwrite an existing
    unresolved mapping state; do not execute it until the mapping is fixed or an
    explicit full-regression trigger is recorded.
 5. Turn selected stable rule IDs into acceptance criteria and verification.
+   Apply `DOC-BOOK-001` whenever project-book chapters, manifest/navigation,
+   glossary, traceability, or durable workflow explanations change. Review the
+   complete affected contract, including every actor, status, transition,
+   result, recovery path, and source/evidence link; do not document only the
+   state or paragraph that triggered the request. Apply `DATA-DOC-001` whenever
+   persisted data or its documentation changes. Reconcile every current table
+   and physical column with the canonical schema and require each DATA section
+   to explain what one row means, why it exists, when and how it is used and
+   changed, full fields, relationships, constraints, indexes, lifecycle,
+   examples, and implementation evidence. Run `docs:data:check`; a migration or
+   ORM definition alone is not a human-readable database contract.
    For Nuxt/Vue UI, load the applicable Vue, shadcn-vue, and UI/UX skills and
    apply `UI-CONTROL-001` whenever a choice control is designed, implemented,
    or reviewed. Apply `UI-COPY-001` to the complete rendered-copy inventory and

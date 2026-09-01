@@ -3,6 +3,21 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.0] - 2026-09-01
+
+### Added
+
+- `DOC-BOOK-001` and `DATA-DOC-001` are now reserved blocking reusable
+  contracts.
+- Stateful workflow documentation must cover every state and transition rather
+  than expanding only one exceptional status.
+- Database chapters must explain every table and field in task language,
+  including operational and security tables, and reconcile them with the
+  canonical schema through `docs:data:check`.
+- Documentation-only and reusable-standard work is explicitly bounded to
+  documentation/package/contract evidence; unmatched paths block planning and
+  cannot silently trigger unrelated application or production suites.
+
 ## [3.4.0] - 2026-08-29
 
 ### Added

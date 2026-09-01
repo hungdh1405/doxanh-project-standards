@@ -112,6 +112,12 @@ carefully,” habit, or subjective confidence does not broaden test scope.
 - API, permission, or data: test validation, the canonical response contract,
   direct-request authorization, scope isolation, constraints, concurrency, and
   activity attribution as applicable.
+- Project-book or database documentation: enforce `DOC-BOOK-001` and
+  `DATA-DOC-001`; reconcile every documented current table and column with the
+  canonical schema, require complete per-table what/why/when/how and lifecycle
+  contracts, cover every persisted state and transition, update traceability,
+  and run the maintained book/data checks. A schema dump, ERD, summary, or
+  field-name list is not sufficient evidence.
 - Mutation: verify confirmation, one authorized write, stale/conflict recovery,
   winning-only effects, and trusted durable activity context.
 - Conditional capability: read and verify the owning capability module and its

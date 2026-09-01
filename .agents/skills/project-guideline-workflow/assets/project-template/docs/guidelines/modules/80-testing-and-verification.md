@@ -392,6 +392,8 @@ row maps to automated/manual evidence; a conditional row may be
 
 | Rule ID | Required contract |
 | --- | --- |
+| `DOC-BOOK-001` | Manifest-driven complete project book, canonical ownership and vocabulary, chapter metadata/navigation, minimum-content contracts, cross-document links, stable traceability, and executable integrity checks. Stateful workflows document every state and transition rather than expanding only one exceptional state. |
+| `DATA-DOC-001` | Human-readable database contract reconciled with the canonical schema: complete table catalog; DATA/scope/lifecycle/TX/QRY/MIG coverage; per-table what/why/when/how, full field dictionaries, relationships, constraints, indexes, lifecycle, examples, and evidence; every current table and column checked against source. |
 | `UI-VISUAL-001` | Default approved component system, semantic tokens, light/dark/system themes, layout-only utility CSS, icon/image rules, and no page-local visual system. |
 | `UI-DENSITY-001` | Compact readable visual density, natural-width desktop actions, deliberate mobile width, at least 44×44 CSS-pixel phone targets, and at least 8 CSS pixels between adjacent targets where accidental activation is possible. |
 | `UI-AUDIENCE-001` | Correct audience/surface and server-authorized actor/scope/capability/state projection for records, fields, actions, options, facets, suggestions, counts, summaries, existence signals, links, exports, and drill-downs; bounded cross-boundary accountability with identity redaction; shared components never become authorization boundaries. |

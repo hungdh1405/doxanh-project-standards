@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "0ecd4f12fb9bae3505d55475da8fc491d82b568cc1e120c82bdf38183ce86fa7",
-    "bytes": 519677,
-    "lines": 9239,
-    "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, risk-scoped planned-path and actual-worktree verification, objective full-regression triggers, evidence-scoped binary completion claims, mandatory executable web UI and temporal-presentation rules, server-authorized complete-surface audience projection, glossary-owned canonical product vocabulary, referenced-record lifecycle resolution, and focused proof requirements on 2026-08-31."
+    "sha256": "3fc67a1443a9b74c4db64f06fa4ef118aa7f43b240d10ddbc73220d8b152bf66",
+    "bytes": 522287,
+    "lines": 9273,
+    "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, risk-scoped verification, evidence-scoped completion claims, mandatory executable UI and temporal rules, server-authorized audience projection, canonical vocabulary, complete project-book and database contracts, schema-reconciled data documentation, referenced-record lifecycle resolution, and focused proof requirements on 2026-09-01."
   },
   "profiles": {
     "required": [
@@ -32,6 +32,20 @@
     "files"
   ],
   "critical_contracts": {
+    "project_book_documentation": {
+      "rule_id": "DOC-BOOK-001",
+      "manifest_driven": true,
+      "minimum_content_enforced": true,
+      "complete_state_transition_coverage": true,
+      "traceability_required": true
+    },
+    "database_documentation": {
+      "rule_id": "DATA-DOC-001",
+      "canonical_schema_reconciliation": true,
+      "all_tables_and_columns": true,
+      "per_table_behavior_contract": true,
+      "executable_data_check": true
+    },
     "api_response_envelope": {
       "top_level_fields": [
         "success",

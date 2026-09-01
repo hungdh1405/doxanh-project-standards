@@ -52,6 +52,8 @@
       "additionalProperties": false,
       "required": [
         "api_response_envelope",
+        "project_book_documentation",
+        "database_documentation",
         "ui_choice_controls",
         "ui_copy",
         "ui_density",
@@ -60,6 +62,42 @@
         "verification_claim"
       ],
       "properties": {
+        "project_book_documentation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "manifest_driven",
+            "minimum_content_enforced",
+            "complete_state_transition_coverage",
+            "traceability_required"
+          ],
+          "properties": {
+            "rule_id": { "const": "DOC-BOOK-001" },
+            "manifest_driven": { "const": true },
+            "minimum_content_enforced": { "const": true },
+            "complete_state_transition_coverage": { "const": true },
+            "traceability_required": { "const": true }
+          }
+        },
+        "database_documentation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "canonical_schema_reconciliation",
+            "all_tables_and_columns",
+            "per_table_behavior_contract",
+            "executable_data_check"
+          ],
+          "properties": {
+            "rule_id": { "const": "DATA-DOC-001" },
+            "canonical_schema_reconciliation": { "const": true },
+            "all_tables_and_columns": { "const": true },
+            "per_table_behavior_contract": { "const": true },
+            "executable_data_check": { "const": true }
+          }
+        },
         "api_response_envelope": {
           "type": "object",
           "additionalProperties": false,

@@ -190,6 +190,66 @@ test('requires executable temporal presentation rules in generated projects', as
   assert.match(runtimeContract, /standards:check.*reject direct rendered temporal fields/su)
 })
 
+test('requires complete source-reconciled project-book and database documentation', async () => {
+  const systemDocuments = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/24-system-document-contracts.md',
+  ), 'utf8')
+  const deliveryContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/25-quality-delivery-and-generation.md',
+  ), 'utf8')
+  const testingContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/80-testing-and-verification.md',
+  ), 'utf8')
+  const agentTemplate = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/AGENTS.template.md',
+  ), 'utf8')
+  const skillContract = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
+  const manifest = JSON.parse(await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/guideline-manifest.json',
+  ), 'utf8'))
+
+  for (const source of [testingContract, agentTemplate, skillContract]) {
+    assert.match(source, /DOC-BOOK-001/u)
+    assert.match(source, /DATA-DOC-001/u)
+  }
+  assert.match(systemDocuments, /what one row represents and why the product needs it/u)
+  assert.match(systemDocuments, /every persisted state value/u)
+  assert.match(deliveryContract, /every maintained application table and physical column/u)
+  assert.equal(manifest.critical_contracts.project_book_documentation.rule_id, 'DOC-BOOK-001')
+  assert.equal(manifest.critical_contracts.database_documentation.rule_id, 'DATA-DOC-001')
+})
+
+test('keeps documentation-only verification bounded to documentation evidence', async () => {
+  const testingContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/80-testing-and-verification.md',
+  ), 'utf8')
+  const agentTemplate = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/AGENTS.template.md',
+  ), 'utf8')
+  const skillContract = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
+  const manifest = JSON.parse(await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/guideline-manifest.json',
+  ), 'utf8'))
+
+  assert.match(testingContract, /Reusable standard, skill, or documentation only/u)
+  assert.match(testingContract, /Do not select consumer UI, API, database, actor, or production suites/u)
+  assert.match(testingContract, /unresolved review state, not permission to\s+run every command/u)
+  assert.match(agentTemplate, /Documentation-only work still runs changed-scope verification/u)
+  assert.match(agentTemplate, /not unrelated browser or production testing/u)
+  assert.match(skillContract, /Start with the smallest complete risk-scoped evidence set/u)
+  assert.match(skillContract, /safe full-rule fallback is an\s+unresolved mapping state/u)
+  assert.equal(manifest.critical_contracts.verification_scope.unrelated_suites_forbidden, true)
+  assert.equal(manifest.critical_contracts.verification_scope.safe_fallback_requires_review, true)
+})
+
 test('requires readable responsive composition for actionable feedback', async () => {
   const interactionContract = await readFile(resolve(
     templateRoot,

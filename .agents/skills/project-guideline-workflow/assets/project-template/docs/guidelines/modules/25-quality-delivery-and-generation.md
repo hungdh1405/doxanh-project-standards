@@ -445,6 +445,14 @@ Rules:
 - All commands must run without production credentials or network-only evidence.
 - The project-level `verify` command and CI run every applicable documentation
   check.
+- `docs:data:check` must reconcile the canonical schema artifact with the book:
+  every maintained application table and physical column must map to exactly
+  one documented DATA contract, and every documented current table/column must
+  exist in the named schema source. It must reject a table represented only by
+  a catalog row, summary paragraph, ERD node, migration name, or field-name
+  list. Parser limitations and provider-owned objects must be explicit and
+  covered by deterministic fixtures or a reviewed exception; silently skipping
+  an unsupported schema construct is forbidden.
 - CI fails on broken local links, duplicate stable IDs, malformed metadata,
   schema-invalid manifests, missing manifest paths, header/manifest drift,
   invalid navigation, an approved chapter that is only a skeleton or contains a
