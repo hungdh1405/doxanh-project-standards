@@ -126,3 +126,9 @@ register the project's executable rule gates. Do not overwrite an existing
   only for an explicit request, release candidate, demonstrated cross-cutting
   impact, systemic focused evidence, or impact that remains unbounded after
   investigation; “continue” or “test carefully” alone does not broaden scope.
+- Build mixed-worktree verification as the union of per-path evidence.
+  Documentation paths contribute documentation, generation, and contract
+  checks only; they cannot select unrelated runtime commands merely because a
+  shared rule also owns prose. Require a changed runtime path, demonstrated
+  dependency, focused failure, or objective full-regression trigger for those
+  commands.

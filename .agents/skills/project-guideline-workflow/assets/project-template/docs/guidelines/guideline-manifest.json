@@ -6,9 +6,9 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "3fc67a1443a9b74c4db64f06fa4ef118aa7f43b240d10ddbc73220d8b152bf66",
-    "bytes": 522287,
-    "lines": 9273,
+    "sha256": "8e1bd4d464a845ce32c75337d08f1f67b779f591589e9f76ad8508ddf3b80d87",
+    "bytes": 522973,
+    "lines": 9283,
     "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, risk-scoped verification, evidence-scoped completion claims, mandatory executable UI and temporal rules, server-authorized audience projection, canonical vocabulary, complete project-book and database contracts, schema-reconciled data documentation, referenced-record lifecycle resolution, and focused proof requirements on 2026-09-01."
   },
   "profiles": {

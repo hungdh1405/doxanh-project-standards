@@ -501,6 +501,16 @@ failure, or new evidence demonstrates a wider blast radius. Running every test
 must never substitute for impact analysis, and passing unrelated suites must
 never compensate for missing focused proof.
 
+Build a mixed-worktree plan as the union of the per-path, per-boundary evidence
+plans. A documentation path contributes its documentation, link, generation,
+schema-reconciliation, and contract checks even when runtime source changes are
+present in the same worktree; it must not contribute a rule's UI, API,
+database-runtime, actor-flow, or production commands merely because that rule
+also owns related prose. Runtime commands are selected only by a changed
+runtime path, a demonstrated dependency from such a path, a focused failure,
+or an objective full-regression trigger. The planner fixtures must prove both a
+documentation-only case and a mixed documentation-plus-runtime case.
+
 Use these minimum classifications:
 
 | Change classification | Required verification scope |

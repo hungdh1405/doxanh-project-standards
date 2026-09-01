@@ -3,6 +3,17 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.1] - 2026-09-01
+
+### Fixed
+
+- Mixed documentation-and-runtime worktrees must build verification as the
+  union of per-path evidence. Documentation paths cannot select unrelated UI,
+  API, database-runtime, actor-flow, or production commands simply because a
+  shared rule also owns related prose.
+- Planner fixtures must cover both documentation-only and mixed-worktree
+  selection behavior.
+
 ## [3.5.0] - 2026-09-01
 
 ### Added

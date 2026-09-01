@@ -154,6 +154,9 @@ Generated projects use `VERIFY-SCOPE-001` to select the smallest complete
 risk-scoped evidence set for ordinary changes. Full regression is reserved for
 an explicit request, release candidate, demonstrated cross-cutting impact,
 systemic evidence, or impact that remains unbounded after investigation.
+Mixed worktrees are planned per changed path: documentation contributes its
+own checks and cannot select unrelated application suites simply because the
+same rule also owns runtime behavior.
 
 ## Security and support boundaries
 

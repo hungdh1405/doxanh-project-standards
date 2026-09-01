@@ -81,6 +81,10 @@ Documentation-only work still runs changed-scope verification, but its
 registered rules should select the exact documentation and contract commands,
 not unrelated browser or production testing. Generated output must be
 regenerated, checked, and proved idempotent.
+In a mixed documentation-and-runtime worktree, build the plan as the union of
+per-path evidence: documentation paths still contribute only documentation
+evidence, while runtime commands require a changed runtime path or a recorded
+dependency from one.
 
 Full regression is required only for an explicit request, a release candidate,
 a demonstrated cross-cutting blast radius, systemic focused-test evidence, or
