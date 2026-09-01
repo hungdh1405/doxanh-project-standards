@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "59fe211a7b11ffa565c4bd12666da2fc190c1407e64cf43330854e4b1a36aec2",
-    "bytes": 524027,
-    "lines": 9297,
-    "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, risk-scoped content-bound changed verification, strict revision-bound release evidence, evidence-scoped completion claims, mandatory executable UI and temporal rules, server-authorized audience projection, canonical vocabulary, complete project-book and database contracts, schema-reconciled data documentation, referenced-record lifecycle resolution, and focused proof requirements on 2026-09-01."
+    "sha256": "6bde15059a7cb75f879b1e8be88fab118d19a99193a235efa10bd5dac943cba6",
+    "bytes": 525408,
+    "lines": 9317,
+    "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, dependency-closed risk-scoped source verification, content-bound changed evidence, strict revision-bound release evidence, evidence-scoped completion claims, mandatory executable UI and temporal rules, server-authorized audience projection, canonical vocabulary, complete project-book and database contracts, schema-reconciled data documentation, referenced-record lifecycle resolution, and focused proof requirements on 2026-09-01."
   },
   "profiles": {
     "required": [
@@ -101,6 +101,9 @@
       "changed_evidence_binding": "maintained-content-fingerprint",
       "commit_only_transition_preserves_evidence": true,
       "full_release_revision_binding_strict": true,
+      "source_change_scope": "changed-module-boundaries-and-direct-consumers",
+      "source_change_forces_full_regression": false,
+      "multi_module_scope": "union-of-focused-slices",
       "full_regression_triggers": [
         "explicit-request",
         "release-candidate",

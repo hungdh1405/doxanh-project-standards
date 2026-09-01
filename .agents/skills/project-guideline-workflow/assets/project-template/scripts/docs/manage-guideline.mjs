@@ -184,6 +184,9 @@ function validateManifestShape() {
     changed_evidence_binding: 'maintained-content-fingerprint',
     commit_only_transition_preserves_evidence: true,
     full_release_revision_binding_strict: true,
+    source_change_scope: 'changed-module-boundaries-and-direct-consumers',
+    source_change_forces_full_regression: false,
+    multi_module_scope: 'union-of-focused-slices',
     full_regression_triggers: [
       'explicit-request',
       'release-candidate',

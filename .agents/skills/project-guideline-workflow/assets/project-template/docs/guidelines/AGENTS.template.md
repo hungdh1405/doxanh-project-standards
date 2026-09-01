@@ -95,6 +95,11 @@ Full regression is required only for an explicit request, a release candidate,
 a demonstrated cross-cutting blast radius, systemic focused-test evidence, or
 impact that remains unbounded after investigation. “Continue,” “test
 carefully,” habit, or subjective confidence does not broaden test scope.
+Application source code does not automatically require full regression. Select
+the owning module, each changed boundary, and demonstrably affected direct
+consumers; for several modules, use the union of those focused slices. Record
+why unrelated modules, actors, browsers, infrastructure, and production flows
+are excluded.
 
 ## Scope-specific mandatory gates
 

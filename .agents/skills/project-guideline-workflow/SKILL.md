@@ -58,7 +58,11 @@ register the project's executable rule gates. Do not overwrite an existing
    boundaries and risks, selected and excluded evidence with reasons, and the
    objective full-regression decision. A safe full-rule fallback is an
    unresolved mapping state; do not execute it until the mapping is fixed or an
-   explicit full-regression trigger is recorded.
+   explicit full-regression trigger is recorded. For application source changes,
+   build a dependency-closed slice from the owning module, changed interfaces or
+   trust boundaries, and demonstrably affected direct consumers. Multiple
+   modules contribute the union of their slices. Do not select every suite merely
+   because at least one source file changed.
 5. Turn selected stable rule IDs into acceptance criteria and verification.
    Apply `DOC-BOOK-001` whenever project-book chapters, manifest/navigation,
    glossary, traceability, or durable workflow explanations change. Review the
@@ -131,6 +135,12 @@ register the project's executable rule gates. Do not overwrite an existing
   only for an explicit request, release candidate, demonstrated cross-cutting
   impact, systemic focused evidence, or impact that remains unbounded after
   investigation; “continue” or “test carefully” alone does not broaden scope.
+- For module-local source changes, run static checks plus the nearest tests that
+  prove the changed behavior and every boundary it actually crosses. Add API,
+  database, queue, realtime, rendered UI, or browser evidence only when that
+  boundary or a dependent workflow is affected. Include direct consumers shown
+  by imports, calls, schemas, shared contracts, or ownership; exclude unrelated
+  modules, actors, browsers, infrastructure, and production flows with reasons.
 - Build mixed-worktree verification as the union of per-path evidence.
   Documentation paths contribute documentation, generation, and contract
   checks only; they cannot select unrelated runtime commands merely because a

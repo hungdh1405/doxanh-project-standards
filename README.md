@@ -161,6 +161,9 @@ Changed-scope reports are bound to the complete maintained-content fingerprint,
 so committing the exact verified files preserves the evidence. An actual
 maintained-content change invalidates it. Full release evidence remains bound
 to the exact Git revision and immutable candidate image.
+Application source changes select the changed module, affected boundaries, and
+demonstrably affected direct consumers. Multiple modules use the union of those
+focused slices; source code alone is never a reason to run every suite.
 
 ## Security and support boundaries
 

@@ -511,6 +511,25 @@ failure, or new evidence demonstrates a wider blast radius. Running every test
 must never substitute for impact analysis, and passing unrelated suites must
 never compensate for missing focused proof.
 
+For application source-code changes, construct a dependency-closed verification
+slice instead of treating `source changed` as a full-regression trigger:
+
+1. identify the owning module and the exact behavior changed
+2. run static checks and the nearest deterministic unit or component tests for
+   that behavior
+3. add integration, database, API, queue, realtime, file, payment, printing, or
+   browser proof only for boundaries the change crosses
+4. add direct consumers only when imports, calls, schemas, shared contracts,
+   persistence, events, permissions, or rendered workflows demonstrate impact
+5. for several changed modules, run the union of their focused slices once
+6. record materially related commands that remain excluded and why
+
+A source edit does not by itself justify every actor flow, every browser, every
+module, infrastructure recovery, production testing, or full regression. A
+shared helper or contract also does not automatically justify the whole suite:
+inspect its actual consumers, test the affected ones, and escalate only when
+the dependency impact is demonstrably cross-cutting or cannot be bounded.
+
 Build a mixed-worktree plan as the union of the per-path, per-boundary evidence
 plans. A documentation path contributes its documentation, link, generation,
 schema-reconciliation, and contract checks even when runtime source changes are
@@ -530,6 +549,7 @@ Use these minimum classifications:
 | Change classification | Required verification scope |
 | --- | --- |
 | Reusable standard, skill, or documentation only, with no application-runtime contract change | Package syntax/schema, frozen baseline or digest, links, generation idempotence, and focused documentation/contract fixtures. Do not select consumer UI, API, database, actor, or production suites. |
+| Module-local application source | Static checks, nearest changed-behavior tests, every boundary actually crossed, and demonstrably affected direct consumers. Do not select unrelated modules, actors, browsers, infrastructure, or production flows. |
 | Localized UI or copy | Static/component checks plus the affected rendered workflow, responsive/theme/accessibility states, and durable result when the action mutates state. Do not select unrelated actors or modules. |
 | API or domain route | Focused unit/integration/direct-request contract proof plus the affected rendered workflow when user-visible. |
 | Database, migration, authorization, or concurrency | Affected schema, constraints, isolation, race, integration, activity, and consuming API/workflow proof. |

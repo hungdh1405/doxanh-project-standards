@@ -3,6 +3,20 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.3] - 2026-09-01
+
+### Clarified
+
+- Application source changes use a dependency-closed, risk-scoped test slice:
+  the changed module, its changed boundaries, and demonstrably affected direct
+  consumers. Source code does not automatically trigger full regression.
+- Multi-module changes use the union of those focused slices. Unrelated actors,
+  modules, browsers, infrastructure, and production flows remain excluded with
+  recorded reasons.
+- Full regression remains limited to explicit requests, release candidates,
+  demonstrated cross-cutting impact, systemic focused failures, or impact that
+  cannot be bounded after dependency analysis.
+
 ## [3.5.2] - 2026-09-01
 
 ### Fixed
