@@ -3,6 +3,18 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.2] - 2026-09-01
+
+### Fixed
+
+- Changed-scope verification is bound to the complete maintained-content
+  fingerprint. Committing exactly the verified content must not make that
+  evidence stale or trigger an unrelated rerun merely because `HEAD` changed.
+- Full release evidence remains strictly bound to the exact Git revision,
+  content fingerprint, and immutable candidate image.
+- Verification planners must test commit-only carry-forward, actual-content
+  invalidation, documentation-only selection, and mixed-worktree selection.
+
 ## [3.5.1] - 2026-09-01
 
 ### Fixed

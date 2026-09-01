@@ -85,6 +85,11 @@ In a mixed documentation-and-runtime worktree, build the plan as the union of
 per-path evidence: documentation paths still contribute only documentation
 evidence, while runtime commands require a changed runtime path or a recorded
 dependency from one.
+A changed-scope report remains current after committing exactly the verified
+content: compare the complete maintained-content fingerprint and do not rerun
+suites solely because `HEAD` changed. Any maintained-content change invalidates
+the report. Full release evidence still requires the exact Git revision,
+content fingerprint, and immutable candidate image.
 
 Full regression is required only for an explicit request, a release candidate,
 a demonstrated cross-cutting blast radius, systemic focused-test evidence, or

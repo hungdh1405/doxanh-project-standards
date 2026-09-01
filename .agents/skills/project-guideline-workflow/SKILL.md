@@ -99,7 +99,12 @@ register the project's executable rule gates. Do not overwrite an existing
    rules in the project's machine-readable gate manifest with real evidence.
 7. Regenerate derived artifacts and prove idempotence. Run the final rule plan
    against the actual worktree, changed-scope verification, focused live proof
-   selected by the rules, and the verification-freshness check.
+   selected by the rules, and the verification-freshness check. Bind ordinary
+   changed-scope evidence to the complete maintained-content fingerprint. A
+   commit-only transition with identical maintained content must preserve that
+   evidence and must not trigger a rerun; an actual content change must make it
+   stale. Keep full release evidence strictly bound to the exact Git revision,
+   content fingerprint, and immutable candidate image.
 8. Apply `VERIFY-CLAIM-001` whenever the user asks whether work is complete,
    fully tested, production-ready, safe to release, covers all cases, or is
    `100%`. Lead with an unambiguous `Yes` or `No`. Say `Yes` only for 100% of an
@@ -132,3 +137,7 @@ register the project's executable rule gates. Do not overwrite an existing
   shared rule also owns prose. Require a changed runtime path, demonstrated
   dependency, focused failure, or objective full-regression trigger for those
   commands.
+- Never rerun a changed-scope suite solely because verified files were committed
+  without changing their content. The freshness check must compare the complete
+  maintained-content fingerprint. Exact revision equality remains mandatory
+  for full release and immutable-image evidence.

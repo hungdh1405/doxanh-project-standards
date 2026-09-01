@@ -181,6 +181,9 @@ function validateManifestShape() {
     default_mode: 'risk-scoped',
     safe_fallback_requires_review: true,
     unrelated_suites_forbidden: true,
+    changed_evidence_binding: 'maintained-content-fingerprint',
+    commit_only_transition_preserves_evidence: true,
+    full_release_revision_binding_strict: true,
     full_regression_triggers: [
       'explicit-request',
       'release-candidate',

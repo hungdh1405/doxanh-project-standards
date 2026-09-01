@@ -428,7 +428,7 @@ The repository must expose and enforce:
 | `verify:automated` | Refuse a dirty maintained checkout, run the complete automated release command set, and write revision/fingerprint-bound candidate evidence before any dependent human approval. |
 | `evidence:init` | After the candidate image exists, initialize an ignored/external evidence bundle bound to the exact revision, maintained fingerprint, and immutable image digest; refuse overwrite. |
 | `evidence:check` | Fail when an applicable release-blocking gate is missing, pending, stale, malformed, unowned, targets another candidate, or lacks a regular non-symlink evidence file with a matching SHA-256 digest. |
-| `verification:check` | Confirm the latest successful report matches the current maintained-project content fingerprint. |
+| `verification:check` | Confirm the latest successful report matches the current maintained-project content fingerprint. For `changed` evidence, a commit-only transition with identical content remains valid; `full` release evidence also requires the exact revision. |
 | `verify` | Perform the fast final aggregation: require a current `full` automated report plus complete candidate-bound manual evidence without rerunning or pretending to automate human review. |
 
 `check`, if retained for compatibility, must alias `check:fast`; it must never
@@ -464,6 +464,16 @@ publishes immutable redacted artifacts. A report is stale immediately after
 maintained project content changes. A previous report, screenshots from another
 revision, a partial command, smoke tests, or an agent's recollection must not
 satisfy the current completion gate.
+
+The maintained-content fingerprint covers the complete maintained project,
+including tracked files and non-ignored untracked files, rather than only the
+current Git diff. A `changed` report records the Git revision as provenance but
+freshness is decided by that complete content fingerprint. Committing exactly
+the verified content therefore preserves the report and must not cause a test
+rerun. Editing, adding, deleting, regenerating, or replacing any maintained file
+changes the fingerprint and invalidates the report. A `full` report and all
+release/browser/image evidence remain strict: both the content fingerprint and
+the exact candidate Git revision must match.
 
 Never commit candidate approval fields into the manifest they approve: that
 commit changes the candidate revision and makes the evidence stale. Keep the
@@ -510,6 +520,10 @@ also owns related prose. Runtime commands are selected only by a changed
 runtime path, a demonstrated dependency from such a path, a focused failure,
 or an objective full-regression trigger. The planner fixtures must prove both a
 documentation-only case and a mixed documentation-plus-runtime case.
+Planner and freshness fixtures must also prove that committing unchanged
+verified content preserves `changed` evidence, while a real content change
+invalidates it and exact revision matching remains mandatory for `full`
+release evidence.
 
 Use these minimum classifications:
 

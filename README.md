@@ -157,6 +157,10 @@ systemic evidence, or impact that remains unbounded after investigation.
 Mixed worktrees are planned per changed path: documentation contributes its
 own checks and cannot select unrelated application suites simply because the
 same rule also owns runtime behavior.
+Changed-scope reports are bound to the complete maintained-content fingerprint,
+so committing the exact verified files preserves the evidence. An actual
+maintained-content change invalidates it. Full release evidence remains bound
+to the exact Git revision and immutable candidate image.
 
 ## Security and support boundaries
 
