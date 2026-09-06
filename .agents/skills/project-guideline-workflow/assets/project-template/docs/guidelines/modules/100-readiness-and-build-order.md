@@ -148,12 +148,18 @@
 
 ### 15.4 Release ready
 
-- [ ] `verify:automated` passes from a clean install and `verify` passes after
-  candidate-dependent human review.
-- [ ] The full automated report and external manual record match the release
-  content fingerprint, immutable revision, and image digest; no applicable
-  release-blocking gate is pending, stale, unowned, or unsupported by hashed
-  evidence.
+- [ ] `release:plan` names the exact accepted/deployed base, candidate, target
+  environment, complete diff, universal release baseline, affected slices,
+  justified exclusions, and full-regression decision.
+- [ ] `verify:automated` passes from a clean install for that release plan and
+  applicable candidate-dependent human review is complete before deployment.
+- [ ] The exact candidate image is deployed, deployed-version and live-target
+  evidence is collected, and final aggregate `verify` passes without rerunning
+  already-current suites.
+- [ ] Candidate automated, external manual, and deployed-target records match
+  the release content fingerprint, immutable revision, image digest, and target
+  environment; no applicable release-blocking gate is pending, stale, unowned,
+  or unsupported by hashed evidence.
 - [ ] Dependency/standards checks pass against the immutable release lockfiles;
   every active exception is approved, unexpired, compensated, and linked to its
   removal plan.
@@ -165,10 +171,14 @@
 - [ ] Backup, isolated restore proof, forward migration recovery, and compatible
   application rollback are ready.
 - [ ] Web, worker, scheduler, PostgreSQL, every active Redis role, conditional realtime gateway, and integrations are healthy.
-- [ ] Critical workflows have continuous end-to-end proof.
+- [ ] The universal critical smoke and every affected critical workflow have
+  continuous end-to-end proof. Unaffected workflows are excluded with a
+  dependency-based reason unless a full-regression trigger applies.
 - [ ] No critical/serious accessibility defects remain.
 - [ ] No high-risk security findings remain.
-- [ ] Required phone/tablet/desktop and light/dark evidence is current.
+- [ ] Phone/tablet/desktop and light/dark evidence required by affected screen
+  contracts is current; full profile coverage is required only in
+  full-regression mode or the separately approved periodic baseline.
 - [ ] If Flutter ships, signed release builds, supported-device smoke tests, privacy/permission declarations, and staged distribution are ready.
 - [ ] Dashboards, alerts, on-call ownership, and runbooks are ready.
 

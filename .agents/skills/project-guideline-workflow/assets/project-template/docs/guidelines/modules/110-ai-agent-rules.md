@@ -18,6 +18,11 @@ AI working under this standard must:
 - start with focused evidence that crosses every changed boundary and expand
   only when dependency analysis or evidence demonstrates wider impact; run full
   regression only for a Section 13.7.2 trigger
+- for release or production work, run `release:plan` against the exact
+  accepted/deployed base and candidate, name the target environment, retain the
+  universal release baseline, and add only the union of affected slices;
+  a release status alone is not a full-regression trigger and does not select
+  unrelated suites
 - treat a safe full-rule fallback caused by unknown or uncovered paths as an
   unresolved mapping state; inspect and correct the mapping or obtain an
   explicit full-regression decision before executing its broad command set
@@ -103,7 +108,15 @@ AI working under this standard must:
 - implement and verify the smallest complete vertical slice
 - run `verify:changed` after the final maintained-file change, run
   `verification:check` before claiming completion, and report every pending
-  manual/not-tested boundary; use full `verify` before claiming release-ready
+  manual/not-tested boundary; use the candidate's risk-scoped `release:plan`,
+  `verify:automated`, applicable manual evidence, and aggregate `verify` before
+  claiming release-ready
+- when verified content is committed unchanged, preserve and promote its
+  content-bound evidence instead of rerunning it; execute only missing
+  revision-, image-, deployment-, target-readiness-, and focused live gates
+- Local-only evidence cannot satisfy a production claim: never use a local
+  Docker, test, screenshot, or lower-environment result as a substitute for
+  deployed-version confirmation and affected live workflow proof
 - test server enforcement, not only UI hiding
 - generate Playwright API, end-user workflow, and accessibility projects;
   preserve the distinction between fixture/API setup and browser-driven action,
@@ -155,6 +168,11 @@ AI must not:
   contract impact
 - treat “continue,” “test carefully,” habit, elapsed time, or subjective
   confidence as authorization for full regression
+- treat “commit,” “push,” “deploy,” “release,” or a protected branch name as a
+  full-regression trigger without an objective Section 13.7.2 reason
+- satisfy a production or release claim with local-only evidence, evidence for
+  another target environment, or a deployed revision/image that differs from
+  the candidate
 - mechanically execute the safe full-rule fallback before resolving its
   unmatched paths and recording an objective decision
 - remove substantial existing requirements without a preservation action and

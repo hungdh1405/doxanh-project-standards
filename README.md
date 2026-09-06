@@ -151,16 +151,22 @@ release, update the semantic version and changelog, run the complete check, make
 one coherent commit, and create an annotated `v<version>` tag.
 
 Generated projects use `VERIFY-SCOPE-001` to select the smallest complete
-risk-scoped evidence set for ordinary changes. Full regression is reserved for
-an explicit request, release candidate, demonstrated cross-cutting impact,
-systemic evidence, or impact that remains unbounded after investigation.
+risk-scoped evidence set for ordinary changes and releases. A release compares
+the accepted/deployed base with the exact candidate, runs a phase-aware
+universal release baseline before and after deployment, and adds only affected
+verification slices and live target proof.
+Release status alone is not a full-regression trigger. Full regression is
+reserved for an explicit request, an initial release or missing trusted
+baseline, demonstrated cross-cutting impact, systemic evidence, or impact that
+remains unbounded after investigation.
 Mixed worktrees are planned per changed path: documentation contributes its
 own checks and cannot select unrelated application suites simply because the
 same rule also owns runtime behavior.
 Changed-scope reports are bound to the complete maintained-content fingerprint,
 so committing the exact verified files preserves the evidence. An actual
-maintained-content change invalidates it. Full release evidence remains bound
-to the exact Git revision and immutable candidate image.
+maintained-content change invalidates it. Candidate release evidence remains
+bound to the exact Git revision, immutable image, and target environment;
+local-only evidence never satisfies a production claim.
 Application source changes select the changed module, affected boundaries, and
 demonstrably affected direct consumers. Multiple modules use the union of those
 focused slices; source code alone is never a reason to run every suite.

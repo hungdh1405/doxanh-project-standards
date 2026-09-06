@@ -269,6 +269,70 @@ test('keeps documentation-only verification bounded to documentation evidence', 
   assert.equal(manifest.critical_contracts.verification_scope.safe_fallback_requires_review, true)
 })
 
+test('keeps releases risk-scoped while requiring candidate and live-target proof', async () => {
+  const testingContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/80-testing-and-verification.md',
+  ), 'utf8')
+  const readinessContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/100-readiness-and-build-order.md',
+  ), 'utf8')
+  const agentRules = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/110-ai-agent-rules.md',
+  ), 'utf8')
+  const agentTemplate = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/AGENTS.template.md',
+  ), 'utf8')
+  const guidelineEntry = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/README.md',
+  ), 'utf8')
+  const skillContract = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
+  const manifest = JSON.parse(await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/guideline-manifest.json',
+  ), 'utf8'))
+  const scope = manifest.critical_contracts.verification_scope
+
+  assert.equal(scope.release_scope, 'candidate-diff-plus-universal-release-baseline')
+  assert.equal(scope.release_candidate_forces_full_regression, false)
+  assert.equal(scope.release_base_revision_required, true)
+  assert.equal(scope.release_target_environment_required, true)
+  assert.equal(scope.release_predeployment_baseline_required, true)
+  assert.equal(scope.release_postdeployment_baseline_required, true)
+  assert.equal(scope.release_unrelated_suites_forbidden, true)
+  assert.deepEqual(scope.full_regression_triggers, [
+    'explicit-request',
+    'initial-release-or-missing-baseline',
+    'cross-cutting-change',
+    'systemic-evidence',
+    'unbounded-impact',
+  ])
+
+  for (const source of [testingContract, readinessContract, agentRules, agentTemplate]) {
+    assert.match(source, /release:plan/u)
+    assert.match(source, /universal release baseline/u)
+    assert.match(source, /accepted(?:\/| or )deployed base/u)
+    assert.match(source, /target\s+environment/u)
+  }
+  for (const source of [testingContract, agentRules, agentTemplate, skillContract]) {
+    assert.match(source, /(?:a )?release (?:label|status) alone.*not.*full-regression trigger/isu)
+    assert.match(source, /local-only evidence|Local evidence.*never replaces/isu)
+  }
+  assert.match(testingContract, /records unrelated actors, screens, and browser profiles as excluded/u)
+  assert.match(testingContract, /content-identical changed evidence/u)
+  assert.match(testingContract, /phase-aware universal baseline/u)
+  assert.match(testingContract, /Before deployment.*After deployment/su)
+  assert.match(testingContract, /mode \(`changed`, `release`, or `full`\)/u)
+  assert.match(testingContract, /candidate `release` report, or a `full` report when full regression was selected.*deployed-target evidence/su)
+  assert.match(agentRules, /only missing\s+revision-, image-, deployment-, target-readiness-, and focused live gates/u)
+  assert.match(agentTemplate, /<release-plan-command>/u)
+  assert.match(guidelineEntry, /pnpm release:plan -- --base/u)
+})
+
 test('requires readable responsive composition for actionable feedback', async () => {
   const interactionContract = await readFile(resolve(
     templateRoot,

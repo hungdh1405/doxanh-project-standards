@@ -117,12 +117,16 @@ Required suites:
 - Page/feature objects may centralize stable user operations and assertions;
   they must not hide business expectations, add sleeps, or become a second
   application abstraction.
-- Release coverage includes the supported desktop browser engines and
-  representative mobile Chrome/Safari projects. Device emulation proves the
-  configured browser/viewport contract, not physical-device behavior.
-- The full released workflow matrix runs before merge to a protected release
-  branch and for every release. A smaller smoke matrix may provide pull-request
-  feedback but never replaces the full merge/release gate.
+- The release plan selects browser profiles from the affected screen and flow
+  contracts. It always includes the project's small critical release smoke and
+  adds desktop/mobile compatibility only for affected surfaces or shared UI
+  foundations. Device emulation proves the configured browser/viewport
+  contract, not physical-device behavior.
+- The full released workflow matrix runs only for an objective full-regression
+  trigger and at the project's separately approved periodic baseline. A scoped
+  release must still prove every affected workflow and the critical smoke, but
+  it records unrelated actors, screens, and browser profiles as excluded rather
+  than running them for ceremony.
 - Configure traces on the first retry and screenshots/video on failure as
   bounded CI artifacts. Redact tokens, cookies, authorization headers,
   personal data, payment data, and secrets before retention or sharing.
@@ -145,14 +149,16 @@ Required suites:
   evidence with exact current coverage. A selected chunk, smoke run, stale
   record, missing case, duplicate profile, failure, or retry-only result cannot
   satisfy or replace release evidence.
-- The aggregate browser gate passes only when every required released profile
-  has exact current clean evidence. A later complete clean rerun of one profile
-  may replace its failed/flaky record; the aggregate must be rebuilt and
-  revalidated before the verification report can pass.
+- The aggregate browser gate passes only when every browser profile selected by
+  the release plan has exact current clean evidence. A later complete clean
+  rerun of one selected profile may replace its failed/flaky record; the
+  aggregate must be rebuilt and revalidated before the verification report can
+  pass.
 - Release proof runs against a production build or the same immutable
   container image intended for release, not only a Nuxt hot-reload server.
   Local interactive development may reuse an explicitly configured local
-  server.
+  server. Local-only evidence cannot satisfy a production claim; the named
+  target still requires deployed-version and focused live proof.
 
 #### Direct API automation rules
 
@@ -353,12 +359,20 @@ script surface:
 | `scheduler:sync` | Idempotently upsert approved job schedulers. |
 | `build` | Production Nuxt build. |
 | `preview` | Run the production build locally. |
-| `verify` | Full local/CI release gate. |
+| `release:plan` | Compare the exact accepted/deployed base revision with the candidate and produce the risk-scoped release commands, universal release baseline, target environment, live checks, exclusions, and full-regression decision. |
+| `verify` | Aggregate the current candidate release evidence selected by `release:plan`; it does not rerun unrelated suites. |
 
-`verify` must run `deps:check`, `i18n:check`, `standards:check`,
-documentation checks, formatting/diff checks, lint, typecheck, tests,
-migration checks, production build, and any project-specific security or
-evidence gate.
+Every release runs one phase-aware universal baseline. Before deployment it
+checks the contract, candidate and lockfile integrity, secret/configuration
+shape without revealing values, production build or immutable-image creation,
+image/runtime smoke, dependency-readiness preflight, and recovery/rollback
+preconditions. After deployment it confirms the exact deployed revision/image,
+live dependency health, and the target's small critical smoke. Add lint,
+typecheck, documentation, dependency, migration, database, security, API,
+browser, accessibility, queue, realtime, files, payment, printing, performance,
+recovery, and manual proof only when the candidate diff, a demonstrated
+dependency, a focused failure, or an objective full-regression trigger selects
+that boundary. Full-regression mode runs the complete active command set.
 
 #### 13.7.1 Executable rule and completion contract
 
@@ -383,8 +397,8 @@ The project must maintain a versioned machine-readable gate manifest in
 - for `not_applicable`, record the exact reason and activation trigger
 - map every screen registry entry marked `Implemented` to maintained browser,
   API, component, accessibility, or approved manual evidence
-- define the deterministic command order for changed-scope and full-release
-  verification
+- define deterministic command order for changed-scope, risk-scoped release,
+  and full-regression verification
 
 Reserve these baseline rule IDs in every newly generated project. An applicable
 row maps to automated/manual evidence; a conditional row may be
@@ -410,7 +424,7 @@ row maps to automated/manual evidence; a conditional row may be
 | `AUTH-SESSION-001` | Exact per-actor credential, session/device counting, replacement, recovery, revocation, isolation, and race behavior. |
 | `ENTRY-SHARE-001` | Conditional canonical entry registry, locator/proof separation, host trust, revocation, and share/open/QR proof. |
 | `COMMERCIAL-001` | Conditional offering-versus-assignment model, effective period/status/limits, versioning, authorization, and audit. |
-| `VERIFY-SCOPE-001` | Risk-scoped verification records change impact, selected and excluded evidence with reasons, safe-fallback review, stepwise expansion, and objective full-regression triggers. |
+| `VERIFY-SCOPE-001` | Risk-scoped verification records change impact, selected and excluded evidence with reasons, safe-fallback review, stepwise expansion, release base/candidate/target context, universal release baseline, and objective full-regression triggers. Release status alone never selects every suite. |
 | `VERIFY-CLAIM-001` | Completion and readiness answers lead with an unambiguous scope-bound yes/no; scope-complete requires current candidate and environment evidence with no failed, skipped, stale, pending, not-tested, or open boundary and never implies zero defects. |
 
 `contract:check` must reject a missing applicable baseline row, a duplicate ID,
@@ -423,21 +437,23 @@ The repository must expose and enforce:
 | --- | --- |
 | `contract:check` | Validate the gate-manifest schema, unique rule IDs, canonical sources, root `AGENTS.md`, applicable profiles, required package/Make/CI surface, command references, screen-evidence coverage, and manual/N/A evidence structure. |
 | `rules:plan` | Before editing, accept explicit anticipated project-relative paths and merge them with current maintained changes; after editing, inspect the actual worktree. In both modes print the exact applicable rule IDs, automated commands, and unresolved manual evidence. Unknown or uncovered maintained paths select the safe full-rule fallback. |
+| `release:plan` | Require an exact accepted/deployed base revision, candidate revision, and target environment; inspect their complete diff, merge all affected verification slices with the universal release baseline, record exclusions, and fail closed when impact or baseline identity cannot be resolved. Release status alone must not select full regression. |
 | `check:fast` | Run the deterministic fast feedback subset. It must include `contract:check`; it is not release evidence. |
 | `verify:changed` | Run the union of automated gates selected by `rules:plan`, fail on missing evidence mappings, and write a changed-scope verification report. |
-| `verify:automated` | Refuse a dirty maintained checkout, run the complete automated release command set, and write revision/fingerprint-bound candidate evidence before any dependent human approval. |
+| `verify:automated` | Refuse a dirty maintained checkout, require `release:plan`, reuse current content-identical changed evidence, run the pre-deployment universal baseline and only missing selected automated release gates, and write revision/fingerprint/image/environment-bound candidate evidence before dependent human approval. In full-regression mode, run the complete active command set. |
 | `evidence:init` | After the candidate image exists, initialize an ignored/external evidence bundle bound to the exact revision, maintained fingerprint, and immutable image digest; refuse overwrite. |
 | `evidence:check` | Fail when an applicable release-blocking gate is missing, pending, stale, malformed, unowned, targets another candidate, or lacks a regular non-symlink evidence file with a matching SHA-256 digest. |
-| `verification:check` | Confirm the latest successful report matches the current maintained-project content fingerprint. For `changed` evidence, a commit-only transition with identical content remains valid; `full` release evidence also requires the exact revision. |
-| `verify` | Perform the fast final aggregation: require a current `full` automated report plus complete candidate-bound manual evidence without rerunning or pretending to automate human review. |
+| `verification:check` | Confirm the latest successful report matches the current maintained-project content fingerprint. For `changed` evidence, a commit-only transition with identical content remains valid; candidate `release` and `full` evidence also require the exact revision. |
+| `verify` | Perform the fast final aggregation without rerunning suites: require the current candidate `release` report, or a `full` report when full regression was selected, complete applicable candidate-bound manual evidence, and deployed-target evidence for the post-deployment universal baseline plus affected live workflows. |
 
 `check`, if retained for compatibility, must alias `check:fast`; it must never
-be described as the release gate. `make verify-changed`,
+be described as the release gate. `make release-plan`, `make verify-changed`,
 `make verify-automated`, and `make verify` must invoke the canonical scripts in
-the documented environment. Automated runners may produce changed/full
-automated artifacts, but a release system must supply the external manual
-evidence bundle before the aggregate gate. The required automated status must
-not be a smoke-only job.
+the documented environment. Automated runners may produce changed/release/full
+artifacts, but a release system must supply the applicable external manual
+evidence before the aggregate gate. The required automated status must contain
+the universal baseline and every selected affected boundary; a smoke-only job
+is insufficient.
 
 The pre-edit rule plan and post-edit worktree plan are separate gates. Planned
 paths prevent an agent from beginning without the applicable acceptance rules;
@@ -448,11 +464,14 @@ maintained worktree rather than the earlier estimate.
 
 Each verification report must record at least:
 
-- schema version, mode (`changed` or `full`), project and environment
+- schema version, mode (`changed`, `release`, or `full`), project and environment
 - exact maintained-content fingerprint and Git revision when available
 - selected rule IDs and ordered commands
 - start/end time, command exit status, and report outcome
 - unresolved manual or not-tested boundaries
+- for release mode, the exact accepted/deployed base revision, candidate
+  revision, target environment, complete-diff digest, universal baseline,
+  affected slices, excluded suites with reasons, and deployed revision/image
 - for a browser-matrix command, the aggregate profile evidence or an immutable
   reference to it, including content/revision binding, exact profile/case
   coverage, attempt count, failure classification, and clean/flaky/failed
@@ -471,9 +490,9 @@ current Git diff. A `changed` report records the Git revision as provenance but
 freshness is decided by that complete content fingerprint. Committing exactly
 the verified content therefore preserves the report and must not cause a test
 rerun. Editing, adding, deleting, regenerating, or replacing any maintained file
-changes the fingerprint and invalidates the report. A `full` report and all
-release/browser/image evidence remain strict: both the content fingerprint and
-the exact candidate Git revision must match.
+changes the fingerprint and invalidates the report. Candidate `release` and
+`full` reports, browser evidence, and image evidence remain strict: both the
+content fingerprint and the exact candidate Git revision must match.
 
 Never commit candidate approval fields into the manifest they approve: that
 commit changes the candidate revision and makes the evidence stale. Keep the
@@ -489,8 +508,9 @@ cross-cutting invariants. Any UI change must select shared rendered invariants
 for supported viewports, scroll ownership, overflow, themes, interaction
 targets, accessibility, and relevant states. Any protected API/data change
 must select envelope, validation, authorization, persistence, activity, and
-isolation gates. The full release gate always runs the complete active command
-set.
+isolation gates. A scoped release always runs its universal release baseline
+plus the union of affected slices. Only a recorded full-regression trigger runs
+the complete active command set.
 
 #### 13.7.2 Risk-scoped verification selection
 
@@ -510,6 +530,10 @@ boundary. Expand only when shared ownership, dependency analysis, a focused
 failure, or new evidence demonstrates a wider blast radius. Running every test
 must never substitute for impact analysis, and passing unrelated suites must
 never compensate for missing focused proof.
+
+For a release, `release:plan` compares the exact accepted/deployed base revision
+with the candidate, adds the universal release baseline and named target proof,
+and then applies this same affected-boundary selection to their complete diff.
 
 For application source-code changes, construct a dependency-closed verification
 slice instead of treating `source changed` as a full-regression trigger:
@@ -555,22 +579,25 @@ Use these minimum classifications:
 | Database, migration, authorization, or concurrency | Affected schema, constraints, isolation, race, integration, activity, and consuming API/workflow proof. |
 | Queue, scheduler, cache, realtime, files, payment, or printing | The owning capability's affected happy path and failure/recovery contract, plus affected consumers. |
 | Shared runtime, security, data foundation, toolchain, or dependency | Every demonstrably affected consumer; escalate to full regression only when an objective trigger below applies. |
-| Release candidate | Complete active automated verification followed by candidate-bound manual evidence. |
+| Release candidate | Compare the accepted/deployed base to the exact candidate, run the universal release baseline plus the union of affected slices, add applicable candidate-bound manual and live target evidence, and record unrelated suites as excluded. Release status alone does not require full regression. |
 
 Full regression is required only when at least one of these objective triggers
 is recorded:
 
 1. the user or accountable owner explicitly requests it
-2. the work is a release candidate or protected release merge
+2. this is the initial release or there is no trusted accepted/deployed baseline
 3. a shared runtime, security, data-foundation, toolchain, dependency, profile,
    or capability change has a demonstrated cross-module blast radius
 4. focused evidence reveals systemic impact beyond the original scope
 5. impact remains unbounded after inspecting ownership, dependencies, changed
    paths, and focused failures
 
-“Continue,” “test carefully,” elapsed time, habit, or subjective confidence is
-not a full-regression trigger. The report must name the concrete trigger; when
-none applies, `full_regression_required` is `false`.
+“Continue,” “test carefully,” “commit,” “push,” “deploy,” “release,” a protected
+branch name, elapsed time, habit, or subjective confidence is not a
+full-regression trigger. The report must name the concrete trigger; when none
+applies, `full_regression_required` is `false`. A release with `false` still
+runs the universal release baseline and every affected slice on the exact
+candidate and named target environment.
 
 Unknown or uncovered maintained paths may still select the **safe full-rule
 fallback**, but that result is an unresolved review state, not permission to

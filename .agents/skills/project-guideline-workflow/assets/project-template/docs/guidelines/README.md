@@ -155,6 +155,7 @@ commands through its Make facade. Record both exact locations in the root
 | `pnpm docs:check` | Run the project-book checks. |
 | `pnpm rules:plan -- --files <comma-separated-project-paths>` | Before editing, merge anticipated paths with maintained changes and print the risk-scoped classification, affected boundaries, applicable rules, selected/excluded commands with reasons, full-regression decision, and unresolved safe fallback; omit `--files` after editing to plan from the actual worktree. |
 | `pnpm verify:changed` | Run the reviewed changed-scope plan; refuse an unresolved safe full-rule fallback. |
+| `pnpm release:plan -- --base <accepted-or-deployed-revision> --candidate <candidate-revision> --target <environment>` | Build the release scope from the complete base-to-candidate diff, universal baseline, affected slices, justified exclusions, target proof, and objective full-regression decision. |
 
 ## 7. Safe editing contract
 

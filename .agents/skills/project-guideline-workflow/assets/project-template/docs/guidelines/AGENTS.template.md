@@ -77,6 +77,10 @@ After the final maintained-file edit:
    and environment with no failed, skipped, stale, pending, not-tested, or open
    boundary; it never guarantees zero defects or unknown future cases.
 
+For release or production work, run the `release:plan` contract through
+`<release-plan-command>` with the exact accepted/deployed base, candidate, and
+target environment before candidate verification.
+
 Documentation-only work still runs changed-scope verification, but its
 registered rules should select the exact documentation and contract commands,
 not unrelated browser or production testing. Generated output must be
@@ -88,13 +92,19 @@ dependency from one.
 A changed-scope report remains current after committing exactly the verified
 content: compare the complete maintained-content fingerprint and do not rerun
 suites solely because `HEAD` changed. Any maintained-content change invalidates
-the report. Full release evidence still requires the exact Git revision,
-content fingerprint, and immutable candidate image.
+the report. Candidate release evidence still requires the exact Git revision,
+content fingerprint, immutable candidate image, and target environment. Promote
+content-identical evidence after commit instead of rerunning it, then execute
+only missing revision-, image-, deployment-, and live-target gates.
 
-Full regression is required only for an explicit request, a release candidate,
-a demonstrated cross-cutting blast radius, systemic focused-test evidence, or
-impact that remains unbounded after investigation. “Continue,” “test
-carefully,” habit, or subjective confidence does not broaden test scope.
+Release verification is always required, but the release label alone is not a
+full-regression trigger. Compare the accepted or deployed base revision with
+the exact candidate, run the universal release baseline, and add the union of
+affected slices. Full regression is required only for an explicit request, an
+initial release or missing accepted baseline, a demonstrated cross-cutting blast
+radius, systemic focused-test evidence, or impact that remains unbounded after
+investigation. “Continue,” “test carefully,” “deploy,” habit, or subjective
+confidence does not broaden test scope.
 Application source code does not automatically require full regression. Select
 the owning module, each changed boundary, and demonstrably affected direct
 consumers; for several modules, use the union of those focused slices. Record
@@ -138,9 +148,11 @@ are excluded.
   failure/recovery contract.
 - Security-sensitive work: never expose secrets or sensitive values; run the
   approved security gates.
-- Release or production: require explicit authorization, a clean candidate,
-  complete automated and manual evidence, recovery readiness, and live
-  post-change verification.
+- Release or production: require explicit authorization, an exact clean
+  candidate, a named target environment, the risk-scoped candidate plan plus
+  universal release baseline, applicable manual evidence, recovery readiness,
+  deployed-version confirmation, and focused live post-change verification.
+  Local-only evidence cannot satisfy a production claim.
 
 ## Generic guideline protection
 

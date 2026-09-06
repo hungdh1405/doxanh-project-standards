@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "6bde15059a7cb75f879b1e8be88fab118d19a99193a235efa10bd5dac943cba6",
-    "bytes": 525408,
-    "lines": 9317,
-    "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, dependency-closed risk-scoped source verification, content-bound changed evidence, strict revision-bound release evidence, evidence-scoped completion claims, mandatory executable UI and temporal rules, server-authorized audience projection, canonical vocabulary, complete project-book and database contracts, schema-reconciled data documentation, referenced-record lifecycle resolution, and focused proof requirements on 2026-09-01."
+    "sha256": "c6597d950580f375995347597f1053a23cec4d37ba17bb67de59dc9991af86fe",
+    "bytes": 530730,
+    "lines": 9372,
+    "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, dependency-closed risk-scoped change and release verification, exact base-to-candidate planning, a phase-aware universal release baseline, content-bound reusable evidence, strict candidate and target proof, evidence-scoped completion claims, mandatory executable UI and temporal rules, server-authorized audience projection, canonical vocabulary, complete project-book and database contracts, schema-reconciled data documentation, referenced-record lifecycle resolution, and focused proof requirements on 2026-09-07."
   },
   "profiles": {
     "required": [
@@ -104,9 +104,16 @@
       "source_change_scope": "changed-module-boundaries-and-direct-consumers",
       "source_change_forces_full_regression": false,
       "multi_module_scope": "union-of-focused-slices",
+      "release_scope": "candidate-diff-plus-universal-release-baseline",
+      "release_candidate_forces_full_regression": false,
+      "release_base_revision_required": true,
+      "release_target_environment_required": true,
+      "release_predeployment_baseline_required": true,
+      "release_postdeployment_baseline_required": true,
+      "release_unrelated_suites_forbidden": true,
       "full_regression_triggers": [
         "explicit-request",
-        "release-candidate",
+        "initial-release-or-missing-baseline",
         "cross-cutting-change",
         "systemic-evidence",
         "unbounded-impact"

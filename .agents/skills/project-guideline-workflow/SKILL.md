@@ -62,7 +62,11 @@ register the project's executable rule gates. Do not overwrite an existing
    build a dependency-closed slice from the owning module, changed interfaces or
    trust boundaries, and demonstrably affected direct consumers. Multiple
    modules contribute the union of their slices. Do not select every suite merely
-   because at least one source file changed.
+   because at least one source file changed. For a release, compare the exact
+   accepted or deployed base revision with the candidate, add the phase-aware
+   universal release baseline and named target-environment proof, and keep
+   unrelated suites excluded. A release label alone is not a full-regression
+   trigger.
 5. Turn selected stable rule IDs into acceptance criteria and verification.
    Apply `DOC-BOOK-001` whenever project-book chapters, manifest/navigation,
    glossary, traceability, or durable workflow explanations change. Review the
@@ -107,8 +111,11 @@ register the project's executable rule gates. Do not overwrite an existing
    changed-scope evidence to the complete maintained-content fingerprint. A
    commit-only transition with identical maintained content must preserve that
    evidence and must not trigger a rerun; an actual content change must make it
-   stale. Keep full release evidence strictly bound to the exact Git revision,
-   content fingerprint, and immutable candidate image.
+   stale. For a release, promote reusable content-identical evidence, run only
+   the missing candidate-, image-, target-, and deployment-bound gates selected
+   by the release plan across their proper pre- or post-deployment phase, and bind
+   the resulting release evidence to the exact Git revision, content fingerprint,
+   immutable candidate image, and environment.
 8. Apply `VERIFY-CLAIM-001` whenever the user asks whether work is complete,
    fully tested, production-ready, safe to release, covers all cases, or is
    `100%`. Lead with an unambiguous `Yes` or `No`. Say `Yes` only for 100% of an
@@ -131,10 +138,12 @@ register the project's executable rule gates. Do not overwrite an existing
   are complete.
 - Report exact passed and untested boundaries. Never claim complete, 100%,
   release-ready, or production-safe from partial or stale evidence.
-- Start with the smallest complete risk-scoped evidence set. Run full regression
-  only for an explicit request, release candidate, demonstrated cross-cutting
-  impact, systemic focused evidence, or impact that remains unbounded after
-  investigation; “continue” or “test carefully” alone does not broaden scope.
+- Start with the smallest complete risk-scoped evidence set. Release verification
+  is mandatory, but release status alone does not broaden it to every suite. Run
+  full regression only for an explicit request, an initial release or missing
+  accepted baseline, demonstrated cross-cutting impact, systemic focused
+  evidence, or impact that remains unbounded after investigation; “continue,”
+  “test carefully,” “deploy,” or “release” alone does not broaden scope.
 - For module-local source changes, run static checks plus the nearest tests that
   prove the changed behavior and every boundary it actually crosses. Add API,
   database, queue, realtime, rendered UI, or browser evidence only when that
@@ -147,7 +156,11 @@ register the project's executable rule gates. Do not overwrite an existing
   shared rule also owns prose. Require a changed runtime path, demonstrated
   dependency, focused failure, or objective full-regression trigger for those
   commands.
+- A production or release request must name the target environment and exact
+  candidate. Local evidence may be reused as applicable pre-deployment proof,
+  but it never replaces target readiness, deployed-version confirmation, and
+  focused live proof for the affected workflows and dependencies.
 - Never rerun a changed-scope suite solely because verified files were committed
   without changing their content. The freshness check must compare the complete
   maintained-content fingerprint. Exact revision equality remains mandatory
-  for full release and immutable-image evidence.
+  for candidate release and immutable-image evidence.

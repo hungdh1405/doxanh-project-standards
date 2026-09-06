@@ -3,6 +3,31 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.6.0] - 2026-09-07
+
+### Changed
+
+- Release verification now compares the accepted/deployed base revision with
+  the exact candidate, runs a phase-aware universal release baseline before and
+  after deployment, and adds only the union of affected verification slices and
+  target-environment proof.
+- A release label, protected branch, commit, push, or deployment no longer
+  triggers full-system regression by itself. Full regression remains mandatory
+  for explicit requests, initial releases or missing trusted baselines,
+  demonstrated cross-cutting impact, systemic focused failures, or unbounded
+  impact.
+- Content-identical verification is promoted across a commit-only transition;
+  release execution runs only missing revision-, image-, deployment-, target-,
+  and affected-live gates instead of repeating unrelated suites.
+
+### Added
+
+- Generated projects now require a `release:plan` contract with exact base,
+  candidate, target environment, complete diff, universal baseline, justified
+  exclusions, and an explicit full-regression decision.
+- Package validation fixtures reject release contracts that omit risk-scoped
+  release selection or allow local-only evidence to satisfy production claims.
+
 ## [3.5.3] - 2026-09-01
 
 ### Clarified
