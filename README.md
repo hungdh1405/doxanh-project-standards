@@ -35,6 +35,87 @@ make install \
 make skill-sync
 ```
 
+### Copy-paste bootstrap for an AI agent on macOS
+
+Open the target project in Codex and tell the agent to run the block below from
+the project directory. The command checks whether the selected Doxanh skill is
+already installed at user scope on this Mac, installs it only through the
+verified snapshot manager when necessary, adopts an uninstalled project, and
+then verifies the project lock and resolved skill.
+
+The default release below is intentionally explicit. Change
+`DOXANH_STANDARDS_REF` only after approving a newer tagged release. For a
+monorepo, set `DOXANH_PROJECT_ROOT` to the application workspace and
+`DOXANH_REPO_ROOT` to the Git repository root before running the block.
+
+```bash
+set -eu
+
+DOXANH_PROJECT_ROOT="${DOXANH_PROJECT_ROOT:-$PWD}"
+DOXANH_REPO_ROOT="${DOXANH_REPO_ROOT:-$(git -C "$DOXANH_PROJECT_ROOT" rev-parse --show-toplevel)}"
+DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v3.7.0}"
+DOXANH_BOOTSTRAP_DIR="$(mktemp -d)"
+
+cleanup_doxanh_bootstrap() {
+  /usr/bin/trash "$DOXANH_BOOTSTRAP_DIR"
+}
+trap cleanup_doxanh_bootstrap EXIT
+
+git clone \
+  --branch "$DOXANH_STANDARDS_REF" \
+  --depth 1 \
+  https://github.com/hungdh1405/doxanh-project-standards.git \
+  "$DOXANH_BOOTSTRAP_DIR/standards"
+
+printf 'Selected Doxanh standards release: %s\n' "$DOXANH_STANDARDS_REF"
+DOXANH_PROJECT_NEEDS_INSTALL=0
+if test -f "$DOXANH_PROJECT_ROOT/.doxanh-project-standards.json"; then
+  printf 'This project is already adopted; checking its existing lock without upgrading it.\n'
+  make -C "$DOXANH_BOOTSTRAP_DIR/standards" installed-check \
+    PROJECT_ROOT="$DOXANH_PROJECT_ROOT" \
+    REPO_ROOT="$DOXANH_REPO_ROOT"
+else
+  DOXANH_PROJECT_NEEDS_INSTALL=1
+fi
+
+if make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-check; then
+  printf 'The selected user-scoped skill is already valid on this Mac.\n'
+else
+  printf 'The selected user-scoped skill is missing or differs; synchronizing it safely.\n'
+  make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-sync
+fi
+
+if test "$DOXANH_PROJECT_NEEDS_INSTALL" -eq 1; then
+  make -C "$DOXANH_BOOTSTRAP_DIR/standards" install \
+    PROJECT_ROOT="$DOXANH_PROJECT_ROOT" \
+    REPO_ROOT="$DOXANH_REPO_ROOT"
+  make -C "$DOXANH_BOOTSTRAP_DIR/standards" installed-check \
+    PROJECT_ROOT="$DOXANH_PROJECT_ROOT" \
+    REPO_ROOT="$DOXANH_REPO_ROOT"
+fi
+make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-check \
+  PROJECT_ROOT="$DOXANH_PROJECT_ROOT"
+make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-resolve \
+  PROJECT_ROOT="$DOXANH_PROJECT_ROOT"
+```
+
+If the project already pins a different release, `installed-check` reports the
+version difference and stops. Do not replace the lock or run an upgrade until
+the project owner approves that release change. If `skill-sync` finds an
+unknown directory, symlink, or locally changed skill at
+`${CODEX_HOME:-$HOME/.codex}/skills/project-guideline-workflow`, it also stops
+instead of deleting or overwriting it.
+
+After a first user-scoped installation, restart Codex and request:
+
+```text
+Use $project-guideline-workflow. Resolve and follow this project's locked
+Doxanh standard. Inspect the project before materializing or updating AGENTS.md,
+the project book, Makefile integration, or verification gates. Do not change
+application code, commit, push, deploy, or upgrade the standards lock without
+my approval.
+```
+
 `make skill-sync` creates one user-level symlink at
 `${CODEX_HOME:-$HOME/.codex}/skills/project-guideline-workflow`. The link points
 to a verified, version-and-content-addressed snapshot under that skills home's
