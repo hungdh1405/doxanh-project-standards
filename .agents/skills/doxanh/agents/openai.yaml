@@ -1,0 +1,4 @@
+interface:
+  display_name: "Doxanh"
+  short_description: "Apply Doxanh standards with focused tests and consistent UI"
+  default_prompt: "Use $doxanh to resolve this project's locked standard, implement the requested change, and verify its affected scope."

@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const skillRoot = resolve(root, '.agents/skills/project-guideline-workflow')
+const skillRoot = resolve(root, '.agents/skills/doxanh')
 const templateRoot = resolve(skillRoot, 'assets/project-template')
 const cli = resolve(skillRoot, 'scripts/project-standards.mjs')
 const userSkillCli = resolve(skillRoot, 'scripts/manage-user-skill.mjs')
@@ -134,14 +134,14 @@ test('installs and verifies a reference-only standalone project', async () => {
     assert.equal(lock.project_template_sha256, undefined)
     assert.equal(lock.repository_skill_files, undefined)
     assert.deepEqual(lock.skill, {
-      name: 'project-guideline-workflow',
+      name: 'doxanh',
       distribution: 'user-scope',
-      repository_path: '.agents/skills/project-guideline-workflow',
+      repository_path: '.agents/skills/doxanh',
       contract_sha256: metadata.skill_contract_sha256,
     })
     assert.equal(lock.repository_root, '.')
     await assert.rejects(
-      readFile(resolve(roots.repositoryRoot, '.agents/skills/project-guideline-workflow/SKILL.md')),
+      readFile(resolve(roots.repositoryRoot, '.agents/skills/doxanh/SKILL.md')),
     )
 
     const checked = run('check', roots.projectRoot, roots.repositoryRoot)
@@ -627,14 +627,14 @@ test('synchronizes and verifies one user-level skill symlink', async () => {
   try {
     const synced = runSkill('sync', skillsHome)
     assert.equal(synced.status, 0, synced.stderr)
-    const destination = resolve(skillsHome, 'project-guideline-workflow')
+    const destination = resolve(skillsHome, 'doxanh')
     assert.equal((await lstat(destination)).isSymbolicLink(), true)
     assert.notEqual(await realpath(destination), await realpath(skillRoot))
     assert.equal(await readFile(resolve(destination, 'SKILL.md'), 'utf8'), await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8'))
 
     const checked = runSkill('check', skillsHome)
     assert.equal(checked.status, 0, checked.stderr)
-    assert.match(checked.stdout, /Verified user skill project-guideline-workflow/u)
+    assert.match(checked.stdout, /Verified user skill doxanh/u)
   }
   finally {
     await rm(sandbox, { recursive: true, force: true })
@@ -644,7 +644,7 @@ test('synchronizes and verifies one user-level skill symlink', async () => {
 test('requires explicit migration for a recognized copied user skill', async () => {
   const sandbox = await mkdtemp(resolve(tmpdir(), 'doxanh-user-skill-test-'))
   const skillsHome = resolve(sandbox, 'skills')
-  const destination = resolve(skillsHome, 'project-guideline-workflow')
+  const destination = resolve(skillsHome, 'doxanh')
   try {
     await mkdir(skillsHome, { recursive: true })
     await cp(skillRoot, destination, { recursive: true })
@@ -664,7 +664,7 @@ test('requires explicit migration for a recognized copied user skill', async () 
 test('refuses to replace an unknown user skill directory', async () => {
   const sandbox = await mkdtemp(resolve(tmpdir(), 'doxanh-user-skill-test-'))
   const skillsHome = resolve(sandbox, 'skills')
-  const destination = resolve(skillsHome, 'project-guideline-workflow')
+  const destination = resolve(skillsHome, 'doxanh')
   try {
     await mkdir(destination, { recursive: true })
     await writeFile(resolve(destination, 'SKILL.md'), 'not owned by Doxanh\n')
@@ -682,7 +682,7 @@ test('copied skill migration refuses changed instructions, assets and extra pers
   for (const path of ['SKILL.md', 'assets/project-template/docs/guidelines/README.md', 'my-notes.md']) {
     const sandbox = await mkdtemp(resolve(tmpdir(), 'doxanh-skill-drift-'))
     const skillsHome = resolve(sandbox, 'skills')
-    const destination = resolve(skillsHome, 'project-guideline-workflow')
+    const destination = resolve(skillsHome, 'doxanh')
     try {
       await cp(skillRoot, destination, { recursive: true })
       await writeFile(resolve(destination, path), 'local work; must preserve\n')
@@ -699,7 +699,7 @@ test('verified copied skill migration retains a recoverable backup', async () =>
   const sandbox = await mkdtemp(resolve(tmpdir(), 'doxanh-skill-backup-'))
   const skillsHome = resolve(sandbox, 'skills')
   try {
-    await cp(skillRoot, resolve(skillsHome, 'project-guideline-workflow'), { recursive: true })
+    await cp(skillRoot, resolve(skillsHome, 'doxanh'), { recursive: true })
     const result = runSkill('sync', skillsHome, '--replace-recognized')
     assert.equal(result.status, 0, result.stderr)
     const backup = (await readdir(skillsHome)).find(name => name.endsWith('.bak'))
@@ -735,7 +735,7 @@ test('two projects resolve distinct immutable versions after another project upg
     assert.equal(install.status, 0, install.stderr)
     const cached = runSkill('cache', skillsHome, '--source', nextSkill)
     assert.equal(cached.status, 0, cached.stderr)
-    assert.equal(await realpath(resolve(skillsHome, 'project-guideline-workflow')), firstRoot)
+    assert.equal(await realpath(resolve(skillsHome, 'doxanh')), firstRoot)
     assert.equal(runSkill('resolve', skillsHome, '--target', second).status, 0)
     const sync = spawnSync(process.execPath, [resolve(nextSkill, 'scripts/manage-user-skill.mjs'), 'sync', '--skills-home', skillsHome], { encoding: 'utf8' })
     assert.equal(sync.status, 0, sync.stderr)
@@ -758,13 +758,13 @@ test('parallel make sync is sequential internally and preflight preserves a conf
     await writeLegacyInstallation(roots, 2)
     const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
     const before = await readFile(lockPath, 'utf8')
-    await mkdir(resolve(skillsHome, 'project-guideline-workflow'), { recursive: true })
-    await writeFile(resolve(skillsHome, 'project-guideline-workflow/SKILL.md'), 'unowned\n')
+    await mkdir(resolve(skillsHome, 'doxanh'), { recursive: true })
+    await writeFile(resolve(skillsHome, 'doxanh/SKILL.md'), 'unowned\n')
     const runSync = () => spawnSync('make', ['-j4', 'sync', `PROJECT_ROOT=${roots.projectRoot}`, `REPO_ROOT=${roots.repositoryRoot}`, `SKILLS_HOME=${skillsHome}`], { cwd: root, encoding: 'utf8' })
     assert.notEqual(runSync().status, 0)
     assert.equal(await readFile(lockPath, 'utf8'), before)
     assert.equal(await readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md'), 'utf8'), await readFile(resolve(templateRoot, 'docs/guidelines/README.md'), 'utf8'))
-    await rm(resolve(skillsHome, 'project-guideline-workflow'), { recursive: true })
+    await rm(resolve(skillsHome, 'doxanh'), { recursive: true })
     const result = runSync()
     assert.equal(result.status, 0, result.stderr)
     assert.equal(run('check', roots.projectRoot, roots.repositoryRoot).status, 0)
@@ -788,7 +788,7 @@ test('failed migration restores the previous project files, lock and user skill'
   const skillsHome = resolve(roots.repositoryRoot, 'skills')
   try {
     await writeLegacyInstallation(roots, 2)
-    await cp(skillRoot, resolve(skillsHome, 'project-guideline-workflow'), { recursive: true })
+    await cp(skillRoot, resolve(skillsHome, 'doxanh'), { recursive: true })
     const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
     const before = await readFile(lockPath, 'utf8')
     // Not present in the legacy lock: discovered by the final reference-only
@@ -799,8 +799,108 @@ test('failed migration restores the previous project files, lock and user skill'
     assert.match(result.stderr, /previous lock and managed files restored/)
     assert.equal(await readFile(lockPath, 'utf8'), before)
     assert.equal(await readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md'), 'utf8'), await readFile(resolve(templateRoot, 'docs/guidelines/README.md'), 'utf8'))
-    assert.equal((await lstat(resolve(skillsHome, 'project-guideline-workflow'))).isDirectory(), true)
+    assert.equal((await lstat(resolve(skillsHome, 'doxanh'))).isDirectory(), true)
     assert.equal(await readFile(resolve(roots.projectRoot, 'docs/new-project-guideline.md'), 'utf8'), 'unregistered copy\n')
+  }
+  finally { await rm(roots.repositoryRoot, { recursive: true, force: true }) }
+})
+
+async function legacyUserFixture(sandbox, skillsHome) {
+  const legacySource = resolve(sandbox, 'legacy-source')
+  await cp(skillRoot, legacySource, { recursive: true })
+  const skillPath = resolve(legacySource, 'SKILL.md')
+  await writeFile(skillPath, (await readFile(skillPath, 'utf8')).replace('name: doxanh\n', 'name: project-guideline-workflow\n'))
+  const oldMetadata = { ...metadata, version: '3.7.0' }
+  delete oldMetadata.skill_name
+  const paths = (await collectFiles(legacySource)).filter(path => path === 'SKILL.md' || path.startsWith('agents/') || path.startsWith('scripts/')).sort()
+  let rows = ''
+  for (const path of paths) rows += `${path}\0${sha256(await readFile(resolve(legacySource, path)))}\n`
+  oldMetadata.skill_contract_sha256 = sha256(rows)
+  await writeFile(resolve(legacySource, 'assets/project-standards.json'), JSON.stringify(oldMetadata))
+  const cached = runSkill('cache', skillsHome, '--source', legacySource)
+  assert.equal(cached.status, 0, cached.stderr)
+  const snapshot = cached.stdout.trim()
+  assert.ok(snapshot.endsWith('/project-guideline-workflow'))
+  const legacyLink = resolve(skillsHome, 'project-guideline-workflow')
+  await symlink(snapshot, legacyLink)
+  return { legacySource, snapshot, legacyLink, oldMetadata }
+}
+
+test('renames legacy discovery while preserving old locks, snapshots, documents and nested projects', async () => {
+  const roots = await fixture(true)
+  const skillsHome = resolve(roots.repositoryRoot, 'skills')
+  try {
+    const { legacyLink, snapshot, oldMetadata } = await legacyUserFixture(roots.repositoryRoot, skillsHome)
+    assert.equal(run('install', roots.projectRoot, roots.repositoryRoot).status, 0)
+    const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
+    const lock = JSON.parse(await readFile(lockPath, 'utf8'))
+    lock.version = oldMetadata.version
+    lock.skill = { ...lock.skill, name: 'project-guideline-workflow', repository_path: '.agents/skills/project-guideline-workflow', contract_sha256: oldMetadata.skill_contract_sha256 }
+    await writeFile(lockPath, JSON.stringify(lock))
+    await writeFile(resolve(roots.repositoryRoot, 'AGENTS.md'), 'Project-owned instructions\n')
+    await mkdir(resolve(roots.projectRoot, 'docs'), { recursive: true })
+    await writeFile(resolve(roots.projectRoot, 'docs/product.md'), 'Project-owned book\n')
+    const oldLock = await readFile(lockPath, 'utf8')
+    const result = runSkill('sync', skillsHome)
+    assert.equal(result.status, 0, result.stderr)
+    await assert.rejects(lstat(legacyLink), { code: 'ENOENT' })
+    assert.ok((await readdir(skillsHome)).some(name => name.startsWith('.project-guideline-workflow.') && name.endsWith('.bak')))
+    assert.equal(await readFile(lockPath, 'utf8'), oldLock)
+    assert.equal(runSkill('resolve', skillsHome, '--target', roots.projectRoot).stdout.trim(), snapshot)
+    assert.equal(runSkill('check', skillsHome).status, 0)
+    assert.equal(run('update', roots.projectRoot, roots.repositoryRoot).status, 0)
+    assert.equal(run('check', roots.projectRoot, roots.repositoryRoot).status, 0)
+    const updated = JSON.parse(await readFile(lockPath, 'utf8'))
+    assert.equal(updated.skill.name, 'doxanh')
+    assert.equal(updated.skill.repository_path, '.agents/skills/doxanh')
+    assert.ok(runSkill('resolve', skillsHome, '--target', roots.projectRoot).stdout.trim().endsWith('/doxanh'))
+    assert.equal(await readFile(resolve(roots.repositoryRoot, 'AGENTS.md'), 'utf8'), 'Project-owned instructions\n')
+    assert.equal(await readFile(resolve(roots.projectRoot, 'docs/product.md'), 'utf8'), 'Project-owned book\n')
+  }
+  finally { await rm(roots.repositoryRoot, { recursive: true, force: true }) }
+})
+
+test('old-name divergence, broken links and new-name conflicts prevent migration without loss', async () => {
+  for (const conflict of ['legacy-drift', 'legacy-personal-file', 'legacy-broken-link', 'new-name-unowned']) {
+    const sandbox = await mkdtemp(resolve(tmpdir(), 'doxanh-name-conflict-'))
+    const skillsHome = resolve(sandbox, 'skills')
+    try {
+      const { legacyLink, snapshot } = await legacyUserFixture(sandbox, skillsHome)
+      if (conflict === 'legacy-drift') await writeFile(resolve(snapshot, 'SKILL.md'), 'local edits\n')
+      if (conflict === 'legacy-personal-file') await writeFile(resolve(snapshot, 'notes.md'), 'personal\n')
+      if (conflict === 'legacy-broken-link') await rm(snapshot, { recursive: true })
+      if (conflict === 'new-name-unowned') {
+        await mkdir(resolve(skillsHome, 'doxanh'))
+        await writeFile(resolve(skillsHome, 'doxanh/SKILL.md'), 'unowned\n')
+      }
+      const before = await readdir(skillsHome)
+      const result = runSkill('sync', skillsHome, '--replace-recognized')
+      assert.notEqual(result.status, 0)
+      assert.deepEqual(await readdir(skillsHome), before)
+      assert.equal((await lstat(legacyLink)).isSymbolicLink(), true)
+      if (conflict === 'legacy-drift') assert.equal(await readFile(resolve(snapshot, 'SKILL.md'), 'utf8'), 'local edits\n')
+      if (conflict === 'legacy-personal-file') assert.equal(await readFile(resolve(snapshot, 'notes.md'), 'utf8'), 'personal\n')
+      if (conflict === 'new-name-unowned') assert.equal(await readFile(resolve(skillsHome, 'doxanh/SKILL.md'), 'utf8'), 'unowned\n')
+    }
+    finally { await rm(sandbox, { recursive: true, force: true }) }
+  }
+})
+
+test('coordinated migration failure restores both discovery names and the old project lock', async () => {
+  const roots = await fixture(true)
+  const skillsHome = resolve(roots.repositoryRoot, 'skills')
+  try {
+    await writeLegacyInstallation(roots, 2)
+    const { legacyLink, snapshot } = await legacyUserFixture(roots.repositoryRoot, skillsHome)
+    const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
+    const before = await readFile(lockPath, 'utf8')
+    await writeFile(resolve(roots.projectRoot, 'docs/new-project-guideline.md'), 'unregistered copy\n')
+    const result = spawnSync('make', ['sync', `PROJECT_ROOT=${roots.projectRoot}`, `REPO_ROOT=${roots.repositoryRoot}`, `SKILLS_HOME=${skillsHome}`], { cwd: root, encoding: 'utf8' })
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, /previous lock and managed files restored/)
+    assert.equal(await realpath(legacyLink), snapshot)
+    await assert.rejects(lstat(resolve(skillsHome, 'doxanh')), { code: 'ENOENT' })
+    assert.equal(await readFile(lockPath, 'utf8'), before)
   }
   finally { await rm(roots.repositoryRoot, { recursive: true, force: true }) }
 })

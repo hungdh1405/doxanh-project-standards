@@ -1,4 +1,0 @@
-interface:
-  display_name: "Project Guideline Workflow"
-  short_description: "Install and apply modular project standards"
-  default_prompt: "Install or apply the modular project guideline workflow and its executable rule gates to this task."

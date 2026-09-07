@@ -35,7 +35,7 @@ project roots, and symlink safety.
   behavior.
 
 For every release, update `package.json`, `CHANGELOG.md`, and
-`.agents/skills/project-guideline-workflow/assets/project-standards.json`,
+`.agents/skills/doxanh/assets/project-standards.json`,
 refresh the package fingerprints, run `make check`, commit one coherent
 release, and create the annotated `v<version>` tag.
 

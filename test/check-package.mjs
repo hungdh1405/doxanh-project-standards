@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const skillRoot = resolve(root, '.agents/skills/project-guideline-workflow')
+const skillRoot = resolve(root, '.agents/skills/doxanh')
 const assetRoot = resolve(skillRoot, 'assets')
 const templateRoot = resolve(assetRoot, 'project-template')
 const metadata = JSON.parse(await readFile(resolve(assetRoot, 'project-standards.json'), 'utf8'))
@@ -45,6 +45,7 @@ async function fingerprint(directory, paths) {
 if (packageJson.version !== metadata.version) {
   errors.push(`package.json version ${packageJson.version} differs from metadata ${metadata.version}`)
 }
+if (metadata.skill_name !== 'doxanh') errors.push('package skill_name must be doxanh')
 const changelog = await readFile(resolve(root, 'CHANGELOG.md'), 'utf8')
 if (!changelog.includes(`## [${metadata.version}]`)) {
   errors.push(`CHANGELOG.md has no ${metadata.version} release`)
@@ -83,7 +84,7 @@ if (complete.byteLength !== manifest.semantic_baseline.bytes) errors.push('seman
 if (completeLines !== manifest.semantic_baseline.lines) errors.push('semantic baseline line count differs')
 
 const skillSource = await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8')
-if (!skillSource.startsWith('---\nname: project-guideline-workflow\n')) {
+if (!skillSource.startsWith('---\nname: doxanh\n')) {
   errors.push('SKILL.md frontmatter name is invalid')
 }
 if (!skillSource.includes('\ndescription: ')) errors.push('SKILL.md description is missing')
@@ -92,11 +93,23 @@ for (const token of ['interface:', 'display_name:', 'short_description:', 'defau
   if (!openAiYaml.includes(token)) errors.push(`agents/openai.yaml is missing ${token}`)
 }
 
-const localMarkdownFiles = ['README.md', 'CHANGELOG.md']
+const localMarkdownFiles = [
+  'README.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'AGENTS.md', 'SECURITY.md',
+  ...(await collectFiles(skillRoot)).filter(path => path.endsWith('.md')).map(path => relative(root, resolve(skillRoot, path))),
+]
 for (const markdownPath of localMarkdownFiles) {
   const source = await readFile(resolve(root, markdownPath), 'utf8')
-  for (const match of source.matchAll(/\]\((\.\.?\/[^)#]+)(?:#[^)]+)?\)/gu)) {
-    const target = resolve(dirname(resolve(root, markdownPath)), match[1])
+  let fence = null
+  const prose = source.split('\n').filter(line => {
+    const marker = line.match(/^ {0,3}(`{3,}|~{3,})/u)?.[1]
+    if (marker && !fence) { fence = marker; return false }
+    if (marker && fence && marker[0] === fence[0] && marker.length >= fence.length) { fence = null; return false }
+    return !fence
+  }).join('\n')
+  for (const match of prose.matchAll(/\]\(([^\s)]+)\)/gu)) {
+    const path = match[1].split('#')[0]
+    if (!path || /^(?:[a-z][a-z\d+.-]*:|\/)/iu.test(path)) continue
+    const target = resolve(dirname(resolve(root, markdownPath)), decodeURIComponent(path))
     try {
       await stat(target)
     }
@@ -123,6 +136,12 @@ try {
     { cwd: fixtureRoot, encoding: 'utf8' },
   )
   if (result.status !== 0) errors.push(`packaged guideline check failed: ${result.stderr.trim()}`)
+  const before = await fingerprint(fixtureRoot, await collectFiles(fixtureRoot))
+  for (let pass = 0; pass < 2; pass += 1) {
+    const generated = spawnSync(process.execPath, [resolve(fixtureRoot, 'scripts/docs/manage-guideline.mjs'), 'entry'], { encoding: 'utf8' })
+    if (generated.status !== 0) errors.push(`entry generation failed: ${generated.stderr.trim()}`)
+    if (await fingerprint(fixtureRoot, await collectFiles(fixtureRoot)) !== before) errors.push(`entry generation pass ${pass + 1} changed the current package or authored modules`)
+  }
 }
 finally {
   await rm(fixtureRoot, { recursive: true, force: true })

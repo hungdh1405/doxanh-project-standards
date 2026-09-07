@@ -3,6 +3,56 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [4.0.0] - 2026-09-08
+
+### Changed
+
+- Rename the discoverable skill and canonical package path to `doxanh`. Invoke
+  it with `$doxanh` or “doxanh skill”; consumer locks now name that skill.
+- Select web, API and Flutter profiles independently, with explicit ownership
+  and profile-aware task routing. API-only/native-only projects do not generate
+  an unrelated web UI or backend.
+- Reconcile every document family, template and platform requirement; clarify
+  inactive collections/runbooks, external API ownership, transport selection,
+  native temporal/testing contracts, and version-compatible form integration.
+- Align CI, Make and readiness checklists with focused verification; preserve
+  clean-commit change discovery and capture failure traces without retries.
+- Verification exports use schema 2 with explicit browser runs for each command.
+  Chrome/Chromium owns functional coverage; secondary browsers and mobile
+  profiles default to focused UI/UX checks even during full regression.
+- Replace the repetitive AI checklist with task routing, framework-skill
+  compatibility guidance and authorized commit/push follow-through.
+- Review affected UI against the approved design and existing shared patterns.
+  Green/sidebar choices are fallbacks; already-approved project design wins.
+  Card descriptions are optional; remove implementation narration and redundant
+  helper cards. Copy review follows changed scope and reuses accepted coverage.
+- Use Nuxt's actual documentation index/full feed and the upstream shadcn-vue
+  skill. Route all reviewed Flutter/Dart skill families by task, with explicit
+  architecture, localization, serialization and SDK compatibility boundaries.
+
+### Added
+
+- Playwright automation skill discovery and `npx skills add microsoft/playwright`
+  setup guidance, with application/contributor skill selection and official
+  test-structure references that preserve focused verification.
+- Complete-review coverage matrix and clarification protocol for every
+  requirement and generated output, plus explicit file/media and external
+  integration lifecycle contracts.
+- Executable rejection of unjustified secondary-browser functional runs,
+  including aggregate commands; explicit browser-risk exceptions remain scoped.
+- Drift-safe migration of the old discoverable skill with recoverable backups,
+  preserved old snapshots/locks, and coordinated rollback fixtures.
+
+### Migration
+
+- Update consumer bootstrap paths/invocations and planner exports when adopting
+  4.0.0. Schema-1 verification exports require migration, not an automatic full run.
+- Existing full-stack consumers explicitly select `nuxt-web,nuxt-api`; project
+  plans no longer silently enable Nuxt web. Mixed projects can target a task
+  with `--task-profiles` without changing their approved project profiles.
+- Root `AGENTS.md`, project books and consumer test runners remain project-owned;
+  package installation does not rewrite them or prove runtime compliance.
+
 ## [3.7.0] - 2026-09-07
 
 ### Changed

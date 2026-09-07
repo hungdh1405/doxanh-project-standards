@@ -1,5 +1,10 @@
 # Doxanh Project Standards
 
+The workflow is called the **Doxanh skill**. Invoke it with `$doxanh` or
+“use the doxanh skill” in any adopted project.
+
+The current release is **4.0.0**, published as `v4.0.0`.
+
 Doxanh Project Standards is the reusable engineering and product-delivery
 baseline used to start and govern new projects. It packages:
 
@@ -14,12 +19,23 @@ The standard is generic. A consuming project still owns its product truth,
 actors, permissions, routes, commercial rules, data model, and deployment
 decisions in its project book.
 
+Select `nuxt-web`, `nuxt-api`, and `flutter-native` independently. A full-stack
+web project selects the first two; API-only and Flutter-only projects need no
+web UI. Client-only projects document their actual external API contracts and
+ownership without generating an extra backend.
+
 ## Requirements
 
 - Git
 - Node.js 22 or newer
 - pnpm 11.24.0 through Corepack for developing this repository
 - Codex for skill-assisted workflows (optional for human-only use)
+
+Framework and automation skills are separate prerequisites, selected for the
+project's stack. The [skill setup guidance](.agents/skills/doxanh/assets/project-template/docs/guidelines/modules/110-ai-agent-rules.md#171-framework-skills-and-documentation)
+includes the Microsoft Playwright skill installation command and selection
+guidance for application tests. Doxanh's installer does not bundle those skills
+or install application dependencies.
 
 ## Quick start
 
@@ -53,7 +69,7 @@ set -eu
 
 DOXANH_PROJECT_ROOT="${DOXANH_PROJECT_ROOT:-$PWD}"
 DOXANH_REPO_ROOT="${DOXANH_REPO_ROOT:-$(git -C "$DOXANH_PROJECT_ROOT" rev-parse --show-toplevel)}"
-DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v3.7.0}"
+DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v4.0.0}"
 DOXANH_BOOTSTRAP_DIR="$(mktemp -d)"
 
 cleanup_doxanh_bootstrap() {
@@ -103,13 +119,13 @@ If the project already pins a different release, `installed-check` reports the
 version difference and stops. Do not replace the lock or run an upgrade until
 the project owner approves that release change. If `skill-sync` finds an
 unknown directory, symlink, or locally changed skill at
-`${CODEX_HOME:-$HOME/.codex}/skills/project-guideline-workflow`, it also stops
+`${CODEX_HOME:-$HOME/.codex}/skills/doxanh`, it also stops
 instead of deleting or overwriting it.
 
 After a first user-scoped installation, restart Codex and request:
 
 ```text
-Use $project-guideline-workflow. Resolve and follow this project's locked
+Use $doxanh. Resolve and follow this project's locked
 Doxanh standard. Inspect the project before materializing or updating AGENTS.md,
 the project book, Makefile integration, or verification gates. Do not change
 application code, commit, push, deploy, or upgrade the standards lock without
@@ -117,12 +133,36 @@ my approval.
 ```
 
 `make skill-sync` creates one user-level symlink at
-`${CODEX_HOME:-$HOME/.codex}/skills/project-guideline-workflow`. The link points
+`${CODEX_HOME:-$HOME/.codex}/skills/doxanh`. The link points
 to a verified, version-and-content-addressed snapshot under that skills home's
 hidden `.doxanh-project-standards/` directory, not the mutable Git checkout.
 There is one cached snapshot per distinct package, no application-local copies.
 Restart Codex after the first installation so
-`$project-guideline-workflow` is discovered.
+`$doxanh` is discovered.
+
+### Migrating from project-guideline-workflow
+
+The canonical source path is now `.agents/skills/doxanh/`. `skill-sync` verifies
+both the `doxanh` destination and any old `project-guideline-workflow` entry
+before changing either. An owned old snapshot link is moved to a reported
+hidden backup; verified copied/check-out installations require the existing
+`REPLACE_SKILL=1` migration flag. Unknown or locally changed entries stop the
+operation. Old snapshots remain available to projects pinned to older releases.
+
+Renaming the user-scoped skill removes the old discoverable entry. Any consuming
+Make facade or bootstrap that hardcodes `project-guideline-workflow` must point
+to `doxanh`, even when the project keeps its older lock. Otherwise its standards
+commands fail before resolving that lock. This bootstrap change needs no rules
+upgrade: the new resolver can read old locks while their cached snapshots remain
+available. Remove a pinned snapshot only after approving its consumers' migration
+or accepting that their locked resolution will fail.
+
+To use the new rules in another project, run its
+approved `make sync`, review its existing `AGENTS.md` invocation, and migrate its
+planner/runner to verification export schema 2. Inspect real test command
+expansion: declare `browser_runs: []` for non-browser commands and explicit
+functional/UI-UX browser rows for browser commands and aggregates. Installation
+preserves project-specific documents and cannot perform that adapter work.
 
 An existing recognized Doxanh skill directory is not replaced implicitly. For
 the one-time migration from a copied installation, run
@@ -149,7 +189,7 @@ the operation before the lock is written. The installer never overwrites root
 `AGENTS.md` or project-specific documents.
 
 After installation, materialize
-`.agents/skills/project-guideline-workflow/assets/project-template/docs/guidelines/AGENTS.template.md`
+`.agents/skills/doxanh/assets/project-template/docs/guidelines/AGENTS.template.md`
 as the consuming repository's root `AGENTS.md`, replace every placeholder with
 approved project truth, and create only the project-specific book described by
 the selected modules.
@@ -159,8 +199,8 @@ the selected modules.
 From this standards checkout, the direct planning command is:
 
 ```bash
-node .agents/skills/project-guideline-workflow/assets/project-template/scripts/docs/manage-guideline.mjs plan \
-  --profiles nuxt-web \
+node .agents/skills/doxanh/assets/project-template/scripts/docs/manage-guideline.mjs plan \
+  --profiles nuxt-web,nuxt-api \
   --capabilities cache,queue,realtime
 ```
 
@@ -172,8 +212,8 @@ required by the project-book contract.
 For a bounded existing-project task, select only its rule owners:
 
 ```bash
-node .agents/skills/project-guideline-workflow/assets/project-template/scripts/docs/manage-guideline.mjs plan \
-  --mode task --rules VERIFY-SCOPE-001,UI-ACTION-001
+node .agents/skills/doxanh/assets/project-template/scripts/docs/manage-guideline.mjs plan \
+  --mode task --profiles nuxt-web --rules VERIFY-SCOPE-001,UI-ACTION-001
 ```
 
 Pass approved profiles/capabilities as above. `--modules GDL-065` selects an
@@ -182,6 +222,19 @@ dependency is included. Unknown IDs and inactive required capabilities fail
 explicitly. Required reading is narrowed, not the applicable obligations.
 Use `--mode project` for initial generation, profile changes and complete
 reviews. Each selected instruction module is still read in full.
+
+For a native-only edit in a mixed repository, pass all approved project
+`--profiles` and `--task-profiles flutter-native`. The planner selects native
+rule owners and rejects an unapproved task profile. Project mode requires an
+explicit platform selection; a missing decision must be clarified.
+
+A complete reusable-standard review selects all profiles/capabilities. A
+consumer-book review follows its approved applicability and accounts for every
+document family and generated artifact under
+[the complete-review contract](./.agents/skills/doxanh/assets/project-template/docs/guidelines/modules/25-quality-delivery-and-generation.md#419-complete-requirement-and-generated-document-review).
+Package checks validate the reusable template and planner; actual consumer
+documents, generators, source reconciliation, and application proof require
+that project's checkout.
 
 ## Check or synchronize an installation
 
@@ -248,7 +301,7 @@ The installed discoverable skill is only the bootstrap when versions differ.
 
 ## Prevent unrelated testing
 
-The skill starts with six essential reminders and a task-to-rule table. The
+The skill starts with essential reminders and a task-to-rule table. The
 complete UI, API, datetime, permission and audit rules remain in their owning
 modules; they are mandatory when the change affects that boundary.
 
@@ -260,7 +313,7 @@ The packaged `scripts/verification-policy.mjs` checks a consuming planner's
 export and returns selected `run`/`reuse` commands and exclusions. It rejects
 unrelated dispatch, redundant reruns, missing mappings and unjustified full
 regression. The complete export contract, runnable example and adoption
-fixtures are in [the testing module](./.agents/skills/project-guideline-workflow/assets/project-template/docs/guidelines/modules/80-testing-and-verification.md).
+fixtures are in [the testing module](./.agents/skills/doxanh/assets/project-template/docs/guidelines/modules/80-testing-and-verification.md).
 
 Upgrading a lock is **not adoption proof**. Inspect and test the consumer's
 actual planner and runner adapter with isolated recording commands. A legacy
@@ -272,7 +325,7 @@ integrity, adapter adoption and application evidence separately.
 
 ```text
 .
-├── .agents/skills/project-guideline-workflow/
+├── .agents/skills/doxanh/
 │   ├── SKILL.md
 │   ├── agents/openai.yaml
 │   ├── assets/project-template/

@@ -11,7 +11,7 @@
 ## Canonical ownership
 
 - The distributable skill lives at
-  `.agents/skills/project-guideline-workflow/`.
+  `.agents/skills/doxanh/`.
 - The materialized project template lives only under the skill's
   `assets/project-template/` directory.
 - `README.md` owns installation and update guidance. `CHANGELOG.md` owns

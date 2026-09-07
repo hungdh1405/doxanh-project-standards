@@ -4,14 +4,14 @@ import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import test from 'node:test'
-import { planVerification } from '../.agents/skills/project-guideline-workflow/scripts/verification-policy.mjs'
+import { planVerification } from '../.agents/skills/doxanh/scripts/verification-policy.mjs'
 
-const skill = resolve('.agents/skills/project-guideline-workflow')
-const check = (id, kind = 'runtime', extra = {}) => ({ id, kind, command: ['node', `${id}.mjs`], binding: 'content', phase: 'verify', ...extra })
+const skill = resolve('.agents/skills/doxanh')
+const check = (id, kind = 'runtime', extra = {}) => ({ id, kind, command: ['node', `${id}.mjs`], binding: 'content', phase: 'verify', browser_runs: [], ...extra })
 const checks = [check('book', 'documentation'), check('unit'), check('api'), check('chrome'), check('unrelated'), check('all', 'runtime', { full_only: true })]
 function fixture(runtime = false) {
   return {
-    schema_version: 1, mode: 'changed', changed_paths: ['docs/product.md'], unmatched_paths: [],
+    schema_version: 2, mode: 'changed', changed_paths: ['docs/product.md'], unmatched_paths: [],
     impacts: [{ path: 'docs/product.md', kind: 'documentation', reason: 'Wording only', checks: ['book'] },
       ...(runtime ? [{ path: 'src/orders.ts', kind: 'runtime', reason: 'Changed order validation and its API boundary', checks: ['unit', 'api'] }] : [])],
     checks: structuredClone(checks), bindings: { content: 'content-a', context: 'toolchain-a' }, evidence: [],
@@ -160,7 +160,7 @@ test('proposed command dispatch rejects unrelated tests, omitted proof and redun
 test('task reading narrows owners and rejects unknown IDs or silently enabled features', () => {
   const planner = resolve(skill, 'assets/project-template/scripts/docs/manage-guideline.mjs')
   const run = (...args) => spawnSync(process.execPath, [planner, 'plan', ...args], { encoding: 'utf8' })
-  const full = JSON.parse(run('--mode', 'project').stdout)
+  const full = JSON.parse(run('--mode', 'project', '--profiles', 'nuxt-web,nuxt-api').stdout)
   const focused = JSON.parse(run('--mode', 'task', '--rules', 'VERIFY-SCOPE-001').stdout)
   assert.deepEqual(focused.modules.map(row => row.id), ['GDL-000', 'GDL-080'])
   assert.ok(focused.modules.length < full.modules.length / 2)
@@ -174,9 +174,124 @@ test('task reading narrows owners and rejects unknown IDs or silently enabled fe
   assert.ok(plan.modules.some(row => row.id === 'GDL-064'))
 })
 
+test('project planning requires explicit independent platforms and never scaffolds another client', () => {
+  const planner = resolve(skill, 'assets/project-template/scripts/docs/manage-guideline.mjs')
+  const run = (...args) => spawnSync(process.execPath, [planner, 'plan', ...args], { encoding: 'utf8' })
+  const missing = run('--mode', 'project')
+  assert.notEqual(missing.status, 0)
+  assert.match(missing.stderr, /approved --profiles/)
+  for (const profile of ['nuxt-web', 'nuxt-api', 'flutter-native']) {
+    const result = run('--mode', 'project', '--profiles', profile)
+    assert.equal(result.status, 0, result.stderr)
+    const plan = JSON.parse(result.stdout)
+    assert.deepEqual(plan.profiles, [profile, 'shared'].sort())
+    const ids = new Set(plan.modules.map(row => row.id))
+    assert.equal(ids.has('GDL-050'), profile === 'nuxt-web')
+    assert.equal(ids.has('GDL-053'), profile === 'flutter-native')
+    assert.equal(ids.has('GDL-061'), profile === 'nuxt-api')
+  }
+})
+
+test('mixed-project native tasks select native rule owners and reject unapproved task platforms', () => {
+  const planner = resolve(skill, 'assets/project-template/scripts/docs/manage-guideline.mjs')
+  const run = (...args) => spawnSync(process.execPath, [planner, 'plan', '--mode', 'task', ...args], { encoding: 'utf8' })
+  const native = run('--profiles', 'nuxt-web,nuxt-api,flutter-native', '--task-profiles', 'flutter-native', '--rules', 'UI-COPY-001,UI-RESP-001,TIME-PRESENTATION-001')
+  assert.equal(native.status, 0, native.stderr)
+  const plan = JSON.parse(native.stdout)
+  assert.deepEqual(plan.task_profiles, ['flutter-native', 'shared'])
+  assert.ok(plan.modules.some(row => row.id === 'GDL-053'))
+  assert.ok(plan.modules.every(row => !['GDL-040', 'GDL-042', 'GDL-050', 'GDL-051', 'GDL-052'].includes(row.id)))
+  const web = run('--profiles', 'nuxt-web,flutter-native', '--task-profiles', 'nuxt-web', '--rules', 'UI-COPY-001')
+  assert.equal(web.status, 0, web.stderr)
+  assert.ok(JSON.parse(web.stdout).modules.every(row => row.id !== 'GDL-053'))
+  assert.notEqual(run('--profiles', 'nuxt-web', '--task-profiles', 'flutter-native', '--rules', 'UI-COPY-001').status, 0)
+  assert.notEqual(run('--profiles', 'nuxt-api', '--rules', 'UI-COPY-001').status, 0)
+})
+
 test('published example is an executable valid documentation-only scope plan', async () => {
   const source = await readFile(resolve(skill, 'assets/project-template/docs/guidelines/modules/80-testing-and-verification.md'), 'utf8')
   const section = source.slice(source.indexOf('For example, one documentation edit'))
   const example = JSON.parse(section.match(/```json\n([\s\S]*?)\n```/u)[1])
   assert.deepEqual(planVerification(example).selected.map(row => row.id), ['book'])
+})
+
+function browserFixture() {
+  const input = fixture(true)
+  const browserCheck = (id, project, engine, coverage) => check(id, 'runtime', {
+    command: ['pnpm', 'exec', 'playwright', 'test', `${id}.spec.ts`, `--project=${project}`],
+    browser_runs: [{ project, engine, coverage }],
+  })
+  input.checks.push(
+    browserCheck('chrome-flow', 'chrome', 'chromium', 'functional'),
+    browserCheck('firefox-layout', 'firefox', 'firefox', 'ui-ux'),
+    browserCheck('safari-layout', 'safari', 'webkit', 'ui-ux'),
+    browserCheck('mobile-layout', 'mobile-chrome', 'chromium', 'ui-ux'),
+    browserCheck('safari-print', 'safari', 'webkit', 'functional'),
+    browserCheck('safari-unrelated-flow', 'safari', 'webkit', 'functional'),
+  )
+  input.browser_policy = { functional_project: 'chrome' }
+  input.impacts[1].checks.push('chrome-flow', 'firefox-layout', 'safari-layout', 'mobile-layout')
+  return input
+}
+
+test('Chrome functional and secondary UI/UX checks run only for selected surfaces', () => {
+  const input = browserFixture()
+  const plan = planVerification(input)
+  assert.deepEqual(plan.selected.map(row => row.id), ['book', 'unit', 'api', 'chrome-flow', 'firefox-layout', 'safari-layout', 'mobile-layout'])
+  input.evidence = evidenceFor(plan, input.bindings)
+  input.bindings.revision = 'committed-content'
+  input.requested_checks = []
+  assert.ok(planVerification(input).selected.every(row => row.action === 'reuse'))
+})
+
+test('full regression expands workflows without multiplying secondary functional suites', () => {
+  const input = browserFixture()
+  input.mode = 'full'
+  input.full_regression = { trigger: 'explicit-request', reason: 'Run full tests for the candidate' }
+  const plan = planVerification(input)
+  assert.ok(plan.selected.some(row => row.id === 'all'))
+  assert.deepEqual(plan.excluded.map(row => row.id), ['safari-print', 'safari-unrelated-flow'])
+  assert.match(plan.excluded[0].reason, /UI\/UX compatibility/)
+})
+
+test('secondary functional coverage requires a specific browser reason and exact checks', () => {
+  const input = browserFixture()
+  input.impacts[1].checks.push('safari-print')
+  assert.throws(() => planVerification(input), /secondary-browser functional/)
+  input.browser_policy.additional_functional = [{ project: 'safari', trigger: 'release', reason: 'Deploying', checks: ['safari-print'] }]
+  assert.throws(() => planVerification(input), /browser-specific trigger/)
+  input.browser_policy.additional_functional[0] = { project: 'safari', trigger: 'browser-specific-risk', reason: 'Changed print handling uses a browser-specific popup lifecycle', checks: ['safari-print'] }
+  assert.ok(planVerification(input).selected.some(row => row.id === 'safari-print'))
+  input.mode = 'full'
+  input.full_regression = { trigger: 'cross-cutting-change', reason: 'Shared print component affects registered consumers' }
+  assert.deepEqual(planVerification(input).excluded.map(row => row.id), ['safari-unrelated-flow'])
+  input.browser_policy.additional_functional[0].checks.push('missing')
+  assert.throws(() => planVerification(input), /exception checks/)
+})
+
+test('aggregate commands cannot hide extra browser runs, even in full mode', () => {
+  const input = browserFixture()
+  input.checks.push(check('legacy-browser-matrix', 'runtime', { browser_runs: [
+    { project: 'chrome', engine: 'chromium', coverage: 'functional' },
+    { project: 'safari', engine: 'webkit', coverage: 'functional' },
+  ] }))
+  input.impacts[1].checks.push('legacy-browser-matrix')
+  assert.throws(() => planVerification(input), /split aggregate commands/)
+  input.mode = 'full'
+  input.full_regression = { trigger: 'explicit-request', reason: 'Full workflow baseline' }
+  assert.throws(() => planVerification(input), /split aggregate commands/)
+  input.checks.at(-1).kind = 'static'
+  assert.throws(() => planVerification(input), /browser commands must be runtime/)
+})
+
+test('missing browser metadata and old exports require migration instead of silent fallback', () => {
+  const old = fixture()
+  old.schema_version = 1
+  assert.throws(() => planVerification(old), /schema_version must be 2/)
+  const incomplete = fixture()
+  delete incomplete.checks[0].browser_runs
+  assert.throws(() => planVerification(incomplete), /browser_runs must be an array/)
+  const invalid = browserFixture()
+  invalid.browser_policy.functional_project = 'safari'
+  assert.throws(() => planVerification(invalid), /Chrome\/Chromium/)
 })

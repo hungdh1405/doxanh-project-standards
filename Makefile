@@ -5,8 +5,8 @@ PROJECT_ROOT ?=
 REPO_ROOT ?= $(PROJECT_ROOT)
 SKILLS_HOME ?= $(if $(CODEX_HOME),$(CODEX_HOME)/skills,$(HOME)/.codex/skills)
 REPLACE_SKILL ?= 0
-CLI := .agents/skills/project-guideline-workflow/scripts/project-standards.mjs
-SKILL_CLI := .agents/skills/project-guideline-workflow/scripts/manage-user-skill.mjs
+CLI := .agents/skills/doxanh/scripts/project-standards.mjs
+SKILL_CLI := .agents/skills/doxanh/scripts/manage-user-skill.mjs
 
 .PHONY: help install update installed-check skill-sync skill-check skill-resolve sync check test
 
@@ -38,7 +38,7 @@ skill-resolve: ## Print the verified skill root for PROJECT_ROOT's locked versio
 
 sync: ## Preflight then sequentially update one project and its user skill.
 	@test -n "$(PROJECT_ROOT)" || (echo "PROJECT_ROOT is required" >&2; exit 2)
-	$(NODE) .agents/skills/project-guideline-workflow/scripts/sync-standards.mjs \
+	$(NODE) .agents/skills/doxanh/scripts/sync-standards.mjs \
 		--target "$(PROJECT_ROOT)" --repo-root "$(REPO_ROOT)" --skills-home "$(SKILLS_HOME)" \
 		$(if $(filter 1,$(REPLACE_SKILL)),--replace-recognized,)
 
