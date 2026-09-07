@@ -3,6 +3,7 @@
 import { createHash } from 'node:crypto'
 import {
   lstat,
+  cp,
   mkdir,
   readFile,
   readdir,
@@ -12,7 +13,7 @@ import {
   symlink,
 } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { basename, dirname, resolve } from 'node:path'
+import { basename, dirname, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const skillName = 'project-guideline-workflow'
@@ -84,7 +85,12 @@ async function skillContractFingerprint(source) {
 }
 
 async function canonicalSource() {
-  const source = await realpath(sourceSkillRoot)
+  const source = await realpath(option('--source') ?? sourceSkillRoot)
+  const metadata = await verifyPackage(source)
+  return { metadata, source }
+}
+
+async function verifyPackage(source) {
   const skill = await readFile(resolve(source, 'SKILL.md'), 'utf8')
   const metadata = JSON.parse(
     await readFile(resolve(source, 'assets/project-standards.json'), 'utf8'),
@@ -101,7 +107,22 @@ async function canonicalSource() {
   if (fingerprint !== metadata.skill_contract_sha256) {
     throw new Error('source skill contract differs from its package fingerprint')
   }
-  return { metadata, source }
+  const template = resolve(source, 'assets/project-template')
+  let rows = ''
+  for (const path of await collectFiles(template)) {
+    rows += `${path}\0${sha256(await readFile(resolve(template, path)))}\n`
+  }
+  if (sha256(rows) !== metadata.project_template_sha256) {
+    throw new Error('source template differs from its package fingerprint')
+  }
+  // Extra personal files are divergence too, not disposable installer content.
+  const allowed = new Set(['SKILL.md', 'assets/project-standards.json'])
+  for (const path of await collectFiles(source)) {
+    if (!allowed.has(path) && !['agents/', 'scripts/', 'assets/project-template/'].some(prefix => path.startsWith(prefix))) {
+      throw new Error(`unmanaged file in installed skill: ${path}`)
+    }
+  }
+  return metadata
 }
 
 async function skillsHome(create) {
@@ -119,13 +140,8 @@ async function skillsHome(create) {
 
 async function recognizedInstalledDirectory(destination) {
   try {
-    const skill = await readFile(resolve(destination, 'SKILL.md'), 'utf8')
-    const metadata = JSON.parse(
-      await readFile(resolve(destination, 'assets/project-standards.json'), 'utf8'),
-    )
-    return skill.startsWith(`---\nname: ${skillName}\n`)
-      && metadata.name === 'doxanh-project-standards'
-      && /^[a-f0-9]{64}$/u.test(metadata.skill_contract_sha256 ?? '')
+    await verifyPackage(destination)
+    return true
   }
   catch {
     return false
@@ -167,7 +183,7 @@ async function replaceWithSymlink(destination, source) {
       movedExisting = true
     }
     await rename(temporary, destination)
-    if (movedExisting) await rm(backup, { recursive: true, force: true })
+    if (movedExisting) console.log(`Previous installation retained at ${backup}`)
   }
   catch (error) {
     await rm(temporary, { force: true })
@@ -177,8 +193,15 @@ async function replaceWithSymlink(destination, source) {
 }
 
 async function check() {
-  const { metadata, source } = await canonicalSource()
+  const { metadata } = await canonicalSource()
   const home = await skillsHome(false)
+  if (option('--target')) {
+    const source = await resolveLocked(home)
+    console.log(`Verified locked user skill: ${source}`)
+    return
+  }
+  const source = snapshotPath(home, metadata)
+  await verifySnapshot(home, metadata)
   const destination = resolve(home, skillName)
   const state = await destinationState(destination, source)
   if (state.kind !== 'current-symlink') {
@@ -195,30 +218,117 @@ async function sync() {
   const { metadata, source } = await canonicalSource()
   const home = await skillsHome(true)
   const destination = resolve(home, skillName)
-  const state = await destinationState(destination, source)
+  const snapshot = snapshotPath(home, metadata)
+  await assertSnapshotParents(home, snapshot)
+  const state = await destinationState(destination, snapshot)
+  await assertReplaceable(state, home, source)
+  await cacheSnapshot(home, source, metadata)
   if (state.kind === 'current-symlink') {
     console.log(`User skill ${skillName} ${metadata.version} is already synchronized.`)
     return
   }
-  if (
-    state.kind !== 'missing'
-    && !(state.kind === 'recognized-directory' && hasFlag('--replace-recognized'))
-  ) {
-    throw new Error(
-      `${destination} is ${state.kind}; refusing to replace an unowned skill path`,
-    )
-  }
-  await replaceWithSymlink(destination, source)
+  await replaceWithSymlink(destination, snapshot)
   console.log(
-    `Synchronized user skill ${skillName} ${metadata.version}: ${destination} -> ${source}`,
+    `Synchronized user skill ${skillName} ${metadata.version}: ${destination} -> ${snapshot}`,
   )
 }
 
-try {
-  if (!['check', 'sync'].includes(command)) {
-    fail('use check or sync')
+async function cacheSnapshot(home, source, metadata) {
+  const snapshot = snapshotPath(home, metadata)
+  await assertSnapshotParents(home, snapshot)
+  if (await exists(snapshot)) await verifySnapshot(home, metadata)
+  else {
+    const parent = dirname(snapshot)
+    await mkdir(parent, { recursive: true })
+    const temporary = `${snapshot}.tmp-${process.pid}-${Date.now()}`
+    try {
+      await cp(source, temporary, { recursive: true, errorOnExist: true, force: false })
+      await verifyPackage(temporary)
+      await rename(temporary, snapshot)
+    }
+    finally { await rm(temporary, { recursive: true, force: true }) }
   }
+  return snapshot
+}
+
+function snapshotPath(home, metadata) {
+  return resolve(home, '.doxanh-project-standards', `${metadata.version}-${metadata.project_template_sha256}-${metadata.skill_contract_sha256}`, skillName)
+}
+
+async function assertSnapshotParents(home, snapshot) {
+  let cursor = snapshot
+  while (cursor !== home) {
+    if (await exists(cursor)) {
+      const details = await lstat(cursor)
+      if (details.isSymbolicLink() || !details.isDirectory()) throw new Error(`snapshot path must use real directories: ${cursor}`)
+    }
+    cursor = dirname(cursor)
+  }
+}
+
+async function verifySnapshot(home, expected) {
+  const snapshot = snapshotPath(home, expected)
+  await assertSnapshotParents(home, snapshot)
+  const actual = await verifyPackage(snapshot)
+  for (const key of ['version', 'project_template_sha256', 'skill_contract_sha256']) {
+    if (actual[key] !== expected[key]) throw new Error(`snapshot ${key} differs from selected release`)
+  }
+  return snapshot
+}
+
+async function assertReplaceable(state, home, source) {
+  if (['missing', 'current-symlink'].includes(state.kind)) return
+  if (state.kind === 'recognized-directory' && hasFlag('--replace-recognized')) return
+  if (state.kind === 'other-symlink' && await recognizedInstalledDirectory(state.target)) {
+    const managedRelative = relative(resolve(home, '.doxanh-project-standards'), state.target)
+    const managed = managedRelative !== '..' && !managedRelative.startsWith(`..${sep}`) && !managedRelative.startsWith(sep)
+    if (managed || state.target === source || hasFlag('--replace-recognized')) return
+  }
+  throw new Error(`${skillName} is ${state.kind}; refusing to replace an unowned skill path or local divergence`)
+}
+
+async function resolveLocked(home) {
+  const lockPath = resolve(option('--target'), '.doxanh-project-standards.json')
+  if ((await lstat(lockPath)).isSymbolicLink()) throw new Error('project lock must not be a symlink')
+  const lock = JSON.parse(await readFile(lockPath, 'utf8'))
+  if (lock.schema_version !== 3 || lock.name !== 'doxanh-project-standards'
+    || !/^\d+\.\d+\.\d+$/u.test(lock.version ?? '')
+    || !/^[a-f0-9]{64}$/u.test(lock.guideline_package_sha256 ?? '')
+    || !/^[a-f0-9]{64}$/u.test(lock.skill?.contract_sha256 ?? '')) {
+    throw new Error('version resolution requires a valid reference-only project lock')
+  }
+  const expected = { version: lock.version, project_template_sha256: lock.guideline_package_sha256, skill_contract_sha256: lock.skill.contract_sha256 }
+  return verifySnapshot(home, expected)
+}
+
+async function preflight() {
+  const { metadata, source } = await canonicalSource()
+  const homeInput = option('--skills-home') ?? (process.env.CODEX_HOME ? resolve(process.env.CODEX_HOME, 'skills') : resolve(homedir(), '.codex/skills'))
+  if (await exists(homeInput)) {
+    const home = await skillsHome(false)
+    const snapshot = snapshotPath(home, metadata)
+    await assertSnapshotParents(home, snapshot)
+    if (await exists(snapshot)) await verifySnapshot(home, metadata)
+    await assertReplaceable(await destinationState(resolve(home, skillName), snapshot), home, source)
+  }
+  console.log('User skill preflight passed; no files changed.')
+}
+
+try {
+  if (!['check', 'sync', 'cache', 'preflight', 'resolve'].includes(command)) {
+    fail('use check, sync, cache --source <released-skill>, preflight, or resolve --target <project-root>')
+  }
+  if (option('--source') && command !== 'cache') throw new Error('--source is only supported by cache; sync must use its own release')
   if (command === 'check') await check()
+  else if (command === 'preflight') await preflight()
+  else if (command === 'resolve') {
+    if (!option('--target')) throw new Error('--target is required')
+    console.log(await resolveLocked(await skillsHome(false)))
+  }
+  else if (command === 'cache') {
+    const { source, metadata } = await canonicalSource()
+    console.log(await cacheSnapshot(await skillsHome(true), source, metadata))
+  }
   else await sync()
 }
 catch (error) {

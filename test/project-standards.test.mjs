@@ -319,7 +319,7 @@ test('keeps releases risk-scoped while requiring candidate and live-target proof
     assert.match(source, /target\s+environment/u)
   }
   for (const source of [testingContract, agentRules, agentTemplate, skillContract]) {
-    assert.match(source, /(?:a )?release (?:label|status) alone.*not.*full-regression trigger/isu)
+    assert.match(source, /(?:a )?release (?:label|status)\s+alone.*not.*full-regression trigger/isu)
     assert.match(source, /local-only evidence|Local evidence.*never replaces/isu)
   }
   assert.match(testingContract, /records unrelated actors, screens, and browser profiles as excluded/u)
@@ -464,7 +464,7 @@ test('requires evidence-scoped binary completion claims', async () => {
     assert.match(source, /VERIFY-CLAIM-001/u)
     assert.match(source, /unambiguous [`]?Yes[`]? or [`]?No|first sentence must give one unambiguous answer/iu)
     assert.match(source, /finite (?:declared |acceptance )?scope/iu)
-    assert.match(source, /zero defects/u)
+    assert.match(source, /zero\s+defects/u)
   }
   assert.match(testingContract, /failed, skipped, stale, pending, flaky-only, not-tested/iu)
   assert.match(testingContract, /completion_claim/u)
@@ -629,7 +629,8 @@ test('synchronizes and verifies one user-level skill symlink', async () => {
     assert.equal(synced.status, 0, synced.stderr)
     const destination = resolve(skillsHome, 'project-guideline-workflow')
     assert.equal((await lstat(destination)).isSymbolicLink(), true)
-    assert.equal(await realpath(destination), await realpath(skillRoot))
+    assert.notEqual(await realpath(destination), await realpath(skillRoot))
+    assert.equal(await readFile(resolve(destination, 'SKILL.md'), 'utf8'), await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8'))
 
     const checked = runSkill('check', skillsHome)
     assert.equal(checked.status, 0, checked.stderr)
@@ -675,4 +676,131 @@ test('refuses to replace an unknown user skill directory', async () => {
   finally {
     await rm(sandbox, { recursive: true, force: true })
   }
+})
+
+test('copied skill migration refuses changed instructions, assets and extra personal files', async () => {
+  for (const path of ['SKILL.md', 'assets/project-template/docs/guidelines/README.md', 'my-notes.md']) {
+    const sandbox = await mkdtemp(resolve(tmpdir(), 'doxanh-skill-drift-'))
+    const skillsHome = resolve(sandbox, 'skills')
+    const destination = resolve(skillsHome, 'project-guideline-workflow')
+    try {
+      await cp(skillRoot, destination, { recursive: true })
+      await writeFile(resolve(destination, path), 'local work; must preserve\n')
+      const result = runSkill('sync', skillsHome, '--replace-recognized')
+      assert.notEqual(result.status, 0)
+      assert.equal(await readFile(resolve(destination, path), 'utf8'), 'local work; must preserve\n')
+      assert.equal((await lstat(destination)).isDirectory(), true)
+    }
+    finally { await rm(sandbox, { recursive: true, force: true }) }
+  }
+})
+
+test('verified copied skill migration retains a recoverable backup', async () => {
+  const sandbox = await mkdtemp(resolve(tmpdir(), 'doxanh-skill-backup-'))
+  const skillsHome = resolve(sandbox, 'skills')
+  try {
+    await cp(skillRoot, resolve(skillsHome, 'project-guideline-workflow'), { recursive: true })
+    const result = runSkill('sync', skillsHome, '--replace-recognized')
+    assert.equal(result.status, 0, result.stderr)
+    const backup = (await readdir(skillsHome)).find(name => name.endsWith('.bak'))
+    assert.ok(backup)
+    assert.equal(await readFile(resolve(skillsHome, backup, 'SKILL.md'), 'utf8'), await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8'))
+  }
+  finally { await rm(sandbox, { recursive: true, force: true }) }
+})
+
+test('two projects resolve distinct immutable versions after another project upgrades', async () => {
+  const sandbox = await mkdtemp(resolve(tmpdir(), 'doxanh-two-versions-'))
+  const skillsHome = resolve(sandbox, 'skills')
+  const first = resolve(sandbox, 'first')
+  const second = resolve(sandbox, 'second')
+  const nextSkill = resolve(sandbox, 'next-release')
+  try {
+    await mkdir(first)
+    await mkdir(second)
+    assert.equal(run('install', first, first).status, 0)
+    assert.equal(runSkill('sync', skillsHome).status, 0)
+    const firstRoot = runSkill('resolve', skillsHome, '--target', first).stdout.trim()
+    assert.ok(firstRoot)
+    await cp(skillRoot, nextSkill, { recursive: true })
+    const nextMetadata = { ...metadata, version: '99.0.0' }
+    // Change the checkout after caching: its existing snapshot stays untouched.
+    await writeFile(resolve(nextSkill, 'SKILL.md'), `${await readFile(resolve(nextSkill, 'SKILL.md'), 'utf8')}\nNew release fixture.\n`)
+    const paths = (await collectFiles(nextSkill)).filter(path => path === 'SKILL.md' || path.startsWith('agents/') || path.startsWith('scripts/')).sort()
+    let rows = ''
+    for (const path of paths) rows += `${path}\0${sha256(await readFile(resolve(nextSkill, path)))}\n`
+    nextMetadata.skill_contract_sha256 = sha256(rows)
+    await writeFile(resolve(nextSkill, 'assets/project-standards.json'), JSON.stringify(nextMetadata))
+    const install = spawnSync(process.execPath, [resolve(nextSkill, 'scripts/project-standards.mjs'), 'install', '--target', second], { encoding: 'utf8' })
+    assert.equal(install.status, 0, install.stderr)
+    const cached = runSkill('cache', skillsHome, '--source', nextSkill)
+    assert.equal(cached.status, 0, cached.stderr)
+    assert.equal(await realpath(resolve(skillsHome, 'project-guideline-workflow')), firstRoot)
+    assert.equal(runSkill('resolve', skillsHome, '--target', second).status, 0)
+    const sync = spawnSync(process.execPath, [resolve(nextSkill, 'scripts/manage-user-skill.mjs'), 'sync', '--skills-home', skillsHome], { encoding: 'utf8' })
+    assert.equal(sync.status, 0, sync.stderr)
+    const secondRoot = runSkill('resolve', skillsHome, '--target', second).stdout.trim()
+    assert.notEqual(firstRoot, secondRoot)
+    assert.equal(runSkill('resolve', skillsHome, '--target', first).stdout.trim(), firstRoot)
+    assert.equal(await readFile(resolve(firstRoot, 'SKILL.md'), 'utf8'), await readFile(resolve(skillRoot, 'SKILL.md'), 'utf8'))
+    await writeFile(resolve(nextSkill, 'SKILL.md'), 'mutable checkout changed again\n')
+    assert.equal(runSkill('resolve', skillsHome, '--target', second).status, 0)
+    await writeFile(resolve(secondRoot, 'SKILL.md'), 'snapshot drift\n')
+    assert.notEqual(runSkill('resolve', skillsHome, '--target', second).status, 0)
+  }
+  finally { await rm(sandbox, { recursive: true, force: true }) }
+})
+
+test('parallel make sync is sequential internally and preflight preserves a conflicting installation', async () => {
+  const roots = await fixture(true)
+  const skillsHome = resolve(roots.repositoryRoot, 'skills')
+  try {
+    await writeLegacyInstallation(roots, 2)
+    const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
+    const before = await readFile(lockPath, 'utf8')
+    await mkdir(resolve(skillsHome, 'project-guideline-workflow'), { recursive: true })
+    await writeFile(resolve(skillsHome, 'project-guideline-workflow/SKILL.md'), 'unowned\n')
+    const runSync = () => spawnSync('make', ['-j4', 'sync', `PROJECT_ROOT=${roots.projectRoot}`, `REPO_ROOT=${roots.repositoryRoot}`, `SKILLS_HOME=${skillsHome}`], { cwd: root, encoding: 'utf8' })
+    assert.notEqual(runSync().status, 0)
+    assert.equal(await readFile(lockPath, 'utf8'), before)
+    assert.equal(await readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md'), 'utf8'), await readFile(resolve(templateRoot, 'docs/guidelines/README.md'), 'utf8'))
+    await rm(resolve(skillsHome, 'project-guideline-workflow'), { recursive: true })
+    const result = runSync()
+    assert.equal(result.status, 0, result.stderr)
+    assert.equal(run('check', roots.projectRoot, roots.repositoryRoot).status, 0)
+    assert.equal(runSkill('check', skillsHome).status, 0)
+    const skillEntries = await readdir(skillsHome)
+    const currentLock = await readFile(lockPath, 'utf8')
+    assert.equal(runSync().status, 0)
+    assert.deepEqual(await readdir(skillsHome), skillEntries)
+    assert.equal(await readFile(lockPath, 'utf8'), currentLock)
+    const syncGuard = resolve(skillsHome, '.doxanh-standards-sync.lock')
+    await mkdir(syncGuard)
+    assert.notEqual(runSync().status, 0)
+    assert.equal((await lstat(syncGuard)).isDirectory(), true)
+    assert.equal(await readFile(lockPath, 'utf8'), currentLock)
+  }
+  finally { await rm(roots.repositoryRoot, { recursive: true, force: true }) }
+})
+
+test('failed migration restores the previous project files, lock and user skill', async () => {
+  const roots = await fixture(true)
+  const skillsHome = resolve(roots.repositoryRoot, 'skills')
+  try {
+    await writeLegacyInstallation(roots, 2)
+    await cp(skillRoot, resolve(skillsHome, 'project-guideline-workflow'), { recursive: true })
+    const lockPath = resolve(roots.projectRoot, '.doxanh-project-standards.json')
+    const before = await readFile(lockPath, 'utf8')
+    // Not present in the legacy lock: discovered by the final reference-only
+    // check after migration, forcing the rollback path without fault-injection APIs.
+    await writeFile(resolve(roots.projectRoot, 'docs/new-project-guideline.md'), 'unregistered copy\n')
+    const result = spawnSync('make', ['sync', `PROJECT_ROOT=${roots.projectRoot}`, `REPO_ROOT=${roots.repositoryRoot}`, `SKILLS_HOME=${skillsHome}`, 'REPLACE_SKILL=1'], { cwd: root, encoding: 'utf8' })
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, /previous lock and managed files restored/)
+    assert.equal(await readFile(lockPath, 'utf8'), before)
+    assert.equal(await readFile(resolve(roots.projectRoot, 'docs/guidelines/README.md'), 'utf8'), await readFile(resolve(templateRoot, 'docs/guidelines/README.md'), 'utf8'))
+    assert.equal((await lstat(resolve(skillsHome, 'project-guideline-workflow'))).isDirectory(), true)
+    assert.equal(await readFile(resolve(roots.projectRoot, 'docs/new-project-guideline.md'), 'utf8'), 'unregistered copy\n')
+  }
+  finally { await rm(roots.repositoryRoot, { recursive: true, force: true }) }
 })

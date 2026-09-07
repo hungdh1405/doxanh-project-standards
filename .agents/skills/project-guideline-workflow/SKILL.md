@@ -5,162 +5,105 @@ description: Install, update, or apply the Doxanh modular new-project standard; 
 
 # Project Guideline Workflow
 
-Use the repository contract as authority. This skill distributes, discovers,
-and applies that contract; it does not replace project truth or verification.
+## Essential reminders — every task
 
-## Bootstrap or update
+1. Read applicable `AGENTS.md`, inspect status, and identify the requested
+   outcome. Preserve unrelated work. A review is not permission to edit; an
+   edit is not permission to commit, push, deploy or mutate production data.
+2. Use the project's **locked standard**, approved project book, and actual
+   owning source/tests. Memory, installed prose and earlier claims are not
+   implementation evidence. Resolve with this skill's
+   `scripts/manage-user-skill.mjs resolve --target <project-root>` and read the
+   returned version's `SKILL.md` when different. Ask about material missing
+   requirements; a missing cached version is not permission to upgrade its lock.
+3. **Before tests, state what changed and why each selected check is needed.**
+   Apply `VERIFY-SCOPE-001`. Start with the smallest complete risk-scoped evidence set.
+   Build mixed-worktree verification as the union of per-path evidence.
+   Documentation contributes documentation/contract checks, not unrelated
+   application flows. Do not select every suite merely
+   because at least one source file changed.
+4. **After selected checks pass, stop testing and continue to the requested
+   outcome.** Expand only for a demonstrated dependency, relevant failure, or
+   objective full-regression trigger. “Continue,” “test carefully,” commit,
+   push, deploy and release are not triggers by themselves. A release label
+   alone is not a full-regression trigger.
+5. **Reuse current evidence.** Never rerun a changed-scope suite solely because verified files were committed.
+   Recheck complete maintained-content and relevant environment/configuration
+   fingerprints, not just `HEAD`. For a release, add only missing
+   candidate/image/target/deployment-bound gates and the phase-aware universal
+   release baseline. Local-only evidence cannot satisfy a production claim:
+   prove the changed workflow on the named target.
+6. **Mandatory means mandatory when applicable, not every check on every task.**
+   Use the table below before implementation and at final review. Missing
+   mappings fail closed; a safe full-rule fallback is an
+   unresolved mapping state, not permission to run everything.
 
-The GitHub standards repository is the only editable skill and guideline
-source. A consuming project contains only a reference-only version lock, never
-copied guideline modules or a repository-scoped copy of this skill. The
-user-level skill is a symlink to the selected standards checkout so same-named
-skills are not duplicated.
+## Route to the rules that matter
 
-For a project without `.doxanh-project-standards.json`, run from a released
-standards checkout:
+These reminders point to canonical owners; they do not replace those rules.
+Use the project rule planner for anticipated paths and again for actual changes.
+Read each selected module completely, including required references. Add owners
+when source/dependency analysis reveals another affected boundary.
+
+| Changed surface | Mandatory reminder | Owning modules |
+| --- | --- | --- |
+| Verification, completion, release | `VERIFY-SCOPE-001`, `VERIFY-CLAIM-001`: exact scope, evidence reuse, named live target, honest result. | GDL-080 |
+| Web UI | `UI-VISUAL-001`, `UI-DENSITY-001`, `UI-RESP-001`, `UI-ACCESS-001`: default shadcn-vue, layout-only Tailwind, compact and touch-safe, mobile-first, bounded scrolling, themes and accessibility. Load applicable Vue, shadcn-vue and UI/UX skills. | GDL-050, GDL-051, GDL-052 |
+| Copy, labels, choices | `UI-COPY-001`: canonical actor/scope/entity vocabulary, all locales, no raw keys or implementation narration. `UI-CONTROL-001`: long/remote/searchable catalogs use Combobox. | GDL-021, GDL-052 |
+| Forms, overlays, actionable feedback | `UI-ACTION-001`, `UI-STATE-001`: readable icon/content, separate action region, consistent cancel/commit order, real handlers, confirmation before writes, failure/conflict recovery. | GDL-030, GDL-051, GDL-052 |
+| Records, filters, options, counts, exports | `UI-AUDIENCE-001`: the server authorizes the whole observable surface; hiding a control is not isolation. | GDL-051, GDL-052, GDL-070 |
+| Dates/times in UI, email, exports, print or input | `TIME-PRESENTATION-001`: shared Day.js boundary for the web/server profile, authoritative scope/system format and IANA zone, strict input conversion, no raw display fallback. | GDL-042 |
+| API, identity, permissions | Fixed `success/code/message/data/request_id` envelope; only `data` varies by endpoint; Zod; server-resolved scoped actor, authorization and safe logging. | GDL-060, GDL-070, GDL-071 |
+| Mutation or referenced data | `DATA-CONCURRENCY-001`, `DATA-REFERENCE-001`: atomic scope/state/revision enforcement, valid reference resolution, winning-only effects and durable activity. | GDL-063, GDL-071 |
+| Project book or database documents | `DOC-BOOK-001`, `DATA-DOC-001`: complete affected lifecycle, actors, transitions, examples, source reconciliation, table/field explanations and executable book/data checks. | GDL-020, GDL-021, GDL-024, GDL-025 |
+| Queue, scheduler, realtime, files, payment, printing, native client | Select active capability/profile owners and required dependencies. Never import another project's business decisions. | Use the module planner |
+
+For an existing-project task or bounded reusable-rule change, use task mode:
 
 ```bash
-make install \
-  PROJECT_ROOT=<application-workspace> \
-  REPO_ROOT=<git-repository-root>
-make skill-sync
+node <locked-skill>/assets/project-template/scripts/docs/manage-guideline.mjs plan \
+  --mode task --rules VERIFY-SCOPE-001,UI-ACTION-001
 ```
 
-For an existing locked installation, use `check` before work and `update` only
-when the user has approved adopting the currently available standard version.
-The updater verifies old copied files before removing them during migration and
-must refuse local divergence. Never bypass that guard by deleting or copying
-assets manually.
+Pass the project's approved `--profiles` and `--capabilities`; use `--modules`
+for owners without a stable rule mapping. Unknown IDs fail, not silently skip.
+For initial project/book generation, profile changes or an explicitly complete
+standard review, use `--mode project` and read the full selected profile plan.
+Do not load every capability for a small existing-project edit.
 
-Use the consuming repository's `make standards-sync` facade when present. It
-must refresh a dedicated clean cache from the approved GitHub repository/ref,
-then call this package's `make sync`. Do not point the user skill at a mutable
-application repository or retain a same-named repository skill alongside it.
+## Execution and completion
 
-After first installation, materialize the installed skill asset
-`assets/project-template/docs/guidelines/AGENTS.template.md` as root
-`AGENTS.md`, resolve every placeholder from approved project truth, and
-register the project's executable rule gates. Do not overwrite an existing
-`AGENTS.md` automatically and do not copy the remaining guideline package.
+- Turn selected rule IDs into acceptance criteria before editing. Update each
+  decision in its canonical owner; keep source, docs and traceability in sync.
+- Before dispatching tests, validate the project's exported scope plan with
+  `scripts/verification-policy.mjs`; read its `--help` contract when adopting
+  the guard. Existing projects need a tested adapter from their actual
+  changed-path planner. If absent, report the adoption gap and inspect the
+  exact command mapping; do not claim the guard is installed.
+- After final edits, regenerate derived artifacts and prove idempotence, rerun
+  the actual-worktree rule plan, execute only selected missing checks and live
+  evidence, then run the freshness/aggregate gate. A relevant failure reopens
+  only the affected slice unless investigation proves wider impact.
+- For completion/readiness/`100%` questions, `VERIFY-CLAIM-001` requires an
+  unambiguous `Yes` or `No` first. `Yes` means the declared finite scope passed
+  on the named candidate/environment with zero open boundaries, never zero
+  defects or a guarantee about unknown future cases. Otherwise report passed
+  scope, exact blockers and the smallest closure plan. Do not silently wait or
+  keep running unrelated tests to manufacture confidence.
 
-## Workflow
+## Installation and upgrades
 
-1. Read every applicable `AGENTS.md`, inspect repository status, run the
-   reference-lock and user-skill integrity checks, and preserve unrelated work.
-2. Read the canonical guideline entry and manifest from this installed skill,
-   then read the project-book entry and actual owning product/source/test files
-   for the requested scope.
-3. Run the repository rule planner with every anticipated project-relative
-   path. For new-project generation or reusable-guideline changes, also run the
-   profile/capability module planner from the standards checkout and read every
-   selected module completely.
-4. Apply `VERIFY-SCOPE-001`: record the change classification, affected
-   boundaries and risks, selected and excluded evidence with reasons, and the
-   objective full-regression decision. A safe full-rule fallback is an
-   unresolved mapping state; do not execute it until the mapping is fixed or an
-   explicit full-regression trigger is recorded. For application source changes,
-   build a dependency-closed slice from the owning module, changed interfaces or
-   trust boundaries, and demonstrably affected direct consumers. Multiple
-   modules contribute the union of their slices. Do not select every suite merely
-   because at least one source file changed. For a release, compare the exact
-   accepted or deployed base revision with the candidate, add the phase-aware
-   universal release baseline and named target-environment proof, and keep
-   unrelated suites excluded. A release label alone is not a full-regression
-   trigger.
-5. Turn selected stable rule IDs into acceptance criteria and verification.
-   Apply `DOC-BOOK-001` whenever project-book chapters, manifest/navigation,
-   glossary, traceability, or durable workflow explanations change. Review the
-   complete affected contract, including every actor, status, transition,
-   result, recovery path, and source/evidence link; do not document only the
-   state or paragraph that triggered the request. Apply `DATA-DOC-001` whenever
-   persisted data or its documentation changes. Reconcile every current table
-   and physical column with the canonical schema and require each DATA section
-   to explain what one row means, why it exists, when and how it is used and
-   changed, full fields, relationships, constraints, indexes, lifecycle,
-   examples, and implementation evidence. Run `docs:data:check`; a migration or
-   ORM definition alone is not a human-readable database contract.
-   For Nuxt/Vue UI, load the applicable Vue, shadcn-vue, and UI/UX skills and
-   apply `UI-CONTROL-001` whenever a choice control is designed, implemented,
-   or reviewed. Apply `UI-COPY-001` to the complete rendered-copy inventory and
-   require glossary-owned canonical actor/scope/entity/state/action labels plus
-   executable rejection of competing synonyms and raw/humanized keys. Apply
-   `DATA-REFERENCE-001` whenever a retire, archive, disable,
-   restore, or permanent-delete command can affect referenced durable records;
-   require the documented dependency classification, server impact preflight,
-   atomic enforcement, rendered resolution/recovery, and focused proof.
-   Apply `TIME-PRESENTATION-001` whenever temporal data is rendered, edited,
-   transported, exported, printed, or reviewed; require the authoritative
-   scope/system presentation context, shared formatter/input boundaries, no raw
-   display fallback, and executable source plus focused rendered proof.
-   Apply `UI-ACTION-001` whenever a form, overlay, actionable notification,
-   alert card, banner, inbox item, or pop-up exposes an action; keep message
-   content in its own readable region and actions in a separate responsive
-   action-only region, then prove long localized content at phone and desktop
-   widths.
-   Apply `UI-AUDIENCE-001` whenever a surface renders scoped records, fields,
-   actions, filters, options, facets, suggestions, counts, summaries, exports,
-   or drill-downs. Require one server-authorized actor/scope/capability/state
-   projection for the complete observable surface; shared components and
-   client-side filtering are never authorization boundaries.
-6. Change each rule or product decision in its single canonical owner. Link
-   from secondary documents, update traceability, and materialize applicable
-   rules in the project's machine-readable gate manifest with real evidence.
-7. Regenerate derived artifacts and prove idempotence. Run the final rule plan
-   against the actual worktree, changed-scope verification, focused live proof
-   selected by the rules, and the verification-freshness check. Bind ordinary
-   changed-scope evidence to the complete maintained-content fingerprint. A
-   commit-only transition with identical maintained content must preserve that
-   evidence and must not trigger a rerun; an actual content change must make it
-   stale. For a release, promote reusable content-identical evidence, run only
-   the missing candidate-, image-, target-, and deployment-bound gates selected
-   by the release plan across their proper pre- or post-deployment phase, and bind
-   the resulting release evidence to the exact Git revision, content fingerprint,
-   immutable candidate image, and environment.
-8. Apply `VERIFY-CLAIM-001` whenever the user asks whether work is complete,
-   fully tested, production-ready, safe to release, covers all cases, or is
-   `100%`. Lead with an unambiguous `Yes` or `No`. Say `Yes` only for 100% of an
-   explicitly declared finite acceptance scope bound to the named candidate and
-   environment, with current evidence and no failed, skipped, stale, pending,
-   not-tested, or otherwise open boundary. Otherwise say `No` first, then give
-   the passed scope, open boundaries, and smallest closure plan. Never present a
-   scope-complete claim as a guarantee of zero defects or unknown future cases.
+The GitHub standards repository is the only editable reusable source. Consumers
+keep a reference-only `.doxanh-project-standards.json`, their project book and
+root `AGENTS.md`; never a duplicate guideline or repository skill.
 
-## Boundaries
+Use the approved release's `make install` for a new lock and `make sync` for an
+approved upgrade (`PROJECT_ROOT`, `REPO_ROOT`). Installer integrity, project
+gate adoption and application behavior are three separate results. A new
+version lock alone proves neither adoption nor runtime compliance.
 
-- Keep reusable guidance generic; keep actors, brands, routes, prices,
-  countries, providers, and state names in the project book.
-- Ask when a missing decision would materially change the result. Do not invent
-  a fallback, role, permission, DTO, or business rule.
-- Do not commit, push, deploy, mutate production data, or expose secrets unless
-  the user explicitly authorizes that action.
-- Treat bundled assets as the external reusable source, not as project-book
-  chapters or proof that a consuming project's book, source, gates, or evidence
-  are complete.
-- Report exact passed and untested boundaries. Never claim complete, 100%,
-  release-ready, or production-safe from partial or stale evidence.
-- Start with the smallest complete risk-scoped evidence set. Release verification
-  is mandatory, but release status alone does not broaden it to every suite. Run
-  full regression only for an explicit request, an initial release or missing
-  accepted baseline, demonstrated cross-cutting impact, systemic focused
-  evidence, or impact that remains unbounded after investigation; “continue,”
-  “test carefully,” “deploy,” or “release” alone does not broaden scope.
-- For module-local source changes, run static checks plus the nearest tests that
-  prove the changed behavior and every boundary it actually crosses. Add API,
-  database, queue, realtime, rendered UI, or browser evidence only when that
-  boundary or a dependent workflow is affected. Include direct consumers shown
-  by imports, calls, schemas, shared contracts, or ownership; exclude unrelated
-  modules, actors, browsers, infrastructure, and production flows with reasons.
-- Build mixed-worktree verification as the union of per-path evidence.
-  Documentation paths contribute documentation, generation, and contract
-  checks only; they cannot select unrelated runtime commands merely because a
-  shared rule also owns prose. Require a changed runtime path, demonstrated
-  dependency, focused failure, or objective full-regression trigger for those
-  commands.
-- A production or release request must name the target environment and exact
-  candidate. Local evidence may be reused as applicable pre-deployment proof,
-  but it never replaces target readiness, deployed-version confirmation, and
-  focused live proof for the affected workflows and dependencies.
-- Never rerun a changed-scope suite solely because verified files were committed
-  without changing their content. The freshness check must compare the complete
-  maintained-content fingerprint. Exact revision equality remains mandatory
-  for candidate release and immutable-image evidence.
+Follow the source repository README for safe installation and version
+resolution. Materialize the linked `AGENTS.template.md` only on first setup,
+resolve its placeholders from project truth, and never overwrite existing
+instructions automatically. Do not change application scopes, secrets, live
+data or the shared installation while merely reviewing this skill.

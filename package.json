@@ -1,6 +1,6 @@
 {
   "name": "doxanh-project-standards",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "private": true,
   "type": "module",
   "description": "Reusable Doxanh project standards and Codex workflow skill",
@@ -9,8 +9,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "check": "node test/check-package.mjs && node --test test/project-standards.test.mjs",
-    "test": "node --test test/project-standards.test.mjs"
+    "check": "node test/check-package.mjs && node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs"
   },
   "license": "MIT",
   "repository": {

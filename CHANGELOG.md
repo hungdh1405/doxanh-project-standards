@@ -3,6 +3,35 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.7.0] - 2026-09-07
+
+### Changed
+
+- Put essential task/test-scope reminders first in the skill. Detailed
+  requirements stay mandatory in their canonical owners; task mode loads only
+  selected owners and dependencies instead of the entire generation profile.
+- Require an explicit test-dispatch checkpoint and stopping condition. Reuse
+  current content-bound proof after commit; add only missing evidence.
+- Separate installed-package integrity, consumer planner/runner adoption and
+  application verification. A changed version lock cannot prove gate adoption.
+
+### Added
+
+- Read-only executable verification-policy guard with behavioral fixtures for
+  documentation, mixed/module-local changes, dependencies, full-regression
+  decisions, phase-aware releases, evidence freshness and proposed dispatch.
+- Content-addressed external skill snapshots and per-project lock resolution,
+  preserving distinct versions without repository-local skill copies.
+
+### Fixed
+
+- Scheduler selection includes its queue/Redis dependency, including task mode.
+- Copied-skill migration validates instruction and template hashes, rejects
+  local divergence and extra files, and retains a recoverable previous copy.
+- Coordinated synchronization preflights both sides and runs sequentially even
+  under parallel Make; migration failures restore managed files and the lock,
+  and coordinated failures restore the prior user skill.
+
 ## [3.6.0] - 2026-09-07
 
 ### Changed

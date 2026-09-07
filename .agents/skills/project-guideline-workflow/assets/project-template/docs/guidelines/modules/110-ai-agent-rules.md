@@ -3,6 +3,10 @@
 
 AI working under this standard must:
 
+- keep the installed skill's essential reminders visible in the task plan;
+  select detailed owners by task/rule, not the whole project profile for every
+  small edit, and follow Section 13.7.2's test-dispatch checkpoint and stopping
+  condition rather than repeatedly re-opening current passing evidence
 - read the repository's applicable root and nested `AGENTS.md` files before
   task work; treat them as concise bootstrap instructions and follow their
   canonical links rather than expecting them to repeat the full standard

@@ -6,9 +6,9 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "c6597d950580f375995347597f1053a23cec4d37ba17bb67de59dc9991af86fe",
-    "bytes": 530730,
-    "lines": 9372,
+    "sha256": "24efd98ac6d9aff62f5288ed6209a9ca04709b99d25e4b09a151225f26d88adf",
+    "bytes": 537592,
+    "lines": 9464,
     "meaning": "Approved complete external guideline with a reference-only consumer lock, required root AGENTS bootstrap, dependency-closed risk-scoped change and release verification, exact base-to-candidate planning, a phase-aware universal release baseline, content-bound reusable evidence, strict candidate and target proof, evidence-scoped completion claims, mandatory executable UI and temporal rules, server-authorized audience projection, canonical vocabulary, complete project-book and database contracts, schema-reconciled data documentation, referenced-record lifecycle resolution, and focused proof requirements on 2026-09-07."
   },
   "profiles": {
@@ -31,6 +31,102 @@
     "realtime",
     "files"
   ],
+  "capability_dependencies": {
+    "scheduler": [
+      "queue"
+    ]
+  },
+  "task_reading": {
+    "always": [
+      "GDL-000",
+      "GDL-080"
+    ],
+    "dependencies": {
+      "GDL-065": [
+        "GDL-064"
+      ],
+      "GDL-066": [
+        "GDL-064"
+      ]
+    },
+    "rules": {
+      "VERIFY-SCOPE-001": [
+        "GDL-080"
+      ],
+      "VERIFY-CLAIM-001": [
+        "GDL-080"
+      ],
+      "DOC-BOOK-001": [
+        "GDL-020",
+        "GDL-021",
+        "GDL-025"
+      ],
+      "DATA-DOC-001": [
+        "GDL-024",
+        "GDL-025"
+      ],
+      "UI-VISUAL-001": [
+        "GDL-050",
+        "GDL-052"
+      ],
+      "UI-DENSITY-001": [
+        "GDL-050",
+        "GDL-051",
+        "GDL-052"
+      ],
+      "UI-AUDIENCE-001": [
+        "GDL-051",
+        "GDL-052",
+        "GDL-070"
+      ],
+      "UI-ACTION-001": [
+        "GDL-030",
+        "GDL-051",
+        "GDL-052"
+      ],
+      "UI-COPY-001": [
+        "GDL-021",
+        "GDL-052"
+      ],
+      "UI-CONTROL-001": [
+        "GDL-052"
+      ],
+      "UI-COLLECTION-001": [
+        "GDL-051"
+      ],
+      "UI-RESP-001": [
+        "GDL-051",
+        "GDL-052"
+      ],
+      "UI-STATE-001": [
+        "GDL-051",
+        "GDL-052"
+      ],
+      "UI-ACCESS-001": [
+        "GDL-052"
+      ],
+      "TIME-PRESENTATION-001": [
+        "GDL-042"
+      ],
+      "DATA-CONCURRENCY-001": [
+        "GDL-063",
+        "GDL-071"
+      ],
+      "DATA-REFERENCE-001": [
+        "GDL-063",
+        "GDL-071"
+      ],
+      "AUTH-SESSION-001": [
+        "GDL-070"
+      ],
+      "ENTRY-SHARE-001": [
+        "GDL-041"
+      ],
+      "COMMERCIAL-001": [
+        "GDL-022"
+      ]
+    }
+  },
   "critical_contracts": {
     "project_book_documentation": {
       "rule_id": "DOC-BOOK-001",

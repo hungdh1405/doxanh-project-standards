@@ -622,6 +622,94 @@ Automatable status is generated from commands; manual status is approved by the
 named reviewer. Unchecked release-blocking work remains visibly pending and
 prevents `verify` from succeeding.
 
+##### Test-dispatch checkpoint and stopping condition
+
+Before the first test command, give the user one short scope statement: changed
+behavior, affected boundaries, selected checks, excluded unrelated checks and
+any missing live target. Do not ask for routine approval of an already-scoped
+check. Before adding a command, name the new dependency or failure that requires
+it. If nothing changed and current evidence still matches, check freshness and
+continue to the requested commit, push or other authorized outcome. Do not
+reopen passed acceptance criteria merely because a new message arrived.
+
+After all selected evidence passes, stop test execution. Move to documentation,
+handoff or the next explicitly authorized action. If a required check is
+blocked, report the exact blocker and smallest closure step; do not substitute
+unrelated successful suites or silently wait for another prompt. Do not create
+a new tracked task/status document for this checkpoint: use the existing
+planner/evidence record and concise commentary.
+
+##### Executable selection guard and adoption proof
+
+The external skill's `scripts/verification-policy.mjs` validates a project-owned
+planner export before test dispatch. It is a read-only selection guard, not a
+test runner, source analyzer, secret scanner or release approver. Its output
+separates selected `run`/`reuse` checks from excluded commands. A project may
+use an equivalent guard only with the same behavioral fixtures below.
+
+Run it with `node <locked-skill>/scripts/verification-policy.mjs <plan.json>`.
+The project adapter owns real Git change discovery, full maintained-content
+hashing, command registration, dependency analysis and trustworthy evidence.
+Do not hand-pick changed paths or invent a passing evidence record. Export:
+
+| Field | Required meaning |
+| --- | --- |
+| `schema_version`, `mode` | Version `1`; `changed`, `release`, or explicitly justified `full`. |
+| `changed_paths`, `unmatched_paths` | Complete maintained task diff or release base-to-candidate diff; unresolved paths block dispatch. |
+| `impacts` | Rows with `path`, `kind`, `reason`, and `checks` IDs. Kinds: `documentation`, `static`, `tooling`, `runtime`. Every changed path needs an explained mapping. |
+| `checks` | Complete active command catalog, not only wanted tests: unique `id`, argument-array `command`, `kind`, `phase` (`verify`, `predeploy`, `postdeploy`), `binding` (`content`, `candidate`, `deployment`), and optional `depends_on`, `full_only`, `baseline_purpose`. Dependencies are ordered, cycle-checked and phase-local. Classify aggregate commands by their expanded commands: a script wrapping all browser/API tests is not a documentation/static check. |
+| `bindings` | Complete maintained `content` fingerprint and relevant toolchain/configuration/fixture `context` fingerprint. Candidate evidence also binds `revision`, immutable `image`, `environment`; deployment evidence also binds the deployment identity in `deployment`. Never store secret values. |
+| `evidence` | Trusted runner records with `check`, `check_digest` from the plan, `status`, and `bindings`. Only `passed` evidence with every required matching binding is reusable; failures, retries-only, missing or stale proof run again only if selected. |
+| `requested_checks`, `dispatch_phase` | Optional exact proposed dispatch IDs; the guard rejects unrelated commands, omitted missing evidence, or rerunning reusable proof. If supplied, `dispatch_phase` restricts dispatch to `verify`, `predeploy` (including `verify`), or `postdeploy`; otherwise it checks the complete planned command list. The runner records real results and enforces release phase preconditions. |
+| `full_regression` | Only in `full` mode: one of the registered objective `trigger` codes and a concrete `reason` linking the request/impact evidence. |
+| `release` | Required for release: `base`, `candidate`, `environment`, `diff_digest`, and `baseline` entries by phase. |
+
+The universal baseline maps each entry's `purpose` to a registered `check`:
+`predeploy` includes `candidate-integrity`, `target-readiness`,
+`recovery-readiness`; `postdeploy` includes `deployed-identity`, `live-smoke`.
+These groups own the universal obligations in Section 13.7, not every actor
+workflow. A blanket full suite cannot be relabelled as a baseline check.
+Planning may precede image/deployment creation, but reuse requires their exact
+identities; the runner must enforce missing execution preconditions per phase.
+
+For example, one documentation edit maps only its documentation check:
+
+```json
+{
+  "schema_version": 1,
+  "mode": "changed",
+  "changed_paths": ["docs/product-spec.md"],
+  "unmatched_paths": [],
+  "impacts": [{"path": "docs/product-spec.md", "kind": "documentation", "reason": "Clarify existing wording; no runtime contract change", "checks": ["book"]}],
+  "checks": [{"id": "book", "command": ["pnpm", "docs:check"], "kind": "documentation", "phase": "verify", "binding": "content"}],
+  "bindings": {"content": "computed-complete-content-digest", "context": "computed-documentation-toolchain-digest"},
+  "evidence": []
+}
+```
+
+Fixture requirements for package releases and each consuming adapter:
+
+- documentation-only selects no runtime command, including through prerequisites
+- mixed documentation/runtime selects their union once; a module-local edit
+  does not select unrelated roles or capability suites
+- unknown paths, missing commands and dependency cycles fail before execution
+- identical content/context after commit reuses passing content-bound evidence;
+  changed source, commands or relevant environment invalidate affected proof
+- release adds the pre/post baseline and affected slices, not full regression;
+  another target or deployment cannot reuse live evidence
+- explicit justified full regression works; a release label without a trigger
+  cannot dispatch a full-only command
+- the exact proposed command list rejects unrelated tests and redundant reruns
+
+Package integrity, adapter adoption and application verification are distinct
+results. During upgrades, inspect the consumer's real `rules:plan`,
+`release:plan`, `verify:changed`, `verify:automated`, `verification:check` and
+aggregate `verify`. Run its planner/runner fixtures with fake recording commands
+in isolation to prove dispatch decisions without starting application flows.
+An old unconditional `full` runner is an adoption gap even when the lock and
+installed skill hashes pass. Do not rewrite another project's gates without
+approval or claim prose/regex checks prove behavioral adoption.
+
 #### 13.7.3 Evidence-scoped completion and readiness claims
 
 `VERIFY-CLAIM-001` governs answers to questions such as whether work is

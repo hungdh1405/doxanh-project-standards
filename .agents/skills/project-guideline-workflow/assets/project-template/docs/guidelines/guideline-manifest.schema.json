@@ -12,6 +12,8 @@
     "semantic_baseline",
     "profiles",
     "capabilities",
+    "capability_dependencies",
+    "task_reading",
     "critical_contracts",
     "modules"
   ],
@@ -47,6 +49,26 @@
       }
     },
     "capabilities": { "$ref": "#/$defs/uniqueStrings" },
+    "capability_dependencies": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/uniqueStrings" }
+    },
+    "task_reading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["always", "rules", "dependencies"],
+      "properties": {
+        "always": { "$ref": "#/$defs/uniqueStrings" },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/uniqueStrings" }
+        },
+        "rules": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/uniqueStrings" }
+        }
+      }
+    },
     "critical_contracts": {
       "type": "object",
       "additionalProperties": false,

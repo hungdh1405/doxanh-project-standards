@@ -467,29 +467,45 @@ async function update(packageData) {
     && lock.version === packageData.metadata.version
     && lock.guideline_package_sha256 === packageData.metadata.project_template_sha256
     && lock.skill.contract_sha256 === packageData.metadata.skill_contract_sha256
+  if (command === 'preflight') {
+    console.log('Project update preflight passed; no files changed.')
+    return
+  }
   if (alreadyCurrent) {
     console.log(`${packageData.metadata.name} ${lock.version} is already current.`)
     return
   }
 
-  for (const entry of legacyProjectEntries) {
-    await rm(await assertSafeTarget(roots.projectRoot, entry.path))
+  const originals = []
+  for (const [root, entries] of [
+    [roots.projectRoot, [...legacyProjectEntries, { path: lockFilename }]],
+    [roots.repositoryRoot, legacySkillEntries],
+  ]) {
+    for (const entry of entries) {
+      const path = await assertSafeTarget(root, entry.path)
+      originals.push({ root, path: entry.path, content: await readFile(path), mode: (await stat(path)).mode })
+    }
   }
-  for (const entry of legacySkillEntries) {
-    await rm(await assertSafeTarget(roots.repositoryRoot, entry.path))
+  try {
+    for (const entry of legacyProjectEntries) await rm(await assertSafeTarget(roots.projectRoot, entry.path))
+    for (const entry of legacySkillEntries) await rm(await assertSafeTarget(roots.repositoryRoot, entry.path))
+    await pruneManagedDirectories(roots.projectRoot, legacyProjectEntries)
+    await pruneManagedDirectories(roots.repositoryRoot, legacySkillEntries, repoSkillPath)
+    await writeLock(roots.projectRoot, roots.repositoryRoot, packageData)
+    await checkInstalled(packageData)
   }
-  await pruneManagedDirectories(roots.projectRoot, legacyProjectEntries)
-  await pruneManagedDirectories(roots.repositoryRoot, legacySkillEntries, repoSkillPath)
-
-  await writeLock(roots.projectRoot, roots.repositoryRoot, packageData)
+  catch (error) {
+    for (const original of originals) await writeAtomic(original.root, original)
+    throw new Error(`update failed; previous lock and managed files restored: ${error.message}`)
+  }
   console.log(
     `Updated ${packageData.metadata.name} from ${lock.version} to ${packageData.metadata.version}.`,
   )
 }
 
 async function main() {
-  if (!['install', 'check', 'update'].includes(command)) {
-    fail('use install, check, or update')
+  if (!['install', 'check', 'update', 'preflight'].includes(command)) {
+    fail('use install, check, update, or preflight')
   }
   const packageData = await sourcePackage()
   if (command === 'install') await install(packageData)

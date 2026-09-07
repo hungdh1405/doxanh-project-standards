@@ -6,7 +6,7 @@ baseline used to start and govern new projects. It packages:
 - a modular project guideline with profile and capability selection;
 - strict UI/UX, API, data, security, observability, testing, and operations
   contracts;
-- one user-scoped Codex skill sourced from this repository;
+- one discoverable user-scoped Codex skill with version-pinned external snapshots;
 - a dependency-free reference-lock installer with drift-safe migration from
   older copied packages.
 
@@ -23,8 +23,8 @@ decisions in its project book.
 
 ## Quick start
 
-Clone one clean standards checkout and use it for the project reference lock
-and user-level Codex skill:
+Clone a clean approved standards release and use it for the project reference
+lock and user-level Codex skill:
 
 ```bash
 git clone https://github.com/hungdh1405/doxanh-project-standards.git
@@ -37,14 +37,21 @@ make skill-sync
 
 `make skill-sync` creates one user-level symlink at
 `${CODEX_HOME:-$HOME/.codex}/skills/project-guideline-workflow`. The link points
-to this checkout, so the skill is never copied into every application
-repository. Restart Codex after the first installation so
+to a verified, version-and-content-addressed snapshot under that skills home's
+hidden `.doxanh-project-standards/` directory, not the mutable Git checkout.
+There is one cached snapshot per distinct package, no application-local copies.
+Restart Codex after the first installation so
 `$project-guideline-workflow` is discovered.
 
 An existing recognized Doxanh skill directory is not replaced implicitly. For
 the one-time migration from a copied installation, run
-`make skill-sync REPLACE_SKILL=1`. Unknown directories and symlinks are always
-preserved and rejected.
+`make skill-sync REPLACE_SKILL=1`. The entire old skill and template must match
+their own recorded digests; local edits or extra personal files stop migration.
+The previous installation is retained as a reported `.bak` path. Unknown
+directories and symlinks are preserved and rejected. Switching a verified
+legacy checkout symlink from another checkout also requires `REPLACE_SKILL=1`;
+updates between owned snapshots do not. Hashes detect drift, not maliciously
+re-signed local packages.
 
 ## Apply the standard to a project
 
@@ -55,7 +62,7 @@ the same directory; a monorepo may place the project under the repository root.
 
 Installation adds only `.doxanh-project-standards.json` at the project root.
 The lock records the selected version, guideline-package fingerprint, and
-user-skill contract; reusable guideline files remain in this checkout. A
+user-skill contract; reusable guideline files remain outside the project. A
 conflicting legacy guideline path, symlink, or existing installation lock stops
 the operation before the lock is written. The installer never overwrites root
 `AGENTS.md` or project-specific documents.
@@ -76,9 +83,24 @@ node .agents/skills/project-guideline-workflow/assets/project-template/scripts/d
   --capabilities cache,queue,realtime
 ```
 
-Read every returned module completely. Capabilities that are not selected must
+This is the complete project-generation plan. Read every returned module
+completely. Capabilities that are not selected must
 still receive the explicit not-applicable decision and activation trigger
 required by the project-book contract.
+
+For a bounded existing-project task, select only its rule owners:
+
+```bash
+node .agents/skills/project-guideline-workflow/assets/project-template/scripts/docs/manage-guideline.mjs plan \
+  --mode task --rules VERIFY-SCOPE-001,UI-ACTION-001
+```
+
+Pass approved profiles/capabilities as above. `--modules GDL-065` selects an
+owner without a rule shortcut; with `--capabilities scheduler` its queue/Redis
+dependency is included. Unknown IDs and inactive required capabilities fail
+explicitly. Required reading is narrowed, not the applicable obligations.
+Use `--mode project` for initial generation, profile changes and complete
+reviews. Each selected instruction module is still read in full.
 
 ## Check or synchronize an installation
 
@@ -99,6 +121,14 @@ make sync \
   REPO_ROOT=/absolute/path/to/repository
 ```
 
+Sync is sequential even under `make -j`. Both sides pass read-only preflight
+before changes. A failed project migration restores the old lock and managed
+files; a failed coordinated sync also restores the prior user skill. Previous
+successful skill installations remain recoverable. Concurrent coordinated
+syncs fail on an explicit lock instead of racing; after a crashed process,
+inspect its state and retained backup before manually removing its empty lock
+directory. Do not run standalone update/link commands concurrently with sync.
+
 Update is deliberately conservative. It first verifies old copied files and
 refuses migration if any changed locally. A successful migration removes only
 verified reusable copies and empty directories, then writes the reference-only
@@ -107,14 +137,55 @@ consumer's project book; do not silently fork the reusable modules.
 
 Synchronization from versions 1 or 2 verifies and removes copied guideline and
 repository-skill files, writes the version-3 reference-only lock, and links the
-user skill to the selected standards checkout. Later synchronization updates
-only the clean checkout, lock, and same link.
+user skill to a verified snapshot. Later synchronization updates the project
+lock and discoverable link; existing snapshots remain unchanged.
 
 Consuming repositories should expose a small `make standards-sync` facade that
 refreshes a dedicated cache from this GitHub repository and calls `make sync`.
 The application does not own or edit the cached skill. Pin `STANDARDS_REF` to a
 release tag when a project requires explicit upgrade approval; use `main` only
 where the repository policy guarantees that `main` is always releasable.
+
+Every consuming facade must resolve its **own lock** before reading rules or
+running package checks, not follow the discoverable link's current version:
+
+```bash
+make skill-resolve PROJECT_ROOT=/absolute/path/to/project
+```
+
+The command prints the exact verified skill root. Use that root's `SKILL.md`,
+assets and scripts for this task. Direct equivalent:
+`node <available-skill>/scripts/manage-user-skill.mjs resolve --target <project>`.
+Resolution is read-only and fails if the locked snapshot is absent or has
+drifted. To cache a missing older version without changing the discoverable
+link, use this version's manager:
+`node <available-skill>/scripts/manage-user-skill.mjs cache --source <approved-release-skill-root>`.
+This also imports fingerprinted releases that predate the snapshot installer.
+Do not rewrite the project lock to whatever is available.
+A later upgrade in one project cannot alter another project's resolved rules.
+The installed discoverable skill is only the bootstrap when versions differ.
+
+## Prevent unrelated testing
+
+The skill starts with six essential reminders and a task-to-rule table. The
+complete UI, API, datetime, permission and audit rules remain in their owning
+modules; they are mandatory when the change affects that boundary.
+
+Before tests, the agent states the changed behavior and selected/excluded
+checks. After those checks pass, it proceeds to the requested outcome. Unchanged
+content after a commit or a new message does not justify another full run.
+
+The packaged `scripts/verification-policy.mjs` checks a consuming planner's
+export and returns selected `run`/`reuse` commands and exclusions. It rejects
+unrelated dispatch, redundant reruns, missing mappings and unjustified full
+regression. The complete export contract, runnable example and adoption
+fixtures are in [the testing module](./.agents/skills/project-guideline-workflow/assets/project-template/docs/guidelines/modules/80-testing-and-verification.md).
+
+Upgrading a lock is **not adoption proof**. Inspect and test the consumer's
+actual planner and runner adapter with isolated recording commands. A legacy
+runner that always invokes `full` still needs a scoped implementation change;
+the package cannot silently repair another project's commands. Report package
+integrity, adapter adoption and application evidence separately.
 
 ## Repository layout
 
@@ -126,7 +197,9 @@ where the repository policy guarantees that `main` is always releasable.
 │   ├── assets/project-template/
 │   └── scripts/
 │       ├── manage-user-skill.mjs
-│       └── project-standards.mjs
+│       ├── project-standards.mjs
+│       ├── sync-standards.mjs
+│       └── verification-policy.mjs
 ├── test/project-standards.test.mjs
 ├── AGENTS.md
 ├── CHANGELOG.md
@@ -146,7 +219,9 @@ make check
 ```
 
 `make check` validates the skill package, frozen guideline baseline, installer
-fixtures, JSON files, documentation links, and skill structure. Before a
+fixtures, task selection, evidence-reuse decisions, JSON files, documentation
+links, and skill structure. These are standards-package checks: they do not
+launch consumer application/browser/production suites. Before a
 release, update the semantic version and changelog, run the complete check, make
 one coherent commit, and create an annotated `v<version>` tag.
 

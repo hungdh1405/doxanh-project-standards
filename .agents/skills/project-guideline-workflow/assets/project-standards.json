@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "name": "doxanh-project-standards",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "repository": "https://github.com/hungdh1405/doxanh-project-standards",
-  "project_template_sha256": "45c5fc7981725e851974b6e9e505bb2987524bb47d7e3b2ad533b51eb3f85c4e",
-  "skill_contract_sha256": "78734075b4d874533a55aaae6ee8a7226d269419fc8cd6c580c61656fbee5df1"
+  "project_template_sha256": "782bbfabe99f61787a34049c823946e3f48c4cdc9dc136a95dae8f8756237a39",
+  "skill_contract_sha256": "e9a5fe5a1e962fc47b475d68f34694efaa09e2e7b90661c01fb663bdfde6d94b"
 }

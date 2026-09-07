@@ -6,11 +6,11 @@
 > Owner: Project owner
 > Reviewers: Product, design, engineering, security, QA, and operations leads
 > Profiles: Shared, Nuxt web, Flutter native
-> Last reviewed: 2026-08-25
+> Last reviewed: 2026-09-07
 > Canonical for: Human and AI entry into the modular new-project standard
 > Depends on: None
 > Produces: External guideline manifest, `AGENTS.md` template, active module plan, and the generated project-book contract
-> Evidence: Modular complete edition is checked byte-for-byte against the approved 2026-08-25 semantic baseline
+> Evidence: Modular complete edition is checked byte-for-byte against the manifest's versioned semantic baseline
 
 This is the required human and AI entry point inside the installed standards
 skill. The detailed rules are maintained as ordered modules under its
@@ -49,12 +49,14 @@ Humans and AI agents must:
 2. read the adjacent `docs/guidelines/guideline-manifest.json` in the installed
    standards skill
 3. determine active profiles and capabilities from approved project truth
-4. run the consuming repository's `make standards-plan` facade with those
-   selections
+4. run the locked package's module planner (or the consuming repository's facade):
+   `--mode task --rules <ids>` / `--modules <ids>` for bounded work;
+   `--mode project` for generation, profile changes or a complete review
 5. read every returned module completely, in returned order
 6. resolve material unknowns through the clarification protocol before design
    or implementation
-7. generate and verify the same project-book outputs required by the modules
+7. generate the complete required book on initial setup; for maintenance,
+   update the affected canonical outputs without regenerating unrelated chapters
 
 The Nuxt web and shared profiles are required. Flutter is optional and is loaded
 only when approved. Conditional capabilities are loaded only when active; an
@@ -68,6 +70,11 @@ make standards-plan \
   PROFILES=nuxt-web \
   CAPABILITIES=cache,queue,realtime,shareable-entry
 ```
+
+Task mode selects the authority/verification owners plus the named rules or
+modules and required dependencies. Unknown IDs or inactive required capabilities
+fail explicitly. It reduces reading, not mandatory obligations. Project mode
+retains the full profile inventory. Scheduler activation includes queue/Redis.
 
 The plan is an applicability index, not permission to ignore a cross-cutting
 shared module or invent a missing product decision.

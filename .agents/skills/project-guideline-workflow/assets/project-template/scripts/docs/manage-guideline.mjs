@@ -298,6 +298,25 @@ function validateManifestShape() {
 
 const schemaSource = await readFile(schemaPath, 'utf8')
 const manifestErrors = validateManifestShape()
+const knownModuleIds = new Set(manifest.modules.map(module => module.id))
+for (const [capability, dependencies] of Object.entries(manifest.capability_dependencies ?? {})) {
+  if (!manifest.capabilities.includes(capability)) manifestErrors.push(`unknown dependency owner ${capability}`)
+  for (const dependency of requireStringArray(manifestErrors, capability, dependencies)) {
+    if (!manifest.capabilities.includes(dependency)) manifestErrors.push(`unknown capability dependency ${dependency}`)
+  }
+}
+if (!isRecord(manifest.capability_dependencies)) manifestErrors.push('capability_dependencies must be an object')
+if (!isRecord(manifest.task_reading?.rules)) manifestErrors.push('task_reading.rules must be an object')
+if (!isRecord(manifest.task_reading?.dependencies)) manifestErrors.push('task_reading.dependencies must be an object')
+for (const [label, ids] of Object.entries({
+  always: manifest.task_reading?.always,
+  ...manifest.task_reading?.rules,
+  ...manifest.task_reading?.dependencies,
+})) {
+  for (const id of requireStringArray(manifestErrors, `task_reading.${label}`, ids)) {
+    if (!knownModuleIds.has(id)) manifestErrors.push(`unknown task module ${id}`)
+  }
+}
 if (manifestErrors.length) fail(manifestErrors)
 
 async function moduleFiles() {
@@ -679,8 +698,30 @@ function isActive(module, profiles, capabilities) {
 }
 
 async function plan() {
+  const modes = parseCsvOption('--mode')
+  if (modes.size > 1) fail('select only one plan mode')
+  const mode = [...modes][0] ?? 'project'
+  if (!['project', 'task'].includes(mode)) fail(`unknown plan mode ${mode}`)
   const profiles = parseCsvOption('--profiles')
   const capabilities = parseCsvOption('--capabilities')
+  const requestedCapabilities = [...capabilities].sort()
+  const rules = parseCsvOption('--rules')
+  const requestedModules = parseCsvOption('--modules')
+  if (mode === 'project' && (rules.size || requestedModules.size)) fail('rule/module selectors require --mode task')
+  if (mode === 'task' && !rules.size && !requestedModules.size) fail('task mode requires --rules or --modules')
+  for (const rule of rules) {
+    if (!Object.hasOwn(manifest.task_reading.rules, rule)) fail(`unknown rule ${rule}; map its canonical module explicitly with --modules`)
+    manifest.task_reading.rules[rule].forEach(id => requestedModules.add(id))
+  }
+  for (const id of requestedModules) if (!knownModuleIds.has(id)) fail(`unknown module ${id}`)
+  for (const id of requestedModules) {
+    for (const dependency of manifest.task_reading.dependencies[id] ?? []) requestedModules.add(dependency)
+  }
+  // Dependencies activate infrastructure required by an approved capability,
+  // never unrelated product features. Set traversal terminates even on overlap.
+  for (const capability of capabilities) {
+    for (const dependency of manifest.capability_dependencies[capability] ?? []) capabilities.add(dependency)
+  }
   manifest.profiles.required.forEach(profile => profiles.add(profile))
   const unknownProfiles = [...profiles].filter(
     profile => ![...manifest.profiles.required, ...manifest.profiles.optional].includes(profile),
@@ -694,18 +735,29 @@ async function plan() {
       ...unknownCapabilities.map(value => `unknown capability ${value}`),
     ])
   }
-  const active = manifest.modules.filter(
+  const available = manifest.modules.filter(
     module => isActive(module, profiles, capabilities),
   )
+  if (mode === 'task') {
+    manifest.task_reading.always.forEach(id => requestedModules.add(id))
+    for (const id of requestedModules) {
+      if (!available.some(module => module.id === id)) fail(`${id} requires an approved profile/capability; do not silently activate it`)
+    }
+  }
+  const active = mode === 'project' ? available : available.filter(module => requestedModules.has(module.id))
   console.log(JSON.stringify({
     schema_version: 1,
+    mode,
     entry_path: manifest.entry_path,
+    rules: [...rules].sort(),
     profiles: [...profiles].sort(),
+    requested_capabilities: requestedCapabilities,
     capabilities: [...capabilities].sort(),
     modules: active.map(({ id, path, title }) => ({ id, path, title })),
     excluded_conditional_modules: manifest.modules
-      .filter(module => !active.includes(module))
+      .filter(module => !available.includes(module))
       .map(({ id, path, title, activation }) => ({ id, path, title, activation })),
+    unselected_active_modules: available.filter(module => !active.includes(module)).map(({ id, path, title }) => ({ id, path, title })),
     critical_contracts: manifest.critical_contracts,
   }, null, 2))
 }

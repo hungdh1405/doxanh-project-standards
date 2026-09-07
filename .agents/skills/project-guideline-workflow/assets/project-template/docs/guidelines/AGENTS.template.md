@@ -44,9 +44,18 @@ Before editing or giving a source-grounded review:
 4. Run `<rules-plan-command> FILES="<comma-separated-planned-paths>"`.
 5. Read every selected canonical rule source and turn its stable IDs into the
    acceptance and verification plan.
-6. For new-project generation or reusable-guideline changes, also run the
-   installed standards profile/capability plan and read every returned module
-   completely.
+6. For a bounded task or reusable-rule change, use the locked standard's
+   `plan --mode task --rules <selected-rule-ids>` (or explicit `--modules`). For
+   initial generation, profile changes or a complete review, use `--mode project`.
+   Read every selected module completely; include proven affected dependencies.
+
+Before running tests, state the changed behavior, selected checks and excluded
+unrelated checks. Validate the exported plan with the locked skill's
+`verification-policy.mjs` or a behaviorally equivalent project gate. An absent
+adapter is an adoption gap, not permission to run every test. After the selected
+checks pass, stop testing and continue to the authorized outcome. A new user
+message, commit or push does not invalidate identical-content evidence. Only a
+changed boundary, relevant failure, stale proof or objective trigger reopens it.
 
 During implementation:
 
