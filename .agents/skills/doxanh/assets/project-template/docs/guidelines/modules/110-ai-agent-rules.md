@@ -1,11 +1,22 @@
 
 ## 17. AI agent operating rules
 
-Use the Doxanh skill (`$doxanh`, also called “doxanh skill”) as the task
-bootstrap. Read applicable root/nested `AGENTS.md`, resolve the project's locked
-standard, inspect the actual owning source and project book, and preserve
-unrelated work. Installed prose, memory, a version lock, and previous claims
-are not implementation evidence.
+Use the Doxanh skill (`$doxanh` in Codex, `/doxanh` in Claude Code, also called
+“doxanh skill”) as the task bootstrap. Both agents use the same maintained skill,
+rules and project lock. Read applicable root/nested `AGENTS.md` and `CLAUDE.md`,
+resolve the project's locked standard, inspect the actual owning source and
+project book, and preserve unrelated work. Installed prose, memory, a version
+lock, and previous claims are not implementation evidence.
+
+Use the invoked skill's installed resolver rather than assuming a Codex-specific
+home directory. Agent discovery and a project's pinned rule version are separate:
+updating a shared discovery link must not silently upgrade another project's lock.
+Keep shared repository instructions in `AGENTS.md`; a Claude startup file may
+import that file instead of duplicating its rules. Preserve existing instructions
+and conflicts for review. Check required tools and relevant framework skills in
+the agent actually running the task; installation in another agent is not proof
+of availability. Follow that agent's permissions and tools without assuming
+Codex-specific tool names or bypassing Claude's permission controls.
 
 Use task mode for bounded maintenance. Read the selected owners completely and
 form acceptance criteria from their stable rule IDs. Use project mode for

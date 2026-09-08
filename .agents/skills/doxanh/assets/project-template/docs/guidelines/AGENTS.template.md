@@ -18,7 +18,8 @@
 
 ## Authority and required sources
 
-Use `$doxanh` (the “doxanh skill”) for this project's work. Resolve
+Use `$doxanh` in Codex or `/doxanh` in Claude Code (the “doxanh skill”) for this
+project's work. Read applicable `CLAUDE.md` instructions as well. Resolve
 `.doxanh-project-standards.json` through the available skill's
 `scripts/manage-user-skill.mjs resolve --target <project-root>` and read that
 locked version. Do not silently upgrade the project to the discoverable version.

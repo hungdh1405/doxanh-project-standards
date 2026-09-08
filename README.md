@@ -1,9 +1,9 @@
 # Doxanh Project Standards
 
-The workflow is called the **Doxanh skill**. Invoke it with `$doxanh` or
-“use the doxanh skill” in any adopted project.
+The workflow is called the **Doxanh skill**. Invoke it with `$doxanh` in Codex, `/doxanh`
+in Claude Code, or “use the doxanh skill” in any adopted project.
 
-The current release is **4.0.0**, published as `v4.0.0`.
+The current release is **4.1.0**, published as `v4.1.0`.
 
 Doxanh Project Standards is the reusable engineering and product-delivery
 baseline used to start and govern new projects. It packages:
@@ -11,7 +11,7 @@ baseline used to start and govern new projects. It packages:
 - a modular project guideline with profile and capability selection;
 - strict UI/UX, API, data, security, observability, testing, and operations
   contracts;
-- one discoverable user-scoped Codex skill with version-pinned external snapshots;
+- one shared skill for Codex and Claude Code with version-pinned external snapshots;
 - a dependency-free reference-lock installer with drift-safe migration from
   older copied packages.
 
@@ -29,7 +29,7 @@ ownership without generating an extra backend.
 - Git
 - Node.js 22 or newer
 - pnpm 11.24.0 through Corepack for developing this repository
-- Codex for skill-assisted workflows (optional for human-only use)
+- Codex and/or Claude Code for skill-assisted workflows (optional for human-only use)
 
 Framework and automation skills are separate prerequisites, selected for the
 project's stack. The [skill setup guidance](.agents/skills/doxanh/assets/project-template/docs/guidelines/modules/110-ai-agent-rules.md#171-framework-skills-and-documentation)
@@ -40,7 +40,7 @@ or install application dependencies.
 ## Quick start
 
 Clone a clean approved standards release and use it for the project reference
-lock and user-level Codex skill:
+lock and a shared user-level skill:
 
 ```bash
 git clone https://github.com/hungdh1405/doxanh-project-standards.git
@@ -48,12 +48,13 @@ cd doxanh-project-standards
 make install \
   PROJECT_ROOT=/absolute/path/to/project \
   REPO_ROOT=/absolute/path/to/repository
-make skill-sync
+make skill-sync AGENTS=both
+make skill-check AGENTS=both
 ```
 
 ### Copy-paste bootstrap for an AI agent on macOS
 
-Open the target project in Codex and tell the agent to run the block below from
+Open the target project in Codex or Claude Code and ask the agent to run the block below from
 the project directory. The command checks whether the selected Doxanh skill is
 already installed at user scope on this Mac, installs it only through the
 verified snapshot manager when necessary, adopts an uninstalled project, and
@@ -69,7 +70,8 @@ set -eu
 
 DOXANH_PROJECT_ROOT="${DOXANH_PROJECT_ROOT:-$PWD}"
 DOXANH_REPO_ROOT="${DOXANH_REPO_ROOT:-$(git -C "$DOXANH_PROJECT_ROOT" rev-parse --show-toplevel)}"
-DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v4.0.0}"
+DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v4.1.0}"
+DOXANH_AGENTS="${DOXANH_AGENTS:-both}" # codex, claude, or both
 DOXANH_BOOTSTRAP_DIR="$(mktemp -d)"
 
 cleanup_doxanh_bootstrap() {
@@ -94,11 +96,11 @@ else
   DOXANH_PROJECT_NEEDS_INSTALL=1
 fi
 
-if make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-check; then
+if make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-check AGENTS="$DOXANH_AGENTS"; then
   printf 'The selected user-scoped skill is already valid on this Mac.\n'
 else
   printf 'The selected user-scoped skill is missing or differs; synchronizing it safely.\n'
-  make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-sync
+  make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-sync AGENTS="$DOXANH_AGENTS"
 fi
 
 if test "$DOXANH_PROJECT_NEEDS_INSTALL" -eq 1; then
@@ -109,9 +111,9 @@ if test "$DOXANH_PROJECT_NEEDS_INSTALL" -eq 1; then
     PROJECT_ROOT="$DOXANH_PROJECT_ROOT" \
     REPO_ROOT="$DOXANH_REPO_ROOT"
 fi
-make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-check \
+make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-check AGENTS="$DOXANH_AGENTS" \
   PROJECT_ROOT="$DOXANH_PROJECT_ROOT"
-make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-resolve \
+make -C "$DOXANH_BOOTSTRAP_DIR/standards" skill-resolve AGENTS="$DOXANH_AGENTS" \
   PROJECT_ROOT="$DOXANH_PROJECT_ROOT"
 ```
 
@@ -119,26 +121,91 @@ If the project already pins a different release, `installed-check` reports the
 version difference and stops. Do not replace the lock or run an upgrade until
 the project owner approves that release change. If `skill-sync` finds an
 unknown directory, symlink, or locally changed skill at
-`${CODEX_HOME:-$HOME/.codex}/skills/doxanh`, it also stops
+any selected agent's `skills/doxanh` path, it also stops
 instead of deleting or overwriting it.
 
-After a first user-scoped installation, restart Codex and request:
+After installation, start a new agent session and request:
 
 ```text
-Use $doxanh. Resolve and follow this project's locked
+Use the doxanh skill. Resolve and follow this project's locked
 Doxanh standard. Inspect the project before materializing or updating AGENTS.md,
 the project book, Makefile integration, or verification gates. Do not change
 application code, commit, push, deploy, or upgrade the standards lock without
 my approval.
 ```
 
-`make skill-sync` creates one user-level symlink at
-`${CODEX_HOME:-$HOME/.codex}/skills/doxanh`. The link points
-to a verified, version-and-content-addressed snapshot under that skills home's
-hidden `.doxanh-project-standards/` directory, not the mutable Git checkout.
-There is one cached snapshot per distinct package, no application-local copies.
-Restart Codex after the first installation so
-`$doxanh` is discovered.
+### Codex, Claude Code, or both
+
+```bash
+make skill-sync AGENTS=both
+make skill-check AGENTS=both
+make skill-check AGENTS=both PROJECT_ROOT=/absolute/path/to/project
+```
+
+Select `AGENTS=codex` (the backwards-compatible default), `AGENTS=claude`, or
+`AGENTS=both`. This selects discovery locations, not different rule sets:
+
+| Agent | Default discovery path | Explicit invocation |
+| --- | --- | --- |
+| Codex | `${CODEX_HOME:-$HOME/.codex}/skills/doxanh` | `$doxanh` |
+| Claude Code | `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/doxanh` | `/doxanh` |
+
+Both agents also understand “use the doxanh skill”. They read the same `SKILL.md`,
+assets and scripts. `agents/openai.yaml` supplies optional Codex UI metadata;
+Claude uses the standard skill entrypoint. This package targets local Codex and
+Claude Code workflows with Node.js and repository access, not a claim of tested
+Claude.ai/Cowork or hosted API execution.
+
+For `AGENTS=both`, the Codex skill home owns the verified snapshots under its
+hidden `.doxanh-project-standards/` directory. Claude's discovery link follows
+that home's stable `doxanh` link. Later updates to the shared link reach both
+agents without another copy. Claude-only installation stores the same package
+under the Claude skill home and requires no Codex installation. Existing managed
+links are followed to their owning store instead of creating competing copies.
+The snapshots remain immutable and independent of the source Git checkout.
+
+`SKILLS_HOME` overrides the primary store/discovery home; `CLAUDE_SKILLS_HOME`
+overrides Claude's discovery location when installing both. For example:
+
+```bash
+make skill-sync AGENTS=both \
+  SKILLS_HOME=/custom/codex/skills \
+  CLAUDE_SKILLS_HOME=/custom/claude/skills
+```
+
+The installed resolver infers its own store, including when invoked through a
+Claude link. Consumer Make facades should locate an available installed skill
+and invoke its resolver without forcing a different agent's `--skills-home`.
+A machine configured only for Claude must not need a Codex bootstrap path.
+Use `--skills-home` only to deliberately select a store or discovery home.
+Resolving a lock never downloads, installs or upgrades its version.
+
+The installer validates every selected destination before replacing any, rejects
+unknown/broken links and local divergence, and rolls back all selected discovery
+entries if a coordinated project migration fails. Recognized copied installs
+still require `REPLACE_SKILL=1`. Existing project locks keep their versions;
+retain their snapshots until their upgrades are approved.
+When joining an existing standalone agent installation, verified cached versions
+are imported into the shared store so older locks still resolve. Original caches
+are preserved for recovery; unrecognized or modified cache entries stop migration.
+
+[Codex skills](https://learn.chatgpt.com/docs/build-skills) and
+[Claude Code skills](https://code.claude.com/docs/en/skills) document their skill
+formats and discovery behavior. Check the relevant framework skills in the
+agent actually doing the work; sharing Doxanh does not install those dependencies.
+
+For Claude startup instructions, keep one owner in root `AGENTS.md`. When setting
+up a project for Claude, a root `CLAUDE.md` can import it:
+
+```markdown
+# Repository instructions
+
+@AGENTS.md
+```
+
+Inspect and preserve existing `CLAUDE.md` before adding an import. The installer
+never rewrites either instructions file. When explicitly invoked, Doxanh also
+tells both agents to read applicable `AGENTS.md` and `CLAUDE.md` instructions.
 
 ### Migrating from project-guideline-workflow
 
@@ -250,14 +317,14 @@ After selecting a newer released checkout, synchronize the project and user
 skill together:
 
 ```bash
-make sync \
+make sync AGENTS=both \
   PROJECT_ROOT=/absolute/path/to/project \
   REPO_ROOT=/absolute/path/to/repository
 ```
 
 Sync is sequential even under `make -j`. Both sides pass read-only preflight
 before changes. A failed project migration restores the old lock and managed
-files; a failed coordinated sync also restores the prior user skill. Previous
+files; a failed coordinated sync also restores the prior skill and every selected agent discovery link. Previous
 successful skill installations remain recoverable. Concurrent coordinated
 syncs fail on an explicit lock instead of racing; after a crashed process,
 inspect its state and retained backup before manually removing its empty lock

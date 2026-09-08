@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "efcfb74b22a4cf868fded3b0e9e784302fd2de99ed3841adb8518d1627d8fe8e",
-    "bytes": 583562,
-    "lines": 10065,
-    "meaning": "Doxanh 4.0.0 complete review: all 31 modules and 42 document families; independently selected web/API/native profiles and task routing; project design precedence; scoped CI/browser/native verification; external API, files and realtime lifecycle; complete document audit and clarification. User retained all-CRUD confirmation and the global 500 ms overlay hold. Reviewed 2026-09-08."
+    "sha256": "f6f5f684200aabafdccd6772d6b0c1faab49d2ee92299129f4e4a33bf1f9d9fc",
+    "bytes": 584392,
+    "lines": 10076,
+    "meaning": "Doxanh 4.1.0 adds shared Codex and Claude Code invocation, installed-store resolution and per-agent tool discovery in GDL-110. All 4.0.0 profile, product, UI, API and focused verification contracts remain intact. Reviewed 2026-09-08."
   },
   "profiles": {
     "required": [

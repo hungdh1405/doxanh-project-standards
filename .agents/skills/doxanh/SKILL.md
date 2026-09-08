@@ -1,12 +1,13 @@
 ---
 name: doxanh
-description: Use the Doxanh skill ($doxanh or "doxanh skill") to implement, review, test, and deliver changes in projects adopting Doxanh standards, or to install/update those standards and their project book. Enforces focused verification, consistent UI and product copy, relevant framework skills, and authorized commit/push follow-through. Formerly project-guideline-workflow.
+description: Use the Doxanh skill in Codex ($doxanh) or Claude Code (/doxanh), also called "doxanh skill", to implement, review, test, and deliver changes in projects adopting Doxanh standards, or to install/update those standards and their project book. Enforces focused verification, consistent UI and product copy, relevant framework skills, and authorized commit/push follow-through. Formerly project-guideline-workflow.
 ---
 
 # Doxanh skill
 
-Invoke with `$doxanh` or “use the doxanh skill”. The discoverable name is a
-bootstrap: resolve each consuming project's lock before applying its rules.
+Invoke with `$doxanh` in Codex, `/doxanh` in Claude Code, or “use the doxanh
+skill”. Both agents use this same package. The discoverable name is a bootstrap:
+resolve each consuming project's lock before applying its rules.
 
 Select approved `nuxt-web`, `nuxt-api`, and/or `flutter-native` profiles
 independently. Ask when implementation ownership or the API contract is missing;
@@ -14,7 +15,7 @@ do not generate an extra frontend/backend to fill the gap.
 
 ## Essential reminders — every task
 
-1. Read applicable `AGENTS.md`, inspect status, and identify the requested
+1. Read applicable `AGENTS.md` and `CLAUDE.md`, inspect status, and identify the requested
    outcome. Preserve unrelated work. A review is not permission to edit; an
    edit is not permission to commit, push, deploy or mutate production data.
    Carry forward authorization already given in this conversation. When commit
@@ -146,9 +147,16 @@ all application tests; GDL-080 still owns test dispatch.
 
 ## Installation and upgrades
 
+For agent discovery, use `make skill-sync AGENTS=both` from the approved source
+release, or select `AGENTS=codex` / `AGENTS=claude`. The installed resolver infers
+its shared snapshot store; invoke it through the available skill path without
+hardcoding another agent's home. A Claude-only machine needs no Codex setup.
+`make skill-check AGENTS=both` verifies both discovery links; pass `PROJECT_ROOT`
+to additionally verify a project's lock. See the source README for custom paths.
+
 The GitHub standards repository is the only editable reusable source. Consumers
 keep a reference-only `.doxanh-project-standards.json`, their project book and
-root `AGENTS.md`; never a duplicate guideline or repository skill.
+root `AGENTS.md` (with an optional `CLAUDE.md` import); never a duplicate guideline or repository skill.
 
 Use the approved release's `make install` for a new lock and `make sync` for an
 approved upgrade (`PROJECT_ROOT`, `REPO_ROOT`). Installer integrity, project

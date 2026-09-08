@@ -1,9 +1,9 @@
 {
   "name": "doxanh-project-standards",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "private": true,
   "type": "module",
-  "description": "Reusable Doxanh project standards and Codex workflow skill",
+  "description": "Reusable Doxanh project standards and shared Codex/Claude Code workflow skill",
   "packageManager": "pnpm@11.24.0",
   "engines": {
     "node": ">=22"

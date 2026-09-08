@@ -94,7 +94,7 @@ for (const token of ['interface:', 'display_name:', 'short_description:', 'defau
 }
 
 const localMarkdownFiles = [
-  'README.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'AGENTS.md', 'SECURITY.md',
+  'README.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'AGENTS.md', 'CLAUDE.md', 'SECURITY.md',
   ...(await collectFiles(skillRoot)).filter(path => path.endsWith('.md')).map(path => relative(root, resolve(skillRoot, path))),
 ]
 for (const markdownPath of localMarkdownFiles) {

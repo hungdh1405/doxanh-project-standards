@@ -3,6 +3,21 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [4.1.0] - 2026-09-08
+
+### Added
+
+- Share one verified Doxanh snapshot between Codex and Claude Code discovery
+  links with `AGENTS=both`; support isolated `AGENTS=claude` installation without
+  Codex. Existing `AGENTS=codex` installation remains the default.
+- Resolve the owning snapshot store from installed helpers or managed agent
+  links, including custom skill homes and older project locks.
+- Preflight every selected agent entry and roll back their links together if
+  installation or a coordinated project update fails. Preserve conflicting
+  skills, local edits, project instructions and project-specific documents.
+- Document `$doxanh` and `/doxanh`, per-agent framework skill discovery, and a
+  thin `CLAUDE.md` import of shared `AGENTS.md` instructions.
+
 ## [4.0.0] - 2026-09-08
 
 ### Changed

@@ -3,7 +3,7 @@
 ## Scope and authority
 
 - This repository is the canonical source for the reusable Doxanh project
-  standard and its Codex workflow skill.
+  standard and its shared Codex and Claude Code workflow skill.
 - Keep the standard generic. Product actors, brands, routes, prices, countries,
   providers, and state names belong in each consuming project's project book.
 - Preserve unrelated work. Commit and push only when explicitly authorized.

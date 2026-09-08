@@ -352,7 +352,7 @@ async function install(packageData) {
   await writeLock(roots.projectRoot, roots.repositoryRoot, packageData)
   console.log(
     `Installed ${packageData.metadata.name} ${packageData.metadata.version}: `
-    + 'reference-only consumer lock; reusable guidelines and the Codex skill '
+    + 'reference-only consumer lock; reusable guidelines and the agent skill '
     + 'remain outside the application repository.',
   )
 }

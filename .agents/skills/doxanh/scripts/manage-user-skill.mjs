@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto'
+import { spawnSync } from 'node:child_process'
 import {
   lstat,
   cp,
   mkdir,
   readFile,
+  readlink,
   readdir,
   realpath,
   rename,
   rm,
+  rmdir,
   symlink,
 } from 'node:fs/promises'
 import { homedir } from 'node:os'
@@ -127,17 +130,65 @@ async function verifyPackage(source) {
   return metadata
 }
 
-async function skillsHome(create) {
-  const defaultHome = process.env.CODEX_HOME
-    ? resolve(process.env.CODEX_HOME, 'skills')
-    : resolve(homedir(), '.codex', 'skills')
-  const input = resolve(option('--skills-home') ?? defaultHome)
+function snapshotHome(skillRoot) {
+  const cache = dirname(dirname(skillRoot))
+  return basename(cache) === '.doxanh-project-standards' ? dirname(cache) : null
+}
+
+function selectedAgents() {
+  const agents = option('--agents') ?? 'codex'
+  if (!['codex', 'claude', 'both'].includes(agents)) throw new Error('--agents must be codex, claude, or both')
+  return agents
+}
+
+function claudeHome() {
+  return resolve(option('--claude-skills-home') ?? resolve(process.env.CLAUDE_CONFIG_DIR ?? resolve(homedir(), '.claude'), 'skills'))
+}
+
+function primaryHome() {
+  // An installed helper knows its owning snapshot store. This also makes a
+  // Claude-only installation work without CODEX_HOME or a Codex installation.
+  return resolve(option('--skills-home')
+    ?? (!option('--agents') ? snapshotHome(sourceSkillRoot) : null)
+    ?? (selectedAgents() === 'claude'
+      ? claudeHome()
+      : resolve(process.env.CODEX_HOME ?? resolve(homedir(), '.codex'), 'skills')))
+}
+
+async function canonicalHome(input, create = false) {
   if (create) await mkdir(input, { recursive: true })
+  if (!await exists(input)) return resolve(await canonicalHome(dirname(input)), basename(input))
   const details = await lstat(input)
   if (details.isSymbolicLink() || !details.isDirectory()) {
     throw new Error(`skills home must be a real directory: ${input}`)
   }
   return realpath(input)
+}
+
+async function storageHome(home) {
+  const discovery = resolve(home, skillName)
+  if (!await exists(discovery) || !(await lstat(discovery)).isSymbolicLink()) return home
+  let target
+  try { target = await realpath(discovery) }
+  catch { return home } // Preflight reports a broken link without replacing it.
+  const store = snapshotHome(target)
+  if (!store) return home
+  await assertSnapshotParents(store, target)
+  await verifyPackage(target)
+  return canonicalHome(store)
+}
+
+async function skillsHome(create) {
+  return storageHome(await canonicalHome(primaryHome(), create))
+}
+
+async function installation() {
+  selectedAgents()
+  const primary = await canonicalHome(primaryHome())
+  const home = await storageHome(primary)
+  const homes = [home, primary]
+  if (selectedAgents() === 'both') homes.push(await canonicalHome(claudeHome()))
+  return { home, homes: [...new Set(homes)] }
 }
 
 async function recognizedInstalledDirectory(destination) {
@@ -173,79 +224,148 @@ async function destinationState(destination, source) {
   return { kind: 'other-entry' }
 }
 
-async function replaceWithSymlink(destination, source) {
-  const suffix = `${process.pid}-${Date.now()}-${sha256(source).slice(0, 8)}`
-  const temporary = resolve(dirname(destination), `.${basename(destination)}.${suffix}.tmp`)
-  const backup = resolve(dirname(destination), `.${basename(destination)}.${suffix}.bak`)
-  await symlink(source, temporary, 'dir')
-  let movedExisting = false
-  try {
-    if (await exists(destination)) {
-      await rename(destination, backup)
-      movedExisting = true
+async function checkInstallation(metadata, plan) {
+  const source = snapshotPath(plan.home, metadata)
+  await verifySnapshot(plan.home, metadata)
+  for (const home of plan.homes) {
+    const destination = resolve(home, skillName)
+    const state = await destinationState(destination, source)
+    if (state.kind !== 'current-symlink') {
+      throw new Error(`${destination} is ${state.kind}; run skill-sync from the selected standards release`)
     }
-    await rename(temporary, destination)
-    if (movedExisting) console.log(`Previous installation retained at ${backup}`)
+    if (home !== plan.home && resolve(home, await readlink(destination)) !== resolve(plan.home, skillName)) {
+      throw new Error(`${destination} must follow the shared discovery link; run skill-sync for both agents`)
+    }
+    if (await exists(resolve(home, legacySkillName))) {
+      throw new Error(`legacy skill is still discoverable in ${home}; run skill-sync to migrate it safely`)
+    }
   }
-  catch (error) {
-    await rm(temporary, { force: true })
-    if (movedExisting && !await exists(destination)) await rename(backup, destination)
-    throw error
-  }
+  return source
 }
 
 async function check() {
   const { metadata } = await canonicalSource()
-  const home = await skillsHome(false)
+  const plan = await installation()
   if (option('--target')) {
-    const source = await resolveLocked(home)
-    console.log(`Verified locked user skill: ${source}`)
+    // Verify discovery separately from the project's possibly older snapshot.
+    // The source release is the selected bootstrap, not an implicit lock upgrade.
+    const active = await verifyPackage(await realpath(resolve(plan.home, skillName)))
+    await checkInstallation(active, plan)
+    console.log(`Verified locked user skill: ${await resolveLocked(plan.home)}`)
     return
   }
-  const source = snapshotPath(home, metadata)
-  await verifySnapshot(home, metadata)
-  const destination = resolve(home, skillName)
-  const state = await destinationState(destination, source)
-  if (state.kind !== 'current-symlink') {
-    throw new Error(
-      `${destination} is ${state.kind}; run skill-sync from the selected standards release`,
-    )
+  const source = await checkInstallation(metadata, plan)
+  console.log(`Verified user skill ${skillName} ${metadata.version}: ${plan.homes.map(home => resolve(home, skillName)).join(', ')} -> ${source}`)
+}
+
+async function preflightInstallation(metadata, source, plan) {
+  const snapshot = snapshotPath(plan.home, metadata)
+  await assertSnapshotParents(plan.home, snapshot)
+  if (await exists(snapshot)) await verifySnapshot(plan.home, metadata)
+  for (const home of plan.homes) {
+    for (const name of [skillName, legacySkillName]) {
+      const state = await destinationState(resolve(home, name), snapshot)
+      // Links already owned by either the shared store or this discovery home
+      // are safe to update; copied or foreign packages still require migration.
+      try { await assertReplaceable(state, plan.home, source) }
+      catch { await assertReplaceable(state, home, source) }
+    }
   }
-  if (await exists(resolve(home, legacySkillName))) {
-    throw new Error('legacy skill is still discoverable; run skill-sync to migrate it safely')
+  // A prior standalone Claude installation can contain versions pinned by
+  // projects we cannot enumerate. Verify and retain all of them when joining
+  // the shared store, so discovery migration does not strand those locks.
+  const imports = []
+  for (const home of plan.homes.filter(home => home !== plan.home)) {
+    const cache = resolve(home, '.doxanh-project-standards')
+    if (!await exists(cache)) continue
+    await assertSnapshotParents(home, cache)
+    for (const entry of await readdir(cache)) {
+      const directory = resolve(cache, entry)
+      await assertSnapshotParents(home, directory)
+      const names = await readdir(directory)
+      if (names.length !== 1 || ![skillName, legacySkillName].includes(names[0])) {
+        throw new Error(`unrecognized cached snapshot: ${directory}`)
+      }
+      const previous = resolve(directory, names[0])
+      const previousMetadata = await verifyPackage(previous)
+      if (snapshotPath(home, previousMetadata) !== previous) throw new Error(`cached snapshot identity differs: ${previous}`)
+      await verifySnapshot(home, previousMetadata)
+      const destination = snapshotPath(plan.home, previousMetadata)
+      await assertSnapshotParents(plan.home, destination)
+      if (await exists(destination)) await verifySnapshot(plan.home, previousMetadata)
+      imports.push({ source: previous, metadata: previousMetadata })
+    }
   }
-  console.log(
-    `Verified user skill ${skillName} ${metadata.version}: ${destination} -> ${source}`,
-  )
+  return imports
+}
+
+function projectCommand(command) {
+  const target = option('--target')
+  if (!target) throw new Error('--update-project requires --target')
+  const args = [resolve(scriptDirectory, 'project-standards.mjs'), command, '--target', target]
+  if (option('--repo-root')) args.push('--repo-root', option('--repo-root'))
+  const result = spawnSync(process.execPath, args, { encoding: 'utf8' })
+  if (result.stdout) process.stdout.write(result.stdout)
+  if (result.status !== 0) throw new Error(result.stderr || result.error?.message || `Project ${command} failed`)
 }
 
 async function sync() {
   const { metadata, source } = await canonicalSource()
-  const home = await skillsHome(true)
-  const destination = resolve(home, skillName)
-  const snapshot = snapshotPath(home, metadata)
-  await assertSnapshotParents(home, snapshot)
-  const state = await destinationState(destination, snapshot)
-  await assertReplaceable(state, home, source)
-  const legacy = resolve(home, legacySkillName)
-  await assertReplaceable(await destinationState(legacy, snapshot), home, source)
-  await cacheSnapshot(home, source, metadata)
-  let legacyBackup
-  if (await exists(legacy)) {
-    legacyBackup = resolve(home, `.${legacySkillName}.${process.pid}-${Date.now()}.bak`)
-    await rename(legacy, legacyBackup)
-  }
+  const plan = await installation()
+  if (hasFlag('--update-project')) projectCommand('preflight')
+  await preflightInstallation(metadata, source, plan)
+  for (const home of plan.homes) await canonicalHome(home, true)
+  // All discovery entries and the optional project update share one transaction.
+  const guards = []
+  const changes = []
   try {
-    if (state.kind !== 'current-symlink') await replaceWithSymlink(destination, snapshot)
+    for (const home of [...plan.homes].sort()) {
+      const guard = resolve(home, '.doxanh-standards-sync.lock')
+      await mkdir(guard)
+      guards.push(guard)
+    }
+    // Recheck after acquiring the shared guard, before changing any links.
+    const imports = await preflightInstallation(metadata, source, plan)
+    for (const previous of imports) await cacheSnapshot(plan.home, previous.source, previous.metadata)
+    const snapshot = await cacheSnapshot(plan.home, source, metadata)
+    for (const home of plan.homes) {
+      for (const name of [legacySkillName, skillName]) {
+        const destination = resolve(home, name)
+        if (name === skillName && (await destinationState(destination, snapshot)).kind === 'current-symlink'
+          && (home === plan.home || resolve(home, await readlink(destination)) === resolve(plan.home, skillName))) continue
+        const present = await exists(destination)
+        if (!present && name === legacySkillName) continue
+        const backup = present ? resolve(home, `.${name}.${process.pid}-${Date.now()}.bak`) : null
+        if (backup) await rename(destination, backup)
+        const change = { destination, backup, installed: false }
+        changes.push(change)
+        if (name === skillName) {
+          // Other agents follow the store's stable discovery link, so even a
+          // later single-agent update keeps the shared release consistent.
+          const target = home === plan.home ? snapshot : resolve(plan.home, skillName)
+          await symlink(target, destination, 'dir')
+          change.installed = true
+        }
+      }
+    }
+    await checkInstallation(metadata, plan)
+    if (hasFlag('--update-project')) projectCommand('update')
+    for (const change of changes) {
+      if (change.backup) console.log(`Previous installation retained at ${change.backup}`)
+    }
+    console.log(`Synchronized user skill ${skillName} ${metadata.version}: ${plan.homes.map(home => resolve(home, skillName)).join(', ')} -> ${snapshot}`)
   }
   catch (error) {
-    if (legacyBackup) await rename(legacyBackup, legacy)
+    for (const change of changes.reverse()) {
+      if (change.installed && await exists(change.destination)) {
+        if (!(await lstat(change.destination)).isSymbolicLink()) throw new Error(`Unexpected concurrent change at ${change.destination}; recovery copy: ${change.backup ?? 'none'}`)
+        await rm(change.destination)
+      }
+      if (change.backup) await rename(change.backup, change.destination)
+    }
     throw error
   }
-  if (legacyBackup) console.log(`Previous legacy installation retained at ${legacyBackup}`)
-  console.log(
-    `Synchronized user skill ${skillName} ${metadata.version}: ${destination} -> ${snapshot}`,
-  )
+  finally { for (const guard of guards.reverse()) await rmdir(guard) }
 }
 
 async function cacheSnapshot(home, source, metadata) {
@@ -322,15 +442,7 @@ async function resolveLocked(home) {
 
 async function preflight() {
   const { metadata, source } = await canonicalSource()
-  const homeInput = option('--skills-home') ?? (process.env.CODEX_HOME ? resolve(process.env.CODEX_HOME, 'skills') : resolve(homedir(), '.codex/skills'))
-  if (await exists(homeInput)) {
-    const home = await skillsHome(false)
-    const snapshot = snapshotPath(home, metadata)
-    await assertSnapshotParents(home, snapshot)
-    if (await exists(snapshot)) await verifySnapshot(home, metadata)
-    await assertReplaceable(await destinationState(resolve(home, skillName), snapshot), home, source)
-    await assertReplaceable(await destinationState(resolve(home, legacySkillName), snapshot), home, source)
-  }
+  await preflightInstallation(metadata, source, await installation())
   console.log('User skill preflight passed; no files changed.')
 }
 
@@ -338,6 +450,8 @@ try {
   if (!['check', 'sync', 'cache', 'preflight', 'resolve'].includes(command)) {
     fail('use check, sync, cache --source <released-skill>, preflight, or resolve --target <project-root>')
   }
+  selectedAgents()
+  if (hasFlag('--update-project') && command !== 'sync') throw new Error('--update-project is only supported by sync')
   if (option('--source') && command !== 'cache') throw new Error('--source is only supported by cache; sync must use its own release')
   if (command === 'check') await check()
   else if (command === 'preflight') await preflight()
