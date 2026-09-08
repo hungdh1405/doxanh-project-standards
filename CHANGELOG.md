@@ -18,6 +18,13 @@ All notable changes to this project are documented here. Versions follow
 - Document `$doxanh` and `/doxanh`, per-agent framework skill discovery, and a
   thin `CLAUDE.md` import of shared `AGENTS.md` instructions.
 
+### Verification
+
+- Package checks and a real Codex invocation passed. Claude Code skill and
+  `/doxanh` discovery passed; its end-to-end invocation is still pending because
+  no authenticated Claude account is available for testing yet. Compatibility
+  is expected, but authenticated Claude execution has not been verified.
+
 ## [4.0.0] - 2026-09-08
 
 ### Changed

@@ -156,6 +156,15 @@ Claude uses the standard skill entrypoint. This package targets local Codex and
 Claude Code workflows with Node.js and repository access, not a claim of tested
 Claude.ai/Cowork or hosted API execution.
 
+Verification status for **4.1.0**: the package checks and a real Codex invocation
+passed. Claude Code discovered both the `doxanh` skill and `/doxanh` command,
+but its end-to-end invocation remains unverified: no authenticated Claude
+account is available for testing yet, and the attempted check stopped at
+authentication. Claude Code support is expected to work based on the shared
+skill format, successful discovery and installer checks; an authenticated live
+invocation is still needed to confirm it. This pending check does not block
+Codex use.
+
 For `AGENTS=both`, the Codex skill home owns the verified snapshots under its
 hidden `.doxanh-project-standards/` directory. Claude's discovery link follows
 that home's stable `doxanh` link. Later updates to the shared link reach both
