@@ -94,6 +94,11 @@ UI documents, GDL-024 for system/API/data documents, GDL-053 for native detail,
 and GDL-022 for active commercial contracts. `DOC-BOOK-001` alone is the shared
 book workflow, not every chapter's content contract.
 
+For proposals, plans, specifications, reports, and other human-facing documents,
+including standalone drafting, read and apply
+[GDL-020 Section 4.5](assets/project-template/docs/guidelines/modules/20-project-book-system.md#45-documentation-quality-rules)
+for readability and intended author/audience voice before completing the document.
+
 For an existing-project task or bounded reusable-rule change, use task mode:
 
 ```bash

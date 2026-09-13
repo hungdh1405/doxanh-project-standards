@@ -217,6 +217,64 @@ service's internal database or authorization implementation.
 
 ### 4.5 Documentation quality rules
 
+#### Readability and author voice
+
+Apply this guidance to proposals, plans, specifications, reports, and other
+human-facing documents, including standalone documents outside the project book.
+It governs presentation; it does not require generating an otherwise unrequested
+document or adding a standalone document to the book manifest.
+
+- Separate distinct actions, requirements, decisions, and questions into
+  individual points. Use bullet lists for parallel points and numbered lists
+  when the order of steps matters.
+- Keep each paragraph focused on one topic. Split it when the topic or purpose
+  changes, but keep related explanations together; do not mechanically put every
+  sentence in its own paragraph.
+- Avoid dense table cells. Where the Markdown renderer supports inline HTML,
+  use `<br>` between distinct points so they appear on separate rendered lines;
+  use `<br><br>` when the points need paragraph-like separation. A source newline
+  alone is not a reliable rendered line break inside a table cell.
+- If a table needs long explanations or many line breaks, replace it with short
+  subsections and lists. Where a required comparison matrix must remain, keep
+  its cells concise and link to the detailed explanations below it. If inline
+  HTML is unsupported, use subsections and lists rather than visible HTML tags.
+- Use blank lines around lists and between paragraphs so Markdown renders
+  correctly. Keep a blank line between a heading and the content that follows.
+- Preserve meaning, scope, ownership, assumptions, and approval status when
+  reformatting. Do not turn a suggestion into a commitment, an open question
+  into a decision, or a proposed requirement into an approved one.
+- Match the intended author and audience. When drafting a proposal from the
+  requester to a recipient, write in the requester's voice: “I propose,”
+  “I will” for intended commitments, and “Information I need from you.” Do not
+  address instructions to the requester or describe the requester in the third
+  person. Preserve conditional or unapproved commitments as such; do not force
+  first-person language into neutral specifications or reports.
+- Before completing the document, check for dense paragraphs, overloaded table
+  cells, unrelated points joined together, and inconsistent author voice.
+  Confirm that the reformatting preserves the original contract and review
+  the rendered output when the target renderer is available.
+
+Example — presentation only, not a required authentication design:
+
+Before:
+
+> Staff invite customers by email. Customers set a password and sign in with
+> email and password. Face ID or Touch ID can reopen an active session.
+
+After — separate capability points:
+
+- Staff invite customers by email.
+- Customers set a password and sign in with email and password.
+- Face ID or Touch ID can reopen an active session.
+
+For a short Markdown table cell in a renderer that supports inline HTML:
+
+```md
+Staff invite customers by email.<br><br>Customers set a password and sign in with email and password.<br><br>Face ID or Touch ID can reopen an active session.
+```
+
+#### Content accuracy and evidence
+
 - Use real product language and examples.
 - Name all important routes, states, events, fields, and owners.
 - Record unsupported behavior and non-goals.

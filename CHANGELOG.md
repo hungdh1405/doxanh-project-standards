@@ -3,6 +3,18 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [4.1.1] - Unreleased
+
+### Changed
+
+- Clarify human-facing document readability and intended author/audience voice
+  in the existing GDL-020 Section 4.5 documentation guidance, with a short
+  before/after example and renderer-aware table formatting.
+- Route standalone proposals, plans, specifications and reports to that same
+  canonical guidance. Preserve meaning, ownership, assumptions and approval
+  status; keep related explanations together without forcing one sentence per
+  paragraph or duplicating rules in the skill entry point.
+
 ## [4.1.0] - 2026-09-08
 
 ### Added
