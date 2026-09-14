@@ -42,6 +42,13 @@ export function planUI(input) {
   for (const row of paths.values()) {
     row.consumers.forEach(path => need(paths.has(path), `unmapped shared consumer ${path}`))
   }
+  for (const screen of screens.values()) {
+    if (!Object.hasOwn(screen, 'scope_sources')) continue
+    const scope = list(screen.scope_sources, `${screen.id}.scope_sources`)
+    need(scope.length && new Set(scope).size === scope.length
+      && scope.every(path => pathOK(path) && paths.has(path)),
+    `${screen.id}: scope_sources must name unique mapped source paths`)
+  }
   const roots = new Set([
     ...input.impacts.filter(row => row.kind === 'runtime').map(row => row.path),
     ...input.changed_paths.filter(path => paths.has(path)
@@ -50,17 +57,27 @@ export function planUI(input) {
     ...list(input.review_paths, 'review_paths'),
   ])
   const selected = new Set()
-  const visited = new Set()
-  function visit(path) {
+  function visit(path, root, visited) {
     need(paths.has(path), `missing applicability mapping for ${path}`)
     if (visited.has(path)) return
     visited.add(path)
     const row = paths.get(path)
-    row.screens.forEach(id => selected.add(id))
-    row.consumers.forEach(visit)
+    const eligible = row.screens.filter(id => {
+      const scope = screens.get(id).scope_sources
+      return !scope || (input.mode !== 'full' && scope.includes(root))
+    })
+    need(!row.screens.length || eligible.length,
+      `${path}: scoped evidence does not cover ${root}; map the complete affected composition`)
+    eligible.forEach(id => selected.add(id))
+    row.consumers.forEach(consumer => visit(consumer, root, visited))
   }
-  roots.forEach(visit)
-  if (input.mode === 'full') screens.forEach((_, id) => selected.add(id))
+  // Coverage is checked independently per initiating source. A previously
+  // visited consumer must not hide an uncovered second root in a mixed task.
+  roots.forEach(root => visit(root, root, new Set()))
+  if (input.mode === 'full') {
+    paths.forEach(row => { if (row.screens.length) visit(row.path, row.path, new Set()) })
+    screens.forEach((_, id) => selected.add(id))
+  }
   for (const path of roots) {
     if (/\.(vue|jsx|tsx|css|scss|html)$/u.test(path)) {
       const reached = new Set()

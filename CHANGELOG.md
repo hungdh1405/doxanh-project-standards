@@ -3,7 +3,18 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [5.0.0] - Unreleased
+## [5.0.1] - 2026-09-14
+
+### Fixed
+
+- Enforce optional shared-region scope in the canonical UI guard. A dialog-only
+  contract cannot approve its parent page, another dependency, a mixed task, or
+  full review without complete affected-screen coverage.
+- Add behavioral fixtures for bounded source coverage, transitive consumers,
+  malformed declarations, and complete-screen alternatives. Existing complete
+  contracts remain compatible; consumers keep their own source-discovery maps.
+
+## [5.0.0] - 2026-09-14
 
 ### Breaking adoption change
 

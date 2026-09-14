@@ -65,6 +65,8 @@ content-aware field widths, intentional regions, current rendered measurements
 and named visual review are blocking. Missing mappings/evidence block completion,
 not a reason to run unrelated screens. A skill installation alone does not wire
 a consumer's adapter; report that adoption gap instead of assuming enforcement.
+Use that contract's `scope_sources` for bounded shared-region reviews; dialog
+evidence must not certify unrelated parent-page changes or full-screen review.
 
 For framework work, use [GDL-110's skill routing](assets/project-template/docs/guidelines/modules/110-ai-agent-rules.md#171-framework-skills-and-documentation).
 Check which relevant skills are actually installed and read them. Nuxt work

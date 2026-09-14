@@ -419,6 +419,17 @@ these machine-readable fields:
   `native`), `desktop_supported`, `primary_action`, `width_strategy`, `hierarchy`,
   and `supporting_regions` with `id`, `purpose`, `sizing`. Use an explicit
   reason for no primary action; do not invent one to complete the contract.
+- A bounded shared-region contract declares optional `scope_sources`: a
+  nonempty list of exact mapped source paths whose changes it covers. Omitting
+  it means the contract covers the complete mapped screen, not merely a dialog
+  photographed on that route. The guard evaluates every initiating changed or
+  reviewed source independently. A dialog-only contract cannot approve changes
+  to its parent page, another shared dependency, or a mixed task containing
+  either. Full review requires complete-screen coverage; scoped evidence is
+  supplementary, never a substitute. Do not widen this list to bypass missing
+  coverage: the adapter and reviewer reconcile its declared region with source.
+  For example, a shared confirmation dialog may be reviewed on two consuming
+  routes without claiming either route's unrelated editing form was tested.
 - `fields`: stable `id`, `meaning`, `value_kind`, `value_limit`, `format`,
   `unit`, `width_strategy`, and `inspection`. Use `none` where units do not
   apply. Long titles and URLs may have wide budgets; short numeric fields
@@ -903,6 +914,10 @@ Fixture requirements for package releases and each consuming adapter:
   evidence, reject oversized fields and unresolved visual findings, accept
   justified wide fields/approved responsive alternatives, and fail on missing
   or stale proof without dispatching unrelated application flows
+- bounded shared-region evidence accepts its named source on all mapped
+  consumers, but rejects parent-page, unrelated-dependency, mixed-root and
+  full-review claims without complete affected coverage; malformed scope
+  declarations fail before dispatch
 
 Package integrity, adapter adoption and application verification are distinct
 results. During upgrades, inspect the consumer's real `rules:plan`,

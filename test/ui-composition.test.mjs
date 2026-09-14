@@ -116,6 +116,38 @@ test('missing mappings, rules, commands, numeric strategy and incomplete viewpor
     input => { input.ui.screens[0].cases = input.ui.screens[0].cases.filter(row => row.id !== 'phone-dark-maximum-values') },
   ]) { const input = fixture(); alter(input); assert.throws(() => planVerification(input)) }
 })
+test('bounded shared-region coverage follows each source independently and cannot certify a parent page', () => {
+  const input = fixture()
+  input.ui.screens[0].scope_sources = ['app/Dialog.vue']
+  input.ui.screens.push({ ...screen('create-dialog'), scope_sources: ['app/Dialog.vue'] })
+  input.ui.paths.push(
+    { path: 'app/Dialog.vue', screens: [], consumers: ['app/Edit.vue', 'app/Create.vue'], reason: 'Shared dialog' },
+    { path: 'app/Create.vue', screens: ['create-dialog'], consumers: [], reason: 'Second dialog consumer' },
+    { path: 'app/Other.ts', screens: [], consumers: ['app/Edit.vue'], reason: 'Other shared dependency' },
+  )
+  input.changed_paths = []; input.impacts = []; input.review_paths = ['app/Dialog.vue']
+  assert.deepEqual(planUI(input).screens.map(row => row.id), ['create-dialog', 'edit'])
+  for (const roots of [['app/Edit.vue'], ['app/Other.ts'],
+    ['app/Dialog.vue', 'app/Edit.vue'], ['app/Edit.vue', 'app/Dialog.vue']]) {
+    input.review_paths = roots
+    assert.throws(() => planUI(input), /scoped evidence does not cover/)
+  }
+  input.review_paths = ['app/Dialog.vue']; input.mode = 'full'
+  assert.throws(() => planUI(input), /scoped evidence does not cover/)
+  input.ui.screens.push(screen('complete-edit'), screen('complete-create'))
+  input.ui.paths[0].screens.push('complete-edit')
+  input.ui.paths[2].screens.push('complete-create')
+  assert.equal(planUI(input).screens.length, 4)
+  input.mode = 'changed'; input.review_paths = ['app/Edit.vue']
+  assert.deepEqual(planUI(input).screens.map(row => row.id), ['complete-edit'])
+})
+test('scoped contracts reject malformed or unmapped source lists', () => {
+  for (const scope of [[], null, 'app/Edit.vue', ['../escape.vue'],
+    ['app/Missing.vue'], ['app/Edit.vue', 'app/Edit.vue']]) {
+    const input = fixture(); input.ui.screens[0].scope_sources = scope
+    assert.throws(() => planUI(input), /scope_sources/)
+  }
+})
 test('documents and non-UI runtime do not select UI even in a mixed task', () => {
   const input = fixture()
   input.changed_paths = ['docs/spec.md', 'server/order.ts']

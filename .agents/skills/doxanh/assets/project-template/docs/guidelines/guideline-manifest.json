@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "7da04aef36ec1160cee651ed40d76e59c18a2a48af3fe8511a428f3b8224dbe7",
-    "bytes": 601684,
-    "lines": 10344,
-    "meaning": "Doxanh 5.0.0 adds mandatory automatic UI composition selection, content-aware field sizing, intentional hierarchy, immediate-step actions, generated screen/form contracts and candidate-bound rendered plus named visual-review completion in existing GDL-023/050/051/052/080/110 owners. Verification export schema 3 requires explicit consumer adoption; unrelated regression remains forbidden. Retains the unreleased 4.1.1 document-readability changes. User-requested semantic diff reviewed 2026-09-14; release not yet approved."
+    "sha256": "7d48465a7dbbe00b83a51d6b0d3d9fc322e578f00c4fa6bb206fdfb33f5c4931",
+    "bytes": 602790,
+    "lines": 10359,
+    "meaning": "Doxanh 5.0.1 retains the 5.0.0 composition and readability contracts and clarifies bounded shared-region evidence in GDL-080: each source root requires matching coverage, and dialog evidence cannot certify an unrelated page or full review. Semantic diff reviewed 2026-09-14; user approved the focused correction and release."
   },
   "profiles": {
     "required": [
