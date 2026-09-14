@@ -11,7 +11,9 @@ const check = (id, kind = 'runtime', extra = {}) => ({ id, kind, command: ['node
 const checks = [check('book', 'documentation'), check('unit'), check('api'), check('chrome'), check('unrelated'), check('all', 'runtime', { full_only: true })]
 function fixture(runtime = false) {
   return {
-    schema_version: 2, mode: 'changed', changed_paths: ['docs/product.md'], unmatched_paths: [],
+    schema_version: 3, mode: 'changed', changed_paths: ['docs/product.md'], unmatched_paths: [],
+    review_paths: [],
+    ui: { schema_version: 1, paths: runtime ? [{ path: 'src/orders.ts', reason: 'Server validation only', screens: [], consumers: [] }] : [], screens: [] },
     impacts: [{ path: 'docs/product.md', kind: 'documentation', reason: 'Wording only', checks: ['book'] },
       ...(runtime ? [{ path: 'src/orders.ts', kind: 'runtime', reason: 'Changed order validation and its API boundary', checks: ['unit', 'api'] }] : [])],
     checks: structuredClone(checks), bindings: { content: 'content-a', context: 'toolchain-a' }, evidence: [],
@@ -287,7 +289,7 @@ test('aggregate commands cannot hide extra browser runs, even in full mode', () 
 test('missing browser metadata and old exports require migration instead of silent fallback', () => {
   const old = fixture()
   old.schema_version = 1
-  assert.throws(() => planVerification(old), /schema_version must be 2/)
+  assert.throws(() => planVerification(old), /schema_version must be 3/)
   const incomplete = fixture()
   delete incomplete.checks[0].browser_runs
   assert.throws(() => planVerification(incomplete), /browser_runs must be an array/)

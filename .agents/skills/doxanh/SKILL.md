@@ -58,6 +58,13 @@ before editing. Reuse their shell, components, density and action placement.
 Remove any helper text that does not help the user decide, act or recover;
 `CardDescription` is optional, never a reason to narrate implementation. Inspect
 the affected rendered screen in its relevant states before calling it complete.
+This applies automatically to UI implementation, changes and reviews in adopted
+projects, even without another `$doxanh` mention. Use the source-backed UI plan
+and completion guard in GDL-080 Section 13.6.1: affected shared consumers,
+content-aware field widths, intentional regions, current rendered measurements
+and named visual review are blocking. Missing mappings/evidence block completion,
+not a reason to run unrelated screens. A skill installation alone does not wire
+a consumer's adapter; report that adoption gap instead of assuming enforcement.
 
 For framework work, use [GDL-110's skill routing](assets/project-template/docs/guidelines/modules/110-ai-agent-rules.md#171-framework-skills-and-documentation).
 Check which relevant skills are actually installed and read them. Nuxt work

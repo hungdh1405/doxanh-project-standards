@@ -8,6 +8,11 @@ unrelated screens again after each edit.
 
 - Product UI is not documentation.
 - Use active, consistent action labels: `Save changes`, `Publish`, `Retry`.
+- Label the immediate next step in the current state, not a later outcome.
+  Opening a review step is not yet saving or paying. Keep one primary action
+  per task context, related controls together, and support/navigation actions
+  secondary. Remove duplicate actions, repetitive statuses, irrelevant fields
+  and filler; retain material confirmations, consent and security boundaries.
 - Keep the same action word through button, confirmation, toast, history, and
   activity-history copy.
 - Use the canonical actor, scope, entity, state, and action labels from the
@@ -373,6 +378,11 @@ control contract as `UI-CONTROL-001`.
   approved ADR.
 - Validate server input with Zod at the boundary on every request.
 - Validate normal fields on blur or submit, not noisily on every keystroke.
+- Initial load and entry into a new form step must not display validation
+  failure before interaction/submission. Reset errors and touched state with
+  the new step's values; test asynchronous initialization and reopening.
+- Field width and complete-value inspection follow Section 8.3.1, including
+  short numeric controls, labels, units, errors and responsive constraints.
 - Put errors next to fields and focus the first invalid field after submit.
 - Add an error summary with links for long forms.
 - Preserve attempted values when safe.

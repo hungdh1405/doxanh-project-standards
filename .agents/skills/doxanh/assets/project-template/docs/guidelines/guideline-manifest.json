@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "ba8d5debcb991972a0c1592b2fe69f3ad5156467ea84a4cff08c8f0edc5ee81b",
-    "bytes": 587554,
-    "lines": 10134,
-    "meaning": "Doxanh 4.1.1 clarifies human-facing document readability, renderer-aware table formatting, author/audience voice and meaning-preserving review in GDL-020 Section 4.5. Other 4.1.0 contracts, including risk-scoped verification, remain unchanged. User-requested semantic change reviewed 2026-09-14."
+    "sha256": "7da04aef36ec1160cee651ed40d76e59c18a2a48af3fe8511a428f3b8224dbe7",
+    "bytes": 601684,
+    "lines": 10344,
+    "meaning": "Doxanh 5.0.0 adds mandatory automatic UI composition selection, content-aware field sizing, intentional hierarchy, immediate-step actions, generated screen/form contracts and candidate-bound rendered plus named visual-review completion in existing GDL-023/050/051/052/080/110 owners. Verification export schema 3 requires explicit consumer adoption; unrelated regression remains forbidden. Retains the unreleased 4.1.1 document-readability changes. User-requested semantic diff reviewed 2026-09-14; release not yet approved."
   },
   "profiles": {
     "required": [
@@ -38,6 +38,7 @@
     ]
   },
   "task_reading": {
+    "ui_required": ["UI-VISUAL-001", "UI-DENSITY-001", "UI-RESP-001", "UI-ACTION-001", "UI-COPY-001", "UI-CONTROL-001", "UI-STATE-001", "UI-ACCESS-001"],
     "always": [
       "GDL-000",
       "GDL-080"
@@ -96,6 +97,7 @@
           "GDL-052"
         ],
         "UI-DENSITY-001": [
+          "GDL-023",
           "GDL-050",
           "GDL-051",
           "GDL-052"
@@ -258,7 +260,9 @@
       "default_density": "compact",
       "phone_touch_target_min_css_px": 44,
       "adjacent_target_separation_min_css_px": 8,
-      "desktop_action_width": "natural"
+      "desktop_action_width": "natural",
+      "composition_contract_required": true,
+      "rendered_and_visual_evidence_required": true
     },
     "ui_audience_projection": {
       "rule_id": "UI-AUDIENCE-001",

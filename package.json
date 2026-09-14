@@ -1,6 +1,6 @@
 {
   "name": "doxanh-project-standards",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "private": true,
   "type": "module",
   "description": "Reusable Doxanh project standards and shared Codex/Claude Code workflow skill",

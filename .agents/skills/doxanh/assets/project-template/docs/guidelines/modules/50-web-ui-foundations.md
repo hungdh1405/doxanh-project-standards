@@ -73,6 +73,45 @@ rules in Sections 8.1, 8.2, 8.4, 8.5, and 8.6. `UI-DENSITY-001` and
 manifest; a design review checklist without executable selection and evidence
 is not sufficient.
 
+#### 8.3.1 Content-aware composition acceptance
+
+`UI-DENSITY-001` requires a deliberate field-width strategy, not merely a
+compact component variant. For each field, record its meaning, permitted value
+length/range, units, formatting, inspection behavior, and phone/desktop width
+strategy in the screen's form contract. Include signs, decimal separators,
+localized units, prefixes/suffixes, steppers, and validation messages where used.
+
+- Bound short numbers and codes to their task-appropriate width. An inherited
+  `w-full`, grid stretch, or grow default is not a sizing decision. The label
+  and error region may be wider than the control; do not truncate either to
+  match a three-digit value.
+- Give titles, emails, URLs, and descriptions room appropriate to their use.
+  A wide text field is legitimate. Preserve inspection of the whole value by
+  wrapping, keyboard-accessible editing/scrolling, or an explicit detail reveal;
+  hover-only tooltips do not satisfy phone or keyboard inspection.
+- Keep the parent layout fluid while bounding the control with shared layout
+  tokens/variants. Do not impose one universal pixel width, shrink all numeric
+  controls globally, or change component internals to force a tidy screenshot.
+- Preserve the shared type scale, readable labels and errors, native input
+  semantics, keyboard access, and the established touch-target contract.
+
+Record per-case measurable width budgets derived from these decisions. A
+rendered control outside its approved budget fails even if there is no page
+overflow. A control inside its budget still needs visual review: arbitrarily
+generous budgets cannot excuse a short input spanning an empty panel.
+
+Before: a quantity field spans a wide settings card while its label and error
+are squeezed into adjacent columns. After: the number uses a bounded control,
+its label/error keep readable space, and a related title field uses the available
+constrained form width. The exact dimensions come from that project's content,
+not this example.
+
+Section 8.8 owns screen hierarchy and regions; Sections 8.10–8.12 own task copy
+and action/control semantics. Section 13.6.1 owns executable composition
+selection, rendered evidence, visual review and approved exceptions. Approved
+components, screenshots, and zero-overflow assertions alone cannot pass that
+completion gate.
+
 ### 8.4 Tailwind is layout-only
 
 In application pages and feature components, Tailwind classes are allowed for:

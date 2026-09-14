@@ -107,6 +107,9 @@ division, and evidence-reuse rules when applying external examples.
 - UI work follows `UI-VISUAL-001`, `UI-DENSITY-001`, `UI-COPY-001` and the other
   applicable `UI-*` rules. Reuse the approved shell and shared compositions;
   inspect real copy, responsive/theme states and the changed interaction.
+  The Section 13.6.1 composition plan/guard applies automatically, including
+  source-grounded reviews and shared consumers; no repeated skill request is
+  needed. Measured geometry and named visual review are separate obligations.
 - Source changes follow their owning API, data, authorization, concurrency,
   activity and capability contracts. Test server enforcement and durable
   results when those boundaries are affected, not only a toast or hidden UI.

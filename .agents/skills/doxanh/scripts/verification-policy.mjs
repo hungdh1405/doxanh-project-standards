@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { planUI, verifyUI } from './ui-composition-policy.mjs'
 
 const fullTriggers = new Set([
   'explicit-request', 'initial-release-or-missing-baseline',
@@ -39,7 +40,7 @@ function strings(value, label) {
  * and trusted evidence. A valid selection is not proof its tests passed.
  */
 export function planVerification(input) {
-  requireThat(input?.schema_version === 2, 'schema_version must be 2; export browser_runs for every command')
+  requireThat(input?.schema_version === 3, 'schema_version must be 3; migrate UI applicability and retain browser_runs for every command')
   requireThat(['changed', 'release', 'full'].includes(input.mode), 'invalid mode')
   const changedPaths = strings(input.changed_paths, 'changed_paths')
   requireThat(changedPaths.every(path => !path.startsWith('/') && !path.split('/').includes('..')), 'paths must be project-relative')
@@ -129,6 +130,15 @@ export function planVerification(input) {
   }
   requireThat(changedPaths.every(path => mapped.has(path)), 'every changed path needs an impact mapping')
 
+  const ui = planUI(input)
+  for (const screen of ui.screens) {
+    for (const id of screen.checks) {
+      requireThat(checks.get(id)?.kind === 'runtime', `${screen.id}: rendered UI check ${id} must be runtime`)
+      requireThat(screen.platform !== 'web' || checks.get(id).browser_runs.length > 0, `${screen.id}: web evidence needs a registered browser run`)
+      select(id, `UI composition and shared consumers: ${screen.id}`, 'runtime')
+    }
+  }
+
   if (input.release) {
     requireThat(input.mode !== 'changed', 'release context cannot use changed mode')
     const { base, candidate, environment, diff_digest, baseline } = input.release
@@ -182,7 +192,7 @@ export function planVerification(input) {
     requireThat(requested.every(id => planned.find(check => check.id === id).action === 'run'), 'requested commands rerun reusable evidence')
   }
   return {
-    schema_version: 2, mode: input.mode, selected: planned,
+    schema_version: 3, mode: input.mode, selected: planned, ui,
     browser_policy: input.browser_policy ?? null,
     excluded: [...checks.keys()].filter(id => !selected.has(id)).map(id => ({ id, reason: browserAllowed(checks.get(id))
       ? 'no changed-path dependency, release baseline or full-regression trigger'
@@ -195,11 +205,19 @@ export function planVerification(input) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     if (process.argv[2] === '--help') {
-      console.log('Usage: node verification-policy.mjs <project-export.json>\nContract and adoption fixtures: assets/project-template/docs/guidelines/modules/80-testing-and-verification.md, section 13.7.2.\nRead-only: prints selected run/reuse checks and exclusions; never runs tests or proves project compliance.')
+      console.log('Usage: node verification-policy.mjs <project-export.json> [--ui-complete <artifact-directory>]\nContract: GDL-080 sections 13.6.1 and 13.7.2. Planning never runs tests. --ui-complete also validates candidate-bound rendered artifacts and visual review; it is not a whole-project release claim.')
     }
     else {
       if (!process.argv[2]) throw new Error('supply the project scope-plan JSON or --help')
-      console.log(JSON.stringify(planVerification(JSON.parse(await readFile(resolve(process.argv[2]), 'utf8'))), null, 2))
+      requireThat(process.argv.length === 3 || (process.argv.length === 5 && process.argv[3] === '--ui-complete'), 'invalid arguments; use --help')
+      const input = JSON.parse(await readFile(resolve(process.argv[2]), 'utf8'))
+      const plan = planVerification(input)
+      if (process.argv[3] === '--ui-complete') {
+        requireThat(nonempty(process.argv[4]), '--ui-complete requires an artifact directory')
+        const completion = await verifyUI(input, process.argv[4])
+        console.log(JSON.stringify(completion, null, 2))
+        if (completion.status !== 'scope_complete') process.exitCode = 1
+      } else console.log(JSON.stringify(plan, null, 2))
     }
   }
   catch (error) {

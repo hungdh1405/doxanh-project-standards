@@ -5,6 +5,10 @@ in Claude Code, or “use the doxanh skill” in any adopted project.
 
 The current release is **4.1.0**, published as `v4.1.0`.
 
+The working tree prepares **5.0.0 (unreleased)**. Its mandatory UI composition
+gate changes the verification export contract. It is not published or installed
+in consumers; see [the adoption procedure](#adopt-the-500-ui-composition-gate).
+
 Doxanh Project Standards is the reusable engineering and product-delivery
 baseline used to start and govern new projects. It packages:
 
@@ -235,7 +239,8 @@ or accepting that their locked resolution will fail.
 
 To use the new rules in another project, run its
 approved `make sync`, review its existing `AGENTS.md` invocation, and migrate its
-planner/runner to verification export schema 2. Inspect real test command
+planner/runner to the selected release's verification export schema (schema 3
+in the unreleased 5.0.0 candidate). Inspect real test command
 expansion: declare `browser_runs: []` for non-browser commands and explicit
 functional/UI-UX browser rows for browser commands and aggregates. Installation
 preserves project-specific documents and cannot perform that adapter work.
@@ -397,6 +402,60 @@ runner that always invokes `full` still needs a scoped implementation change;
 the package cannot silently repair another project's commands. Report package
 integrity, adapter adoption and application evidence separately.
 
+## Adopt the 5.0.0 UI composition gate
+
+This is an explicit project migration after release approval, not a claim that
+an installed skill can enforce an application without integration. Existing
+projects remain on their approved locks until that migration is authorized.
+
+1. Select the approved release checkout and run `make check`. Do not use a
+   hypothetical `v5.0.0` tag before it is published. The bootstrap above still
+   selects the existing published release.
+2. Follow the existing `make sync`, `installed-check`, and `skill-resolve`
+   commands for the authorized project. Preserve its root instructions and
+   project book. Reconcile `AGENTS.template.md` with the existing instructions
+   so every UI implementation, modification, and review invokes the planner
+   without requiring another “use Doxanh” request.
+3. Upgrade the project's planner/runner to verification export schema 3.
+   Export source-derived UI ownership, shared consumers, screen/form
+   composition contracts, and explicit `review_paths` for read-only reviews.
+   Register focused rendered checks. Missing mappings fail; non-UI paths need
+   a supported non-UI classification, not a guessed exemption.
+4. Reconcile affected screen contracts with the implementation. The command
+   below prints the canonical web screen skeleton; it does not overwrite any
+   existing document. A project generator must preserve authored decisions.
+5. Wire the completion command below into the project's verification runner
+   and freshness/completion gate. Export actual rendered measurements and
+   artifact hashes, then record the named review of those artifacts. Keep
+   sensitive application evidence out of public source control. Do not invent
+   measurements or substitute an automatic “passed” flag for visual review.
+6. Test the adapter with isolated fixtures: changed screen, shared consumers,
+   read-only review, missing mapping, stale/pending evidence, approved scoped
+   exception, and documentation-only work selecting no UI suite. Then verify
+   the affected application screens on their named target. A lock upgrade by
+   itself does not require unrelated full application regression.
+
+Run from the resolved release's skill root:
+
+```bash
+node assets/project-template/scripts/docs/manage-guideline.mjs plan \
+  --mode task --profiles nuxt-web --ui
+node assets/project-template/scripts/docs/manage-guideline.mjs screen-template
+node scripts/verification-policy.mjs /absolute/path/to/project-plan.json
+node scripts/verification-policy.mjs /absolute/path/to/project-plan.json \
+  --ui-complete /absolute/path/to/evidence-directory
+```
+
+The [verification contract, Section 13.6.1](.agents/skills/doxanh/assets/project-template/docs/guidelines/modules/80-testing-and-verification.md#1361-blocking-ui-composition-contract-and-evidence)
+owns the schemas and completion requirements. Composition rules stay in their
+existing UI modules; this procedure does not duplicate them.
+
+The gate rejects missing, failed, pending, mismatched, or stale evidence. It
+checks measurable budgets and explicit review results; it cannot authenticate
+a dishonest runner or prove subjective design quality. Existing project-required
+human approval remains separate and cannot be silently replaced by an agent.
+Report package checks, adapter adoption, and real application evidence separately.
+
 ## Repository layout
 
 ```text
@@ -409,7 +468,8 @@ integrity, adapter adoption and application evidence separately.
 │       ├── manage-user-skill.mjs
 │       ├── project-standards.mjs
 │       ├── sync-standards.mjs
-│       └── verification-policy.mjs
+│       ├── verification-policy.mjs
+│       └── ui-composition-policy.mjs
 ├── test/project-standards.test.mjs
 ├── AGENTS.md
 ├── CHANGELOG.md

@@ -221,6 +221,17 @@ Rules:
 
 #### 8.8.1 Copyable page-template checklists
 
+`UI-DENSITY-001` and `UI-RESP-001` require each screen to identify its actor,
+primary task, reading hierarchy, content-width strategy, and the purpose of
+each supporting region. Let content determine panel height unless an approved
+comparison, workboard, or scroll contract requires alignment. Equal-height
+grid tracks, viewport-filling cards, or large empty regions need a task-based
+reason; visual symmetry is not one. Remove decorative card fragmentation,
+duplicate summaries, and empty supporting panels. Use the approved shared
+typography/density, and make key values and material consequences identifiable
+without enlarging every element. These decisions receive explicit visual
+review under Section 13.6.1, not a class-name check masquerading as UX proof.
+
 Use these checklists in `docs/ui-system.md` and important mock screens.
 
 List/index:
@@ -532,6 +543,8 @@ project with no owned UI does not generate screen contracts.
 | Master layout/page template | Named shared layout/template |
 | Shared patterns | Stable IDs/links |
 | Content-width strategy | Narrow/medium/wide/split/workboard |
+| Reading hierarchy | Primary task, key values/consequences, secondary information |
+| Supporting regions | Purpose and content-height/alignment decision for each region |
 | Primary scroll owner | Approved layout/document scroll owner; default administrative shell uses `ScrollArea` |
 | Scroll reset/restoration | Route, query/data change, background update, and back/forward behavior |
 | Primary action by state | Named action or none with reason |
@@ -554,6 +567,8 @@ Add a wireframe when structure changes; otherwise state the exact adaptation.
 ### 2.3 Desktop adaptation
 
 Add a wireframe when structure changes; otherwise state the exact adaptation.
+Include wide desktop; explain the content maximum and unused outer space
+without stretching short controls or empty panels.
 
 ## 3. Content and controls
 
@@ -609,6 +624,14 @@ Reference the shared Section 8.11.2 action-footer pattern and document only an
 approved exception; do not redefine action order or responsive placement per
 screen.
 
+### Field sizing decisions
+
+For every field, record meaning, value kind, permitted length/range, units,
+format, width strategy and complete-value inspection behavior. Link the
+per-case width budgets in the Section 13.6.1 composition contract. Keep these
+explanations in short per-field subsections when they would overload the form
+table. Section 8.3.1 owns the sizing rules.
+
 ## 7. State variants
 
 | State ID | Trigger/data condition | Visible composition and exact copy | Primary/secondary actions | Disabled/hidden behavior | Feedback/recovery | URL/pending-state preservation | Permission/activity | Evidence |
@@ -626,6 +649,7 @@ confirmation, destructive-confirmation, and partial-data states.
 | Phone | | | | | | |
 | Tablet | | | | | | |
 | Desktop | | | | | | |
+| Wide desktop | | | | | | |
 | 200%/400% zoom | | | | | | |
 
 ## 9. Feedback, permission, privacy, and accessibility
@@ -650,6 +674,11 @@ confirmation, destructive-confirmation, and partial-data states.
 
 Required evidence names the environment, actor/scope, data origin, date, and
 whether it proves visual, interaction, persisted data, or end-to-end behavior.
+Link the machine-readable composition contract and its candidate-bound
+Section 13.6.1 evidence. It names representative, maximum-value and long-label/
+error fixtures, phone/desktop/wide-desktop widths, both themes, measured
+geometry and interaction results, inspected artifact hashes, and the visual
+reviewer's identity and findings. Pending review is not a passed screen.
 
 ## 11. Open questions and change history
 

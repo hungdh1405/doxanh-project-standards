@@ -386,6 +386,115 @@ Review levels:
 Do not combine screenshots from unrelated scenarios and describe them as one
 continuous flow.
 
+#### 13.6.1 Blocking UI composition contract and evidence
+
+Every UI implementation, modification and source-grounded review automatically
+selects the applicable composition rules. This is not dependent on the user
+naming a skill. `UI-DENSITY-001` owns field sizing in Section 8.3.1;
+`UI-RESP-001` owns layout/hierarchy in Section 8.8; `UI-ACTION-001`,
+`UI-COPY-001`, `UI-CONTROL-001`, `UI-STATE-001`, `UI-VISUAL-001` and
+`UI-ACCESS-001` retain their existing owners. This section owns their
+composition enforcement, not a second set of design rules.
+
+The project adapter discovers maintained paths from Git and the approved review
+scope, and reconciles its screen/field registry and shared dependency graph
+against source. Include templates, styles, tokens, localized content and
+transitive shared consumers. Retain base-side mappings for removed/renamed
+sources. Unknown paths, unbounded consumers or unregistered implemented screens
+block dispatch until mapped. Explicit non-UI mappings explain their source-
+grounded boundary; they cannot hide a UI component or stylesheet. Unrelated
+documentation or server-only work selects no UI cases.
+
+The locked package's `scripts/ui-composition-policy.mjs` is used by
+`verification-policy.mjs`. Export `ui` schema version `1` in verification schema
+version `3`. An equivalent project gate must pass the package's behavioral
+fixtures, not merely print matching rule IDs. The runtime validator defines
+these machine-readable fields:
+
+- `paths`: unique project-relative `path`, `reason`, direct `screens` IDs and
+  `consumers` paths. The guard follows shared consumers transitively, deduplicates
+  screens and rejects missing edges. It cannot infer arbitrary imports: source
+  discovery/reconciliation is an explicitly tested project-adapter obligation.
+- `screens`: stable `id`, `route`, `actor`, `task`, `platform` (`web` or
+  `native`), `desktop_supported`, `primary_action`, `width_strategy`, `hierarchy`,
+  and `supporting_regions` with `id`, `purpose`, `sizing`. Use an explicit
+  reason for no primary action; do not invent one to complete the contract.
+- `fields`: stable `id`, `meaning`, `value_kind`, `value_limit`, `format`,
+  `unit`, `width_strategy`, and `inspection`. Use `none` where units do not
+  apply. Long titles and URLs may have wide budgets; short numeric fields
+  require their own deliberate strategy rather than a universal maximum.
+- `cases`: stable `id`, `state`, `fixture`, `locale`, `theme`, `viewport`
+  (`kind`, `width`, `height`), `max_content_width`, and `field_widths` mapping
+  each visible field to a positive `{min, max}` budget. Explicit `hidden_fields`
+  lists conditionally absent fields, with `visibility_reason` when nonempty;
+  budgets and hidden IDs together cover every registered field without overlap.
+  This permits real loading/permission states without inventing visible inputs.
+  Fixtures cover representative content, maximum permitted values and long
+  localized labels/errors. Use
+  `representative`, `maximum-values`, `long-labels-errors` for these categories;
+  additional named state fixtures are allowed. Include every relevant state
+  identified in the screen contract, not only its happy path. `states` lists
+  that complete relevant set; an uncovered state blocks planning.
+- Web cases include phone (320–430 CSS pixels), desktop (1280–1919) and wide
+  desktop (1920 or wider), each in light and dark. Native cases use logical
+  pixels and the same coverage for released desktop surfaces; native phone-only
+  products do not generate fictional desktop screens. These are evidence
+  samples, not supported-breakpoint limits. Cover all three content-fixture
+  categories at each required viewport/theme pair, including maximum values
+  and long errors on phones. Relevant state-specific cases may be distributed
+  according to risk; do not multiply every locale, state and browser engine.
+- `checks`: registered rendered-test command IDs. The guard selects these
+  automatically alongside existing per-path checks, never an unrelated full
+  suite. Web checks must declare their actual browser runs; native checks use
+  their native harness. `rules` in the returned plan feed the module-reading
+  planner; `--ui` also selects those invariant owners without hand-picked IDs.
+- `exceptions`: narrowly scoped `id`, `case_id`, `criterion`, `target`,
+  `reason`, `approval`, `status: approved`, `reviewer`, `contract_ref` and
+  `alternative`. Preserve approved project decisions. Only explicit field-width, content-width or
+  touch-target alternatives can override those measurements. No exception
+  waives current evidence, visual review, readable meaning or authorization.
+
+Store transient `ui.evidence` outside maintained source. Each record binds
+`screen`, `case_id`, `contract_digest` returned by the plan, route, actor, state,
+fixture, locale, viewport, theme, `runner`, `recorded_at`, `status` and `bindings`
+for candidate content/context/environment. `changed` evidence survives a commit-only transition
+with identical content; release evidence also binds revision and artifact,
+and postdeploy evidence binds deployment identity. `applied_exceptions` names
+only approved exception IDs for that exact case; omitting it applies none.
+
+Each record includes hashed regular-file `measurement_artifact` and
+`screenshot` references (`path`, `sha256`). The measurement JSON uses schema
+version `1` and includes actual `content_width`, `field_widths`, `hidden_fields`
+(IDs verified absent, with no corresponding measured width),
+`page_overflow_px`, `min_touch_target` (at least 44 CSS pixels on web phones,
+48 logical pixels on native phones unless an exact alternative is approved),
+and assertions for `labels_readable`, `values_inspectable`, `errors_readable`, `keyboard_operable`,
+`focus_order_correct`, `actions_order_correct`, `no_overlap`. Collect geometry
+from the rendered target and exercise keyboard/inspection behavior; do not
+hardcode passing flags or copy contract budgets as measured values.
+
+`visual_review` names `reviewer`, `reviewer_kind` (`human` or `agent`),
+`reviewed_at`, `notes`, `status` and `criteria` for `field_sizing`, `hierarchy`,
+`supporting_regions`, `empty_space`, `copy_relevance`, `action_meaning`,
+`grouping`, `typography_density`. It binds the inspected measurement and
+screenshot values as `measurement_sha256` and `screenshot_sha256`. The reviewer must actually inspect the rendered
+composition and report findings; an agent review is labelled as such and never
+substitutes for separately required human accessibility/product approval.
+Automation can check that a named review exists, not prove subjective quality
+or establish that a forged declaration is truthful. Protect runner/reviewer
+provenance in the project's evidence system.
+
+Run `node <locked-skill>/scripts/verification-policy.mjs <plan.json>
+--ui-complete <artifact-directory>` during `verification:check` and the UI
+completion aggregate, after automated checks and visual review. Planning may
+show pending evidence so work can proceed; completion exits nonzero for missing,
+failed, pending, stale, malformed or mismatched evidence, missing artifacts,
+symlinks/hash drift, geometry outside approved budgets or failed visual criteria.
+Zero overflow, approved components, screenshots or successful automation alone
+cannot complete a UI task. This gate is UI-scope proof, not a whole-product
+release approval. A review may finish with findings; it must not label those
+screens verified while findings remain open.
+
 ### 13.7 Nuxt/server command surface
 
 Every Nuxt project exposes the applicable scripts below. A platform-specific
@@ -729,7 +838,8 @@ Do not hand-pick changed paths or invent a passing evidence record. Export:
 
 | Field | Required meaning |
 | --- | --- |
-| `schema_version`, `mode` | Version `2`; `changed`, `release`, or explicitly justified `full`. Version-1 exports need a reviewed browser catalog migration; they fail with an adoption message. |
+| `schema_version`, `mode` | Version `3`; `changed`, `release`, or explicitly justified `full`. Older exports fail with an adoption message; retain browser catalogs and add source-backed UI applicability. |
+| `review_paths`, `ui` | Explicit review paths (empty for change-only work) and the Section 13.6.1 composition contract. A review selects evidence without requiring source edits. |
 | `changed_paths`, `unmatched_paths` | Complete maintained task diff or release base-to-candidate diff; unresolved paths block dispatch. |
 | `impacts` | Rows with `path`, `kind`, `reason`, and `checks` IDs. Kinds: `documentation`, `static`, `tooling`, `runtime`. Every changed path needs an explained mapping. |
 | `checks` | Complete active command catalog, not only wanted tests: unique `id`, argument-array `command`, `kind`, `phase` (`verify`, `predeploy`, `postdeploy`), `binding` (`content`, `candidate`, `deployment`), and optional `depends_on`, `full_only`, `baseline_purpose`. Dependencies are ordered, cycle-checked and phase-local. Classify aggregate commands by their expanded commands: a script wrapping all browser/API tests is not a documentation/static check. |
@@ -758,8 +868,10 @@ For example, one documentation edit maps only its documentation check:
 
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "mode": "changed",
+  "review_paths": [],
+  "ui": {"schema_version": 1, "paths": [], "screens": []},
   "changed_paths": ["docs/product-spec.md"],
   "unmatched_paths": [],
   "impacts": [{"path": "docs/product-spec.md", "kind": "documentation", "reason": "Clarify existing wording; no runtime contract change", "checks": ["book"]}],
@@ -786,7 +898,11 @@ Fixture requirements for package releases and each consuming adapter:
   functional commands, including hidden aggregate runs, fail without their own
   browser-specific trigger; full mode preserves that division
 - a named browser risk selects only its relevant additional cases; API checks
-  are not duplicated per engine; version-1 exports fail with an adoption message
+  are not duplicated per engine; older exports fail with an adoption message
+- UI changes/reviews automatically select current screen and shared-consumer
+  evidence, reject oversized fields and unresolved visual findings, accept
+  justified wide fields/approved responsive alternatives, and fail on missing
+  or stale proof without dispatching unrelated application flows
 
 Package integrity, adapter adoption and application verification are distinct
 results. During upgrades, inspect the consumer's real `rules:plan`,

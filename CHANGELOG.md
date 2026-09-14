@@ -3,10 +3,31 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [4.1.1] - Unreleased
+## [5.0.0] - Unreleased
+
+### Breaking adoption change
+
+- Verification exports now require schema 3 with source-backed UI applicability,
+  explicit review paths and the composition contract. Schema 1/2 exports fail
+  with a migration message. Existing project locks remain unchanged until an
+  approved update; installing the package does not rewrite consumer gates.
+
+### Added
+
+- Automatic composition-rule selection for UI work and reviews; transitive
+  shared-consumer selection, per-field width budgets, state/fixture and
+  phone/desktop/wide-desktop theme coverage, and a separate blocking completion
+  guard for rendered measurements and named visual review.
+- Behavior fixtures reject oversized numeric controls, stretched content,
+  unreadable values, unresolved composition/copy/action findings and stale or
+  missing evidence. Legitimate wide fields and exact approved layout exceptions
+  remain supported. These are policy fixtures, not consumer UX certification.
+- A read-only screen-template generator draws directly from the canonical
+  screen/form contract. Detailed rules retain their existing module owners.
 
 ### Changed
 
+- Retain the previously unreleased 4.1.1 documentation improvements below.
 - Clarify human-facing document readability and intended author/audience voice
   in the existing GDL-020 Section 4.5 documentation guidance, with a short
   before/after example and renderer-aware table formatting.

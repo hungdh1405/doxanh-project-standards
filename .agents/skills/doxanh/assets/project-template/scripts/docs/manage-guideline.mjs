@@ -153,6 +153,8 @@ function validateManifestShape() {
     phone_touch_target_min_css_px: 44,
     adjacent_target_separation_min_css_px: 8,
     desktop_action_width: 'natural',
+    composition_contract_required: true,
+    rendered_and_visual_evidence_required: true,
   }
   if (
     JSON.stringify(manifest.critical_contracts?.ui_density)
@@ -309,6 +311,11 @@ if (!isRecord(manifest.capability_dependencies)) manifestErrors.push('capability
 if (!isRecord(manifest.task_reading?.rules)) manifestErrors.push('task_reading.rules must be an object')
 if (!isRecord(manifest.task_reading?.profile_rules)) manifestErrors.push('task_reading.profile_rules must be an object')
 if (!isRecord(manifest.task_reading?.dependencies)) manifestErrors.push('task_reading.dependencies must be an object')
+const uiRequired = ['UI-VISUAL-001', 'UI-DENSITY-001', 'UI-RESP-001', 'UI-ACTION-001',
+  'UI-COPY-001', 'UI-CONTROL-001', 'UI-STATE-001', 'UI-ACCESS-001']
+if (JSON.stringify(manifest.task_reading?.ui_required) !== JSON.stringify(uiRequired)) {
+  manifestErrors.push('task_reading.ui_required must retain the mandatory composition rules')
+}
 for (const [label, ids] of Object.entries({
   always: manifest.task_reading?.always,
   ...manifest.task_reading?.rules,
@@ -718,6 +725,11 @@ async function plan() {
   const capabilities = parseCsvOption('--capabilities')
   const requestedCapabilities = [...capabilities].sort()
   const rules = parseCsvOption('--rules')
+  // Consumers derive this switch from their source-backed UI impact plan.
+  // Naming any UI rule also includes the composition invariants automatically.
+  if (process.argv.includes('--ui') || [...rules].some(rule => rule.startsWith('UI-'))) {
+    manifest.task_reading.ui_required.forEach(rule => rules.add(rule))
+  }
   const requestedModules = parseCsvOption('--modules')
   if (mode === 'project' && (rules.size || requestedModules.size)) fail('rule/module selectors require --mode task')
   if (mode === 'project' && taskProfiles.size) fail('--task-profiles requires --mode task')
@@ -789,8 +801,18 @@ async function plan() {
   }, null, 2))
 }
 
-if (command === 'bootstrap') await bootstrap()
+async function screenTemplate() {
+  const source = await readFile(resolve(projectRoot, 'docs/guidelines/modules/51-web-layouts-and-screens.md'), 'utf8')
+  const section = source.slice(source.indexOf('### 8.9 Screen definition template'))
+  const template = section.match(/````md\n([\s\S]*?)\n````/u)?.[1]
+  if (!template) fail('canonical screen template is missing')
+  // Print only: the owning book generator controls create-only/preservation.
+  process.stdout.write(`${template}\n`)
+}
+
+if (command === 'screen-template') await screenTemplate()
+else if (command === 'bootstrap') await bootstrap()
 else if (command === 'entry') await writeEntry()
 else if (command === 'check') await check()
 else if (command === 'plan') await plan()
-else fail(`unknown command ${command}; use bootstrap, entry, check, or plan`)
+else fail(`unknown command ${command}; use bootstrap, entry, check, plan, or screen-template`)

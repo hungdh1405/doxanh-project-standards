@@ -61,6 +61,11 @@ colors or navigation differ from those defaults.
 - copy and localization rules
 - accessibility and motion rules
 - per-screen and multi-screen-flow definition formats and evidence gate
+- the source-derived composition registry and candidate-bound evidence gate
+  from Section 13.6.1, including shared-consumer mapping, per-field width
+  decisions, meaningful regions, and named visual review. Native contracts
+  use logical pixels and native rendered/interaction evidence; desktop cases
+  apply when desktop is a supported native surface.
 
 `design-tokens.md` owns exact values and semantic roles. It must provide:
 
@@ -248,3 +253,11 @@ Every checklist item uses exactly one result:
 Do not generate or accept `Partial`, `Mostly complete`, or another ambiguous
 status. Split a compound checklist item until each independently verifiable
 claim can receive one allowed result.
+
+The book generator obtains the web screen/form skeleton with
+`manage-guideline.mjs screen-template`, which prints the canonical Section 8.9
+template without modifying a project. Materialize missing screens only; never
+overwrite an authored contract. Native generators adapt that structure through
+GDL-053. Generate composition cases from the approved screen registry, not from
+whichever screenshots happen to exist. Reconcile every implemented screen,
+field, relevant state and shared consumer before accepting evidence.

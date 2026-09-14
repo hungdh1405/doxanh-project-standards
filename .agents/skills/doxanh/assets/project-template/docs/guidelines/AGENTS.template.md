@@ -23,6 +23,11 @@ project's work. Read applicable `CLAUDE.md` instructions as well. Resolve
 `.doxanh-project-standards.json` through the available skill's
 `scripts/manage-user-skill.mjs resolve --target <project-root>` and read that
 locked version. Do not silently upgrade the project to the discoverable version.
+This bootstrap is automatic for work in this adopted project; the user need not
+mention the skill again. UI implementations, modifications and reviews must use
+the source-derived composition plan and blocking evidence gate in GDL-080
+Section 13.6.1, including affected shared consumers. A review with findings may
+be delivered, but missing or pending evidence cannot be called UI completion.
 
 Use this order when instructions differ:
 
