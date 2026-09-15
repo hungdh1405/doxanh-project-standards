@@ -3,6 +3,27 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [6.0.0] - 2026-09-16
+
+### Breaking adoption change
+
+- Corrected the shared web action-footer contract. Safe dismissal remains
+  before commit in source, DOM, and keyboard order; the primary action is now
+  visually above Cancel on phones and at the logical inline end on desktop.
+  Only the registered shared footer may own the phone-only reversal.
+
+### Changed
+
+- Required source checks plus component and rendered geometry evidence for the
+  responsive footer contract, preventing individual screens from recreating or
+  contradicting its ordering.
+- Clarified that a long single-task form may remain continuous when splitting
+  it would hide context or add navigation work. Authors must first remove
+  redundant copy and spacing, group related fields, and prove bounded scrolling
+  and reachable actions.
+- Added a fixed manifest contract and behavioral regression coverage so these
+  decisions fail closed during planning and package verification.
+
 ## [5.2.0] - 2026-09-15
 
 ### Changed

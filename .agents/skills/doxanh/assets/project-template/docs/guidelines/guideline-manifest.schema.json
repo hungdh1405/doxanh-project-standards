@@ -87,6 +87,7 @@
         "ui_choice_controls",
         "ui_copy",
         "ui_density",
+        "ui_action_footer",
         "ui_audience_projection",
         "ui_sidebar",
         "ui_secondary_information",
@@ -223,6 +224,28 @@
             "desktop_action_width": { "const": "natural" },
             "composition_contract_required": { "const": true },
             "rendered_and_visual_evidence_required": { "const": true }
+          }
+        },
+        "ui_action_footer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "source_order",
+            "phone_visual_order",
+            "desktop_primary_position",
+            "shared_phone_reversal_required",
+            "page_local_reversal_forbidden",
+            "long_single_task_form"
+          ],
+          "properties": {
+            "rule_id": { "const": "UI-ACTION-001" },
+            "source_order": { "const": "safe-dismissal-secondary-primary" },
+            "phone_visual_order": { "const": "primary-secondary-safe-dismissal" },
+            "desktop_primary_position": { "const": "logical-inline-end" },
+            "shared_phone_reversal_required": { "const": true },
+            "page_local_reversal_forbidden": { "const": true },
+            "long_single_task_form": { "const": "continuous-when-splitting-harms-task" }
           }
         },
         "ui_audience_projection": {

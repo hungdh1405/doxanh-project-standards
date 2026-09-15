@@ -162,6 +162,21 @@ function validateManifestShape() {
   ) {
     errors.push('critical_contracts.ui_density differs from the fixed contract')
   }
+  const expectedUiActionFooter = {
+    rule_id: 'UI-ACTION-001',
+    source_order: 'safe-dismissal-secondary-primary',
+    phone_visual_order: 'primary-secondary-safe-dismissal',
+    desktop_primary_position: 'logical-inline-end',
+    shared_phone_reversal_required: true,
+    page_local_reversal_forbidden: true,
+    long_single_task_form: 'continuous-when-splitting-harms-task',
+  }
+  if (
+    JSON.stringify(manifest.critical_contracts?.ui_action_footer)
+    !== JSON.stringify(expectedUiActionFooter)
+  ) {
+    errors.push('critical_contracts.ui_action_footer differs from the fixed contract')
+  }
   const expectedUiAudienceProjection = {
     rule_id: 'UI-AUDIENCE-001',
     server_authoritative: true,

@@ -177,13 +177,14 @@ footer and button components. Tailwind may adapt only layout, spacing, sizing,
 and responsive composition; it must not create a second visual button or modal
 system.
 
-Inspect the installed footer source: some upstream shadcn-vue footers use
-`flex-col-reverse` on phones. The shared application composition must override
-that layout default with normal column/row flow while retaining default
-component visuals. Keep safe-to-commit DOM order; do not reverse the children
-to compensate. Scope source checks to application compositions and validate the
-effective rendered order instead of rejecting untouched upstream source merely
-for containing its original layout class.
+Inspect the installed footer source and define this behavior once in the shared
+application composition. Keep safe-to-commit source and DOM order; do not
+reverse the children or change `tabindex` to obtain the responsive visual
+placement. The shared footer may use a phone-only reverse layout, such as the
+default shadcn-vue `flex-col-reverse` pattern, while returning to normal row
+flow at the tablet/desktop breakpoint. Scope source checks to application
+compositions and validate both the DOM sequence and the effective rendered
+positions.
 
 The shared composition enforces all of the following:
 
@@ -191,22 +192,27 @@ The shared composition enforces all of the following:
   content region above the footer. The footer contains actions only. Never use
   a footer as a two-column layout with explanatory text on one side and buttons
   on the other.
-- Use one semantic sequence in source, DOM, keyboard traversal, and visual
-  reading order at every breakpoint: safe dismissal or navigation first,
-  optional bounded secondary actions next, and the primary or destructive
-  commit last. Use logical inline-start/inline-end language rather than hard-
-  coded left/right placement.
-- On phones, stack actions at full available width in that same order, with the
-  primary or destructive commit last and nearest the block end. Every action,
-  including icon-only controls, has at least a 44 by 44 CSS-pixel target and
-  adjacent targets have at least 8 CSS pixels of separation.
+- Use one semantic source, DOM, and keyboard sequence: safe dismissal or
+  navigation first, optional bounded secondary actions next, and the primary
+  or destructive commit last. Preserve this accessible sequence at every
+  breakpoint; never repair placement by duplicating controls or changing focus
+  order.
+- On phones, stack actions at full available width with the primary or
+  destructive commit visually at the block start and Cancel or the safest
+  dismissal at the block end. This deliberate visual priority differs from the
+  safe source/keyboard sequence. Every action, including icon-only controls,
+  has at least a 44 by 44 CSS-pixel target and adjacent targets have at least 8
+  CSS pixels of separation.
 - On tablet and desktop, keep one compact natural-width horizontal action group
-  aligned to the logical inline end. Safe actions still precede the commit;
-  do not stretch ordinary actions across unused width merely to fill the row.
-- Never use `flex-col-reverse`, CSS `order-*`, duplicated breakpoint-specific
-  action markup, or another reversal technique to repair an incorrect DOM
-  sequence. Responsive CSS changes the arrangement, not the action meaning or
-  traversal order.
+  aligned to the logical inline end, with the primary commit visually at the
+  logical inline end (the right side in left-to-right interfaces). Safe actions
+  still precede the commit in source and in the row; do not stretch ordinary
+  actions across unused width merely to fill it.
+- The registered shared footer is the only application composition allowed to
+  own the phone-only reverse layout. Reject page-local `flex-col-reverse`, CSS
+  `order-*`, duplicated breakpoint-specific action markup, or another reversal
+  technique. Responsive CSS changes visual placement, not action meaning or
+  keyboard traversal.
 - Expose at most one primary commit. If more than three actions would crowd a
   phone footer, move infrequent or non-commit choices to a documented menu or
   content-region control; do not create a dense button wall.
@@ -223,11 +229,13 @@ not an exception.
 
 Enforcement is mandatory:
 
-- `standards:check` rejects reverse/order utilities in action footers,
+- `standards:check` requires the registered shared footer's phone-primary/
+  desktop-inline-end contract and rejects page-local reverse/order utilities,
   breakpoint-duplicated action groups, action footers containing body copy,
   ad-hoc form/dialog footers where the shared pattern applies, and a commit
   action that precedes its cancel/safe action in source
-- component tests prove DOM/tab/visual order, phone and desktop arrangement,
+- component tests prove source/DOM/tab order and responsive visual positions,
+  including the intentionally different phone visual order, phone and desktop arrangement,
   minimum phone targets and separation, long localized labels, disabled and
   pending stability, focus return, and light/dark rendering
 - Playwright exercises representative form and confirmation footers at phone,
@@ -579,12 +587,13 @@ runs; checklist rows do not multiply into every browser × viewport × locale.
   first, then a separate action-only region whenever the content exceeds one
   proven short line; long localized content and formatted metadata wrap without
   compression, material truncation, overlap, or overflow.
-- [ ] Source, DOM, keyboard, and visual order is safe/cancel first and primary/
-  destructive commit last at every breakpoint; no reverse/order utility or
-  duplicated responsive action markup changes that sequence.
-- [ ] Phone actions are full-width, at least 44 by 44 CSS pixels, and separated
-  by at least 8 CSS pixels; tablet/desktop actions form one compact natural-
-  width group at the logical inline end.
+- [ ] Source, DOM, and keyboard order is safe/cancel first and primary/
+  destructive commit last; page-local reverse/order utilities and duplicated
+  responsive action markup are absent.
+- [ ] Phone actions are full-width with the primary visually above secondary
+  and Cancel actions, at least 44 by 44 CSS pixels, and separated by at least 8
+  CSS pixels; tablet/desktop actions form one compact natural-width group with
+  the primary at the logical inline end.
 - [ ] Foreground requests and heavy tasks acquire/release one opaque loading
   lease; the overlay is visible exactly while the derived count is greater than
   zero and remains for the central 500 ms final-release hold.

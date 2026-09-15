@@ -3,11 +3,12 @@
 The workflow is called the **Doxanh skill**. Invoke it with `$doxanh` in Codex, `/doxanh`
 in Claude Code, or “use the doxanh skill” in any adopted project.
 
-The current release is **5.2.0**, published as `v5.2.0`.
+The current release is **6.0.0**, published as `v6.0.0`.
 
-The 5.x standard includes a mandatory UI composition gate. Version 5.2.0 adds
-secondary-information placement guidance while retaining verification export
-schema 3 and UI schema 1. Existing projects keep their approved locks; see
+The 6.x standard keeps the mandatory UI composition gate and corrects shared
+action-footer placement: primary above Cancel on phones and primary at the
+logical inline end on desktop. It retains verification export schema 3 and UI
+schema 1. Existing projects keep their approved locks; see
 [the adoption procedure](#adopt-the-500-ui-composition-gate).
 
 Doxanh Project Standards is the reusable engineering and product-delivery
@@ -75,7 +76,7 @@ set -eu
 
 DOXANH_PROJECT_ROOT="${DOXANH_PROJECT_ROOT:-$PWD}"
 DOXANH_REPO_ROOT="${DOXANH_REPO_ROOT:-$(git -C "$DOXANH_PROJECT_ROOT" rev-parse --show-toplevel)}"
-DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v5.2.0}"
+DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v6.0.0}"
 DOXANH_AGENTS="${DOXANH_AGENTS:-both}" # codex, claude, or both
 DOXANH_BOOTSTRAP_DIR="$(mktemp -d)"
 
@@ -410,7 +411,7 @@ an installed skill can enforce an application without integration. Existing
 projects remain on their approved locks until that migration is authorized.
 
 1. Select the approved release checkout and run `make check`. The bootstrap
-   above selects `v5.2.0`; do not upgrade an existing project without approval.
+   above selects `v6.0.0`; do not upgrade an existing project without approval.
 2. Follow the existing `make sync`, `installed-check`, and `skill-resolve`
    commands for the authorized project. Preserve its root instructions and
    project book. Reconcile `AGENTS.template.md` with the existing instructions
@@ -475,6 +476,26 @@ schema 1 adapter. No application source is changed by installation.
    named visual review, then the completion/freshness gate. Old screenshots
    cannot approve a changed placement. Package fixture success does not prove
    the application has adopted the rule.
+
+### Adopt the 6.0.0 action-footer contract
+
+This is a breaking visual-composition change for web consumers. After an
+authorized `make sync`, update the existing shared form, `Dialog`,
+`AlertDialog`, `Sheet`, and `Drawer` footers rather than changing each screen.
+
+1. Keep safe dismissal before the primary commit in source, DOM, and keyboard
+   order.
+2. Make the shared footer place the primary visually above Cancel on phones and
+   at the logical inline end on tablet/desktop. Do not duplicate controls or
+   change focus order.
+3. Reject page-local reverse/order utilities; only the registered shared footer
+   owns the phone-only visual reversal.
+4. Separate summaries and explanations from the action-only footer. A long
+   single-task form may remain continuous when splitting it would make the task
+   harder; document the decision and verify one bounded scroll owner.
+5. Run focused component and Chromium evidence for a representative form and
+   confirmation at phone and desktop widths. Check actual action positions,
+   touch targets, keyboard order, cancellation, and one confirmed request.
 
 ## Repository layout
 

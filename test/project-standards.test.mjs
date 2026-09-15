@@ -423,6 +423,36 @@ test('requires quiet defaults, task-first phones, persistent scope and truthful 
   })
 })
 
+test('requires responsive action placement without changing safe source order', async () => {
+  const manifest = JSON.parse(await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/guideline-manifest.json',
+  ), 'utf8'))
+  const interactionContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/52-web-interaction-and-verification.md',
+  ), 'utf8')
+  const layoutContract = await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/modules/51-web-layouts-and-screens.md',
+  ), 'utf8')
+
+  assert.deepEqual(manifest.critical_contracts.ui_action_footer, {
+    rule_id: 'UI-ACTION-001',
+    source_order: 'safe-dismissal-secondary-primary',
+    phone_visual_order: 'primary-secondary-safe-dismissal',
+    desktop_primary_position: 'logical-inline-end',
+    shared_phone_reversal_required: true,
+    page_local_reversal_forbidden: true,
+    long_single_task_form: 'continuous-when-splitting-harms-task',
+  })
+  assert.match(interactionContract, /primary.*visually at the block start/isu)
+  assert.match(interactionContract, /right side in left-to-right interfaces/isu)
+  assert.match(interactionContract, /only application composition allowed/isu)
+  assert.match(layoutContract, /long single-task form may remain one continuous form/iu)
+  assert.match(layoutContract, /Do not split\s+a form solely to make it look shorter/iu)
+})
+
 test('planner rejects weakened sidebar, secondary-information and operational contracts before selection', async () => {
   const root = await mkdtemp(resolve(tmpdir(), 'doxanh-metadata-policy-'))
   try {
@@ -432,7 +462,7 @@ test('planner rejects weakened sidebar, secondary-information and operational co
     const plan = () => spawnSync(process.execPath, [resolve(root, 'scripts/docs/manage-guideline.mjs'),
       'plan', '--mode', 'task', '--profiles', 'nuxt-web', '--ui'], { encoding: 'utf8' })
     assert.equal(plan().status, 0)
-    for (const key of ['ui_sidebar', 'ui_secondary_information', 'ui_operational_composition']) {
+    for (const key of ['ui_action_footer', 'ui_sidebar', 'ui_secondary_information', 'ui_operational_composition']) {
       for (const field of [null, ...Object.keys(original.critical_contracts[key])]) {
         const candidate = structuredClone(original)
         if (field === null) delete candidate.critical_contracts[key]

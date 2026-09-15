@@ -63,6 +63,13 @@ collections and show the exceptions that change meaning or action. Budget the
 first phone viewport for the primary task, preserve deliberate entity-workspace
 navigation, and ensure realtime recovery labels perform the complete operation
 they name.
+Shared form and overlay footers preserve safe Cancel-before-commit source and
+keyboard order, show the primary action visually above Cancel on phones, and
+place the primary at the logical inline end on desktop. Do not recreate that
+responsive ordering in individual screens. A long single-task form may remain
+continuous when splitting it would hide context or add navigation work; first
+remove redundant copy and spacing, group related fields, and prove one bounded
+scroll owner.
 For secondary facts, apply GDL-051 Section 8.8.5: choose omission, integration,
 accessible disclosure, or a justified separate region. Do not spend another
 card on metadata by default or hide required decisions to reduce clutter.

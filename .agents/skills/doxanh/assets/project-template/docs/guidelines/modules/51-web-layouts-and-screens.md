@@ -364,6 +364,16 @@ Create/edit:
   changes, conflict, and retry behavior are defined.
 - [ ] Phone section flow and action reachability remain usable without turning
   the form into an explanation-heavy wizard.
+- [ ] A long single-task form may remain one continuous form when every field
+  belongs to the same decision and tabs, accordions, or a multi-step flow would
+  hide context or add navigation work. First remove redundant copy and spacing,
+  group related fields, and give the body one bounded scroll owner. Do not split
+  a form solely to make it look shorter; record why continuity or progressive
+  disclosure best serves the actor's task.
+- [ ] The shared action footer remains reachable without covering fields or
+  errors. A footer at the end is valid when the actor should review the form
+  before committing; make it sticky only when repeated access materially helps
+  and the keyboard, zoom, and small-viewport states prove no content is hidden.
 
 Dashboard/workboard/report:
 

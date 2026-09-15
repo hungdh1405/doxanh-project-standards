@@ -37,8 +37,9 @@ reason, and ask about material unknowns instead of checking the box.
   and Flutter dialog compositions, copy rules, bulk scope, cancel/focus
   behavior, and loading handoff are approved.
 - [ ] The shared web action footer has one action-only content boundary, one
-  safe-to-commit DOM/tab/visual order, phone touch-safe stacking, compact
-  tablet/desktop grouping, and executable drift checks.
+  safe-to-commit source/DOM/tab order, phone touch-safe stacking with the
+  primary visually above Cancel, compact tablet/desktop grouping with the
+  primary at the logical inline end, and executable drift checks.
 - [ ] Important screen files use the strict Section 8.9 contract; phone-first wireframes, visible shell/scroll ownership, copy, controls, data, states, permissions, responsive behavior, and evidence expectations are complete.
 - [ ] Audience/surface separation, entity-detail action ownership, long-
   collection discovery, stable item anatomy, overlay behavior, and every
@@ -92,7 +93,8 @@ reason, and ask about material unknowns instead of checking the box.
   request, result feedback, and tests.
 - [ ] Every form or overlay with actions references the Section 8.11.2 shared
   footer; no screen-local action order, text/action split, reverse utility, or
-  undersized phone control remains.
+  undersized phone control remains. The registered shared footer owns the only
+  phone-only visual reversal.
 - [ ] The platform component mapping is defined: shadcn-vue for web or default Material/platform widgets for Flutter.
 - [ ] DATA tables/fields, TX write boundary, QRY read path, validation,
   permissions, activity `module_key`/`tag_type`, audit, and error rules are
@@ -139,8 +141,9 @@ reason, and ask about material unknowns instead of checking the box.
   confirmation makes no request and explicit confirmation executes exactly one
   authorized mutation with the documented loading and result behavior.
 - [ ] Component and Playwright evidence proves the shared web footer's action-
-  only boundary, safe-to-commit DOM/tab/visual order, responsive geometry,
-  phone target size/separation, pending stability, and long localized labels.
+  only boundary, safe-to-commit source/DOM/tab order, primary-above-Cancel
+  phone geometry, primary-at-inline-end desktop geometry, phone target size/
+  separation, pending stability, and long localized labels.
 - [ ] UI passes Section 8.16 for web and Section 9.9 for Flutter, as applicable.
 - [ ] The screen registry, screen/flow contracts, implementation status, and current evidence agree with the shipped routes and behavior.
 - [ ] Every important visible action and overlay close path was exercised as the

@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "513102d60fc52515c1e898f039d15cab7b3c8c79b047d671d7f7ce88b30f5a8e",
-    "bytes": 616307,
-    "lines": 10571,
-    "meaning": "Doxanh 5.2.0 adds deliberate secondary-information placement, truthful metadata, accessible disclosure, and required shadcn-vue sidebar composition and grouping. Includes the approved 5.1.0 operational UI and realtime rules. Semantic diff reviewed 2026-09-15 against the user's approved generic changes; existing project exceptions and risk-scoped verification remain intact."
+    "sha256": "24859574372433f8a7f8fae1dacc96dec6f52ceb13527ee81004717e9b29925a",
+    "bytes": 617942,
+    "lines": 10593,
+    "meaning": "Doxanh 6.0.0 corrects the shared web action footer so safe source and keyboard order renders with primary above Cancel on phones and primary at the logical inline end on desktop. It also permits a continuous long single-task form when splitting harms the task, with compact grouping, bounded scrolling, and focused evidence. Semantic diff reviewed 2026-09-16 against the user's approved generic changes; existing project exceptions and risk-scoped verification remain intact."
   },
   "profiles": {
     "required": [
@@ -263,6 +263,15 @@
       "desktop_action_width": "natural",
       "composition_contract_required": true,
       "rendered_and_visual_evidence_required": true
+    },
+    "ui_action_footer": {
+      "rule_id": "UI-ACTION-001",
+      "source_order": "safe-dismissal-secondary-primary",
+      "phone_visual_order": "primary-secondary-safe-dismissal",
+      "desktop_primary_position": "logical-inline-end",
+      "shared_phone_reversal_required": true,
+      "page_local_reversal_forbidden": true,
+      "long_single_task_form": "continuous-when-splitting-harms-task"
     },
     "ui_audience_projection": {
       "rule_id": "UI-AUDIENCE-001",
