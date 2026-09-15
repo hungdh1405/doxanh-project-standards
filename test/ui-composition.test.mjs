@@ -88,6 +88,7 @@ async function withEvidence(run) {
 test('UI rules and browser slice are automatic without the user naming rules', () => {
   const plan = planVerification(fixture())
   assert.deepEqual(plan.ui.rules, UI_RULES)
+  assert.ok(plan.ui.rules.includes('UI-COLLECTION-001'))
   assert.deepEqual(plan.selected.map(row => row.id), ['static', 'layout'])
   assert.deepEqual(plan.excluded.map(row => row.id), ['unrelated-payment'])
 })
@@ -109,6 +110,8 @@ test('missing mappings, rules, commands, numeric strategy and incomplete viewpor
     input => { input.ui.paths[0].screens = [] },
     input => { input.ui.screens[0].checks = [] },
     input => { input.ui.screens[0].checks = ['unknown'] },
+    input => { delete input.ui.screens[0].supporting_regions[0].purpose },
+    input => { delete input.ui.screens[0].supporting_regions[0].sizing },
     input => { delete input.ui.screens[0].fields[0].width_strategy },
     input => { input.ui.screens[0].cases.pop() },
     input => { input.ui.screens[0].cases[0].viewport.width = 1440 },
@@ -181,6 +184,50 @@ test('zero overflow and screenshots cannot override failed composition, redundan
     })
   }
 })
+test('exceptions-first collections require a passing rendered review while legitimate explicit comparison can pass', async () => {
+  await withEvidence(async (input, root) => {
+    const review = input.ui.evidence[0].visual_review
+    review.notes = 'Every ordinary item repeats the same healthy-state badge and pushes the task below it'
+    review.criteria.copy_relevance = 'failed'
+    review.criteria.hierarchy = 'failed'
+    assert.equal((await verifyUI(input, root)).status, 'not_verified')
+
+    review.notes = 'Mixed-state audit comparison requires explicit normal and exception labels; the task remains first'
+    review.criteria.copy_relevance = 'passed'
+    review.criteria.hierarchy = 'passed'
+    assert.equal((await verifyUI(input, root)).status, 'scope_complete')
+  })
+})
+test('metadata review blocks redundant panels and hidden consequences, while integrated facts and comparison panels can pass', async () => {
+  for (const example of [
+    { placement: 'Separate identity, total and revision cards repeat the toolbar facts', criterion: 'supporting_regions', verdict: 'failed' },
+    { placement: 'A mandatory decision is available only inside an information popup', criterion: 'action_meaning', verdict: 'failed' },
+    { placement: 'Count provenance and update-time meaning have not been reviewed', criterion: 'copy_relevance', verdict: 'pending' },
+    { placement: 'Compact inline counts; information button reveals correctly labelled update time', criterion: 'supporting_regions', verdict: 'passed' },
+    { placement: 'A comparison report needs separate period totals to support its primary task', criterion: 'supporting_regions', verdict: 'passed' },
+  ]) await withEvidence(async (input, root) => {
+    // Feed reviewer outcomes into the gate, not a pretend automated design judge.
+    const review = input.ui.evidence[0].visual_review
+    review.notes = example.placement
+    review.criteria[example.criterion] = example.verdict
+    const plan = planVerification(input)
+    assert.deepEqual(plan.selected.map(row => row.id), ['static', 'layout'])
+    const result = await verifyUI(input, root)
+    assert.equal(result.status, example.verdict === 'passed' ? 'scope_complete' : 'not_verified')
+    if (example.verdict !== 'passed') assert.ok(result.failures.some(row => row.includes('visual composition review')))
+  })
+})
+
+test('changing metadata placement invalidates the old review without broadening the test scope', async () => {
+  await withEvidence(async (input, root) => {
+    input.ui.screens[0].supporting_regions[0].sizing = 'Information disclosure in the existing task header'
+    assert.equal((await verifyUI(input, root)).status, 'not_verified')
+    assert.deepEqual(planVerification(input).selected.map(row => row.id), ['static', 'layout'])
+    await evidence(input, root)
+    assert.equal((await verifyUI(input, root)).status, 'scope_complete')
+  })
+})
+
 test('missing, failed, pending, stale or anonymous evidence blocks completion, not planning', async () => {
   for (const alter of [
     input => input.ui.evidence.pop(),

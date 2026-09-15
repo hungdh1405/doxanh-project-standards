@@ -406,6 +406,51 @@ test('requires server-authorized complete-surface audience projection', async ()
   })
 })
 
+test('requires quiet defaults, task-first phones, persistent scope and truthful realtime recovery', async () => {
+  const manifest = JSON.parse(await readFile(resolve(
+    templateRoot,
+    'docs/guidelines/guideline-manifest.json',
+  ), 'utf8'))
+
+  assert.ok(manifest.task_reading.ui_required.includes('UI-COLLECTION-001'))
+  assert.deepEqual(manifest.critical_contracts.ui_operational_composition, {
+    rule_ids: ['UI-COLLECTION-001', 'UI-RESP-001', 'UI-AUDIENCE-001', 'UI-STATE-001'],
+    default_state_visibility: 'exceptions-first',
+    first_phone_viewport: 'primary-task-first',
+    scoped_navigation: 'persistent-and-explicit',
+    realtime_recovery: 'reconnect-reauthorize-resubscribe-refetch',
+    subscription_authorization_matrix_required: true,
+  })
+})
+
+test('planner rejects weakened sidebar, secondary-information and operational contracts before selection', async () => {
+  const root = await mkdtemp(resolve(tmpdir(), 'doxanh-metadata-policy-'))
+  try {
+    await cp(templateRoot, root, { recursive: true })
+    const path = resolve(root, 'docs/guidelines/guideline-manifest.json')
+    const original = JSON.parse(await readFile(path, 'utf8'))
+    const plan = () => spawnSync(process.execPath, [resolve(root, 'scripts/docs/manage-guideline.mjs'),
+      'plan', '--mode', 'task', '--profiles', 'nuxt-web', '--ui'], { encoding: 'utf8' })
+    assert.equal(plan().status, 0)
+    for (const key of ['ui_sidebar', 'ui_secondary_information', 'ui_operational_composition']) {
+      for (const field of [null, ...Object.keys(original.critical_contracts[key])]) {
+        const candidate = structuredClone(original)
+        if (field === null) delete candidate.critical_contracts[key]
+        else candidate.critical_contracts[key][field] = false
+        await writeFile(path, JSON.stringify(candidate))
+        const result = plan()
+        assert.notEqual(result.status, 0, `${key}.${field} must not silently weaken the contract`)
+        assert.ok(result.stderr.includes(`critical_contracts.${key} differs from the fixed contract`))
+      }
+    }
+    await writeFile(path, JSON.stringify(original))
+    const restored = plan()
+    assert.equal(restored.status, 0, restored.stderr)
+    assert.ok(JSON.parse(restored.stdout).modules.some(row => row.id === 'GDL-051'))
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('requires canonical product vocabulary across rendered surfaces', async () => {
   const productContract = await readFile(resolve(
     templateRoot,

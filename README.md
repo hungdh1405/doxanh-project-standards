@@ -3,11 +3,12 @@
 The workflow is called the **Doxanh skill**. Invoke it with `$doxanh` in Codex, `/doxanh`
 in Claude Code, or “use the doxanh skill” in any adopted project.
 
-The current release is **4.1.0**, published as `v4.1.0`.
+The current release is **5.2.0**, published as `v5.2.0`.
 
-The working tree prepares **5.0.0 (unreleased)**. Its mandatory UI composition
-gate changes the verification export contract. It is not published or installed
-in consumers; see [the adoption procedure](#adopt-the-500-ui-composition-gate).
+The 5.x standard includes a mandatory UI composition gate. Version 5.2.0 adds
+secondary-information placement guidance while retaining verification export
+schema 3 and UI schema 1. Existing projects keep their approved locks; see
+[the adoption procedure](#adopt-the-500-ui-composition-gate).
 
 Doxanh Project Standards is the reusable engineering and product-delivery
 baseline used to start and govern new projects. It packages:
@@ -74,7 +75,7 @@ set -eu
 
 DOXANH_PROJECT_ROOT="${DOXANH_PROJECT_ROOT:-$PWD}"
 DOXANH_REPO_ROOT="${DOXANH_REPO_ROOT:-$(git -C "$DOXANH_PROJECT_ROOT" rev-parse --show-toplevel)}"
-DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v4.1.0}"
+DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v5.2.0}"
 DOXANH_AGENTS="${DOXANH_AGENTS:-both}" # codex, claude, or both
 DOXANH_BOOTSTRAP_DIR="$(mktemp -d)"
 
@@ -160,7 +161,7 @@ Claude uses the standard skill entrypoint. This package targets local Codex and
 Claude Code workflows with Node.js and repository access, not a claim of tested
 Claude.ai/Cowork or hosted API execution.
 
-Verification status for **4.1.0**: the package checks and a real Codex invocation
+Historical live verification for **4.1.0**: the package checks and a real Codex invocation
 passed. Claude Code discovered both the `doxanh` skill and `/doxanh` command,
 but its end-to-end invocation remains unverified: no authenticated Claude
 account is available for testing yet, and the attempted check stopped at
@@ -240,7 +241,7 @@ or accepting that their locked resolution will fail.
 To use the new rules in another project, run its
 approved `make sync`, review its existing `AGENTS.md` invocation, and migrate its
 planner/runner to the selected release's verification export schema (schema 3
-in the unreleased 5.0.0 candidate). Inspect real test command
+since 5.0.0). Inspect real test command
 expansion: declare `browser_runs: []` for non-browser commands and explicit
 functional/UI-UX browser rows for browser commands and aggregates. Installation
 preserves project-specific documents and cannot perform that adapter work.
@@ -408,9 +409,8 @@ This is an explicit project migration after release approval, not a claim that
 an installed skill can enforce an application without integration. Existing
 projects remain on their approved locks until that migration is authorized.
 
-1. Select the approved release checkout and run `make check`. Do not use a
-   hypothetical `v5.0.0` tag before it is published. The bootstrap above still
-   selects the existing published release.
+1. Select the approved release checkout and run `make check`. The bootstrap
+   above selects `v5.2.0`; do not upgrade an existing project without approval.
 2. Follow the existing `make sync`, `installed-check`, and `skill-resolve`
    commands for the authorized project. Preserve its root instructions and
    project book. Reconcile `AGENTS.template.md` with the existing instructions
@@ -455,6 +455,26 @@ checks measurable budgets and explicit review results; it cannot authenticate
 a dishonest runner or prove subjective design quality. Existing project-required
 human approval remains separate and cannot be silently replaced by an agent.
 Report package checks, adapter adoption, and real application evidence separately.
+
+### Adopt the 5.2.0 secondary-information guidance
+
+After an authorized upgrade with `make sync`, keep the existing schema 3/UI
+schema 1 adapter. No application source is changed by installation.
+
+1. Run the project's source-backed UI planner for the affected screens or
+   shared component consumers. A general placement rule does not request a
+   full application regression.
+2. Reconcile their authored screen contracts with
+   [Section 8.8.5](.agents/skills/doxanh/assets/project-template/docs/guidelines/modules/51-web-layouts-and-screens.md#885-secondary-information-without-extra-task-surfaces)
+   and the generated secondary-information decisions. Record actual count
+   scope, timestamp meaning, placement, and any justified separate regions.
+3. Reflect those decisions in the existing `hierarchy` and
+   `supporting_regions` export. Preserve required actions, warnings, and
+   approved project exceptions.
+4. When implementation is authorized, run the affected rendered checks and
+   named visual review, then the completion/freshness gate. Old screenshots
+   cannot approve a changed placement. Package fixture success does not prove
+   the application has adopted the rule.
 
 ## Repository layout
 

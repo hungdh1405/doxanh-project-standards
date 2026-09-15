@@ -13,6 +13,11 @@ ownership, responsive usability, focus and restoration obligations through its
 documented components and scroll owner. It does not need unused sidebar or
 `ScrollArea` scaffolding. Component/layout names below describe roles; preserve
 an existing approved equivalent instead of renaming it to match an example.
+For a web shell that uses sidebar navigation, however, the required component
+family is the default shadcn-vue `Sidebar`; a hand-built lookalike is not an
+equivalent. Preserve approved theme and scroll decisions. A different component
+system needs the explicit scoped exception in Section 1; a shell without a
+sidebar does not need one added merely to satisfy this rule.
 
 Use these terms consistently:
 
@@ -115,6 +120,40 @@ Component ownership is:
 | Blocking activity | `AppLoadingOverlay` with the default `Spinner`, or `Progress` for known completion | Render once outside the routed page slot; watch the Pinia lease registry from Section 7.10 and cover the application viewport while its count is greater than zero. |
 | Overlays/feedback | Default `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `Tooltip`, `Sonner`, and related components | Remain outside the page slot when global; use the component's focus and stacking behavior. |
 
+##### Sidebar composition and grouping
+
+`UI-VISUAL-001` and `UI-RESP-001` require the
+[official Sidebar composition](https://shadcn-vue.com/docs/components/sidebar):
+one `SidebarProvider`, `Sidebar`, `SidebarContent`, and the appropriate header,
+footer, groups, menu items, and trigger. Reuse existing generated components;
+do not replace them or copy demo branding when changing navigation structure.
+
+- Group destinations by the person's task and stable entity context, not source
+  folders or database tables. Keep genuinely independent destinations direct.
+- For a parent with related child destinations, use `SidebarMenuSub` and its
+  item/button primitives. Use the default `Collapsible` when expansion is
+  helpful. Avoid several nested levels or one-child groups without a task reason.
+- Expansion is a button action; navigation is a route link. If a parent has
+  both a landing page and children, make these two actions unambiguous with
+  separate controls. Do not make one click both navigate and toggle.
+- Derive the active child from the real route and automatically reveal its
+  parent on direct entry and back/forward navigation. A person may then close
+  the group deliberately. Do not erase query filters or the selected workspace.
+- Filter children by the authorized navigation contract and remove empty
+  groups. Grouping must not create or broaden permissions; server authorization
+  remains mandatory for every destination.
+- In collapsed-icon and phone modes, every authorized child stays reachable
+  by keyboard and touch, not hover alone. Use the component's supported
+  expansion/menu behavior. Close the phone sidebar after choosing a destination,
+  not merely after expanding a group.
+
+Generated navigation contracts record group/child IDs, localized labels,
+destinations, visibility rules, active-match rules, expansion behavior, and
+collapsed/phone access. Verify a direct child URL, parent expansion, sibling
+navigation, back/forward, empty/permission-filtered groups, and responsive
+keyboard/touch behavior for the affected navigation; do not rerun unrelated
+business mutations because the shell changed.
+
 #### 8.7.2 Responsive shell behavior
 
 All pages must reflow continuously; named evidence widths are samples, not the
@@ -200,6 +239,12 @@ Rules:
 - Render every page template through its selected master layout and primary
   scroll contract; do not introduce a competing scroller or accidentally
   unbound a shell that the approved design keeps bounded.
+- Budget the first phone viewport for the current person's primary task. After
+  required shell and scope context, put the control, queue, content, or value
+  needed to begin that task before repeated normal-state labels, secondary
+  navigation, explanatory copy, or low-priority summaries. A material warning
+  or recovery action may precede the task only when it changes whether or how
+  the person can safely continue.
 - Choose a content-width strategy: narrow, medium, wide structured, split detail,
   or workboard.
 - Give each state one obvious primary action.
@@ -410,6 +455,11 @@ with different goals or permissions.
 - When one actor can change scope, keep the current scope visible and make
   switching deliberate. A route, store, or stale cached selection must not
   silently carry data or mutations into another scope.
+- Inside an entity-scoped workspace, keep an obvious route to the entity hub,
+  authorized sibling tasks, and an explicit exit to the parent collection.
+  Preserve that navigation context across child routes and responsive modes;
+  do not make a person return to a generic dashboard after each task or guess
+  the first accessible entity when no scope was selected.
 
 Shared presentation components must remain permission-neutral. Reusing a list,
 filter, dashboard, activity viewer, selector, or detail composition never
@@ -477,6 +527,14 @@ collection easy to use.
   occupy consistent semantic regions. Variable text must wrap, clamp with an
   accessible reveal, or reflow without moving an action into an ambiguous
   column.
+- Treat the ordinary/default state as implicit when the surrounding content
+  and enabled action already make it unambiguous. Do not repeat the same
+  normal-state badge or label on every item in a homogeneous actionable
+  collection. Show exceptions that change meaning or action, such as
+  unavailable, blocked, delayed, failed, or restricted. Show a normal state
+  explicitly only when the person must compare mixed states, audit that state,
+  or omission would be ambiguous; record that reason in the screen contract.
+  Exception meaning must remain textual and must not rely on color alone.
 - Align repeated actions and numeric values deliberately, but do not force
   equal heights by clipping required meaning. Test missing images, long titles,
   long translations, null metadata, extreme values, and different action sets.
@@ -492,6 +550,59 @@ Playwright evidence for an important collection must use deliberately uneven
 content and enough records to prove search, grouping, pagination, back/forward,
 responsive reflow, keyboard/touch use, and stable action placement. A tidy
 three-row seed is insufficient evidence.
+
+#### 8.8.5 Secondary information without extra task surfaces
+
+`UI-RESP-001` and `UI-DENSITY-001` require supporting information to earn its
+space. This applies to list, detail, settings, workboard, and other page
+templates, not only dashboards. A separate component or API response does not
+justify a separate visual card.
+
+For counts, timestamps, versions, scope facts, and other secondary metadata,
+choose the least intrusive presentation that supports the named task:
+
+1. Omit duplicated facts and internal values with no useful user decision.
+2. Integrate frequently useful facts into the existing heading, toolbar, or
+   record summary as a concise secondary line. Keep action-only footers free
+   of metadata under Section 8.11.2.
+3. Put occasional reference facts behind a clearly named information control
+   or disclosure. For web, use the approved `Popover` for short contextual
+   details; use a sheet/dialog only when content length or interaction needs it.
+4. Use a separate panel only for a distinct task, consequential state, or
+   meaningful comparison. Record why integration or disclosure is inadequate.
+   Reports, dashboards, and audit views may legitimately need multiple panels.
+
+Do not impose a universal card limit or collapse unrelated tasks into one
+giant card. Do not add nested cards, repeated headings, duplicate counts, or
+equal-height empty regions merely to decorate secondary facts. Choose one
+canonical location for each fact in a given state; responsive relocation must
+not leave duplicate copies exposed to assistive technology.
+
+An information control must work by click, touch, and keyboard, have an
+accessible name describing its content, and support the focus/dismissal
+contract in Section 8.11. Hover-only tooltips are not access to reference
+information. Disclosed content still requires authorized scope, readable
+wrapping, supported themes, and honest loading, unavailable, and stale states.
+
+Keep required decisions, unsaved/unpublished work, blockers, consequential
+warnings, and their relevant actions discoverable in the normal task flow.
+Do not hide them inside an information popup to make the screen look quieter.
+An already-current status with no next action need not occupy its own region.
+
+Metadata labels must reflect their source. Distinguish total, active, filtered,
+and current-page counts. Name what changed for an update timestamp; a fetch,
+publication, or unrelated parent edit is not automatically the last content
+update. Do not invent a timestamp when the API does not provide that fact.
+Apply `TIME-PRESENTATION-001` through the existing date/time owner, not another
+formatter. Expose version numbers only when they support an actual reference,
+comparison, history, or recovery task. Stored snapshots alone do not imply
+that a user can browse or restore them.
+
+Example: replace separate identity, totals, and version cards above a catalog
+with one compact task header, its Add action, and an information control for
+counts and the correctly named update time. If changes await publication,
+retain a visible pending state and Publish action. A report whose primary job
+is comparing totals keeps its useful comparison panels.
 
 ### 8.9 Screen definition template
 
@@ -542,9 +653,12 @@ project with no owned UI does not generate screen contracts.
 | Downstream effect | Durable or navigation effect |
 | Master layout/page template | Named shared layout/template |
 | Shared patterns | Stable IDs/links |
+| Sidebar hierarchy, when present | Group/child IDs, links, visibility, active/expanded state, collapsed and phone access; Section 8.7.1 |
 | Content-width strategy | Narrow/medium/wide/split/workboard |
 | Reading hierarchy | Primary task, key values/consequences, secondary information |
 | Supporting regions | Purpose and content-height/alignment decision for each region |
+| Secondary information | Section 8.8.5 placement decision: omit, integrate, disclose, or separate with task justification |
+| First phone viewport | Required scope context, primary task content/action, and any material warning allowed to precede it |
 | Primary scroll owner | Approved layout/document scroll owner; default administrative shell uses `ScrollArea` |
 | Scroll reset/restoration | Route, query/data change, background update, and back/forward behavior |
 | Primary action by state | Named action or none with reason |
@@ -579,6 +693,19 @@ Every rendered action must name a real handler/use case or exact navigation
 destination. A button that merely closes an overlay is labelled as dismissal;
 an action label must not close with no action, request, or visible state change.
 
+### 3.1 Secondary information decisions
+
+For each count, timestamp, version, or other supporting fact, record:
+
+- User question and source: include count scope or the exact timestamp event.
+- Placement: omitted, integrated, disclosed, or separate; justify a separate panel.
+- Visibility by state: name warnings and required actions that remain visible.
+- Disclosure, if used: trigger name, keyboard/touch access, dismissal, focus,
+  loading/stale behavior, and responsive placement.
+
+Reference existing content/control IDs instead of duplicating their contracts.
+Write `N/A — no secondary metadata` when none exists.
+
 ## 4. Data dependencies
 
 | Dependency | API/query/event ID | Trigger/parameters | Auth/scope | Loading mode/owner | Empty/not-found | Handled non-zero | Unexpected/offline | Stale/realtime/cache | Consumer |
@@ -595,6 +722,8 @@ Write `N/A — not a table/list screen` or complete all applicable rows.
 
 - Pattern: semantic table | mobile list/card | controlled scroller | data grid
 - Row identity/key:
+- Default-state and exception-state presentation, including any reason an
+  ordinary state remains explicit:
 - Default sort and deterministic tie-breaker:
 - Search/filter ownership and URL state:
 - Pagination/cursor/page-size/count behavior:
@@ -665,6 +794,9 @@ confirmation, destructive-confirmation, and partial-data states.
 - Localization, long text, date/time/number/currency:
 - User-task copy review: no role narration, internal rationale, implementation
   language, or redundant `default` wording:
+- Default-state presentation: ordinary state is implicit, or the exact
+  comparison/audit/ambiguity reason for showing it is recorded; exception
+  states and their non-color meaning are named:
 - Reduced motion and animation purpose:
 
 ## 10. Verification

@@ -392,8 +392,8 @@ Every UI implementation, modification and source-grounded review automatically
 selects the applicable composition rules. This is not dependent on the user
 naming a skill. `UI-DENSITY-001` owns field sizing in Section 8.3.1;
 `UI-RESP-001` owns layout/hierarchy in Section 8.8; `UI-ACTION-001`,
-`UI-COPY-001`, `UI-CONTROL-001`, `UI-STATE-001`, `UI-VISUAL-001` and
-`UI-ACCESS-001` retain their existing owners. This section owns their
+`UI-COPY-001`, `UI-CONTROL-001`, `UI-COLLECTION-001`, `UI-STATE-001`,
+`UI-VISUAL-001` and `UI-ACCESS-001` retain their existing owners. This section owns their
 composition enforcement, not a second set of design rules.
 
 The project adapter discovers maintained paths from Git and the approved review
@@ -419,6 +419,12 @@ these machine-readable fields:
   `native`), `desktop_supported`, `primary_action`, `width_strategy`, `hierarchy`,
   and `supporting_regions` with `id`, `purpose`, `sizing`. Use an explicit
   reason for no primary action; do not invent one to complete the contract.
+- For secondary information, the existing `hierarchy` and
+  `supporting_regions[].purpose`/`sizing` explain the Section 8.8.5 placement
+  decision and reference the authored content contract for count scope and
+  timestamp meaning. No additional export schema is needed. Missing purpose
+  or sizing blocks planning; vague declarations cannot substitute for the
+  source-backed contract or the named composition review.
 - A bounded shared-region contract declares optional `scope_sources`: a
   nonempty list of exact mapped source paths whose changes it covers. Omitting
   it means the contract covers the complete mapped screen, not merely a dialog
@@ -494,6 +500,43 @@ substitutes for separately required human accessibility/product approval.
 Automation can check that a named review exists, not prove subjective quality
 or establish that a forged declaration is truthful. Protect runner/reviewer
 provenance in the project's evidence system.
+
+For collection, workspace-navigation, and realtime surfaces, the named review
+also verifies these applicable acceptance points through the existing
+`hierarchy`, `copy_relevance`, `action_meaning`, and `grouping` criteria:
+
+- default/healthy states stay implicit when they do not change meaning or
+  action, while exception states remain understandable without color
+- the first phone viewport exposes the primary task after required scope and
+  safety context rather than repeated normal state or low-priority explanation
+- an entity-scoped workspace preserves a clear hub, authorized sibling tasks,
+  and explicit parent exit without silently selecting another entity
+- realtime recovery labels match the implemented operation, and every active
+  actor/channel/resource subscription has direct allow and denial proof
+
+Project adapters keep regression fixtures for these behaviors. A passing
+fixture includes a legitimate mixed-state comparison or audit view where an
+explicit normal state is useful. Failing fixtures include repeated ordinary
+badges in a homogeneous task list, a primary task displaced below non-material
+content, lost workspace scope, and a `Refresh` action that claims to repair a
+disconnected subscription without reconnecting and resubscribing. Tests must
+exercise planner selection and completion behavior rather than search for the
+wording above.
+
+For secondary-information changes, the existing `supporting_regions`,
+`hierarchy`, `copy_relevance`, `action_meaning`, and `grouping` review criteria
+cover Section 8.8.5. Record the inspected placement and any findings in review
+notes. A failed or pending criterion blocks completion even with valid geometry
+and zero overflow. Keep fixtures that reject such a review for redundant
+metadata-only panels or concealed required actions, and accept a compact
+integrated/disclosed summary and a justified comparison dashboard.
+
+The affected rendered check exercises any disclosure by keyboard and touch,
+including dismissal/focus return, readable long values, loading/stale states,
+and visible consequential state outside it. Compare counts and timestamp labels
+with the authoritative scoped result. The package checks evidence structure
+and verdicts, not whether an arbitrary card is useful; the project runner and
+reviewer supply that proof. This does not select unrelated application flows.
 
 Run `node <locked-skill>/scripts/verification-policy.mjs <plan.json>
 --ui-complete <artifact-directory>` during `verification:check` and the UI
@@ -609,8 +652,8 @@ mark UI rules N/A rather than generating a screen to satisfy them.
 | `UI-ACTION-001` | Every important rendered action and overlay close path has a real outcome and interaction proof; form/overlay footers use the shared action-only composition and deterministic safe-to-commit order from Section 8.11.2; actionable feedback uses the content-led icon/body plus separate responsive action-only composition from Section 8.11.3. |
 | `UI-COPY-001` | User-task copy, glossary-owned canonical actor/scope/entity/state/action vocabulary across every surface and locale, registered presentation of technical keys, effective-value wording, and no competing synonyms, raw/humanized keys, implementation details, policy narration, internal rationale, developer instructions, or dummy content on any released surface. |
 | `UI-CONTROL-001` | Choice controls follow Section 8.12: `Select` is limited to at most nine short, bounded, easily scanned choices; ten or more choices, remote catalogs, or name/code lookup use the searchable default `Combobox` with loading, empty, disabled, clear, keyboard, touch, component, and rendered workflow proof. |
-| `UI-COLLECTION-001` | Search/group/filter/sort/pagination, stable item anatomy, restoration, and uneven-data proof for growing collections. |
-| `UI-RESP-001` | Phone-first continuous reflow, bounded scroll ownership, theme, zoom, keyboard, touch, and required viewport evidence. |
+| `UI-COLLECTION-001` | Search/group/filter/sort/pagination, stable item anatomy, exceptions-first state presentation, restoration, and uneven-data proof for growing collections. |
+| `UI-RESP-001` | Phone-first continuous reflow with the primary task budgeted into the first phone viewport, bounded scroll ownership, persistent scope-aware workspace navigation, theme, zoom, keyboard, touch, and required viewport evidence. |
 | `UI-STATE-001` | Loading, empty, populated, denied, expired, conflict, unexpected-failure, destructive, pending, and recovery states are designed and exercised where applicable. |
 | `UI-ACCESS-001` | WCAG 2.2 AA semantics, names, focus, keyboard, reflow, contrast, live regions, touch, reduced motion, component evidence, and rendered accessibility evidence. |
 | `TIME-PRESENTATION-001` | UTC instant storage/transport, canonical local mutation values, server-authoritative scope/system IANA resolution, one shared client presentation context and formatter, no browser-local formatting or raw display fallback, localized invalid state, and executable source/component/API evidence. |

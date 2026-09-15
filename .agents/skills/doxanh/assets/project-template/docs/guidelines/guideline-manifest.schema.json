@@ -88,6 +88,9 @@
         "ui_copy",
         "ui_density",
         "ui_audience_projection",
+        "ui_sidebar",
+        "ui_secondary_information",
+        "ui_operational_composition",
         "verification_scope",
         "verification_claim"
       ],
@@ -244,6 +247,79 @@
             "counts_and_facets_scope_projected": { "const": true },
             "cross_boundary_identity_default": { "const": "redacted" },
             "direct_request_no_leak_tests": { "const": true }
+          }
+        },
+        "ui_sidebar": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile", "applicability", "component_family", "task_based_grouping_required",
+            "authorized_children_required", "active_child_reveal_required",
+            "keyboard_and_touch_children_required"
+          ],
+          "properties": {
+            "profile": { "const": "nuxt-web" },
+            "applicability": { "const": "shell-with-sidebar-navigation" },
+            "component_family": { "const": "shadcn-vue/sidebar" },
+            "task_based_grouping_required": { "const": true },
+            "authorized_children_required": { "const": true },
+            "active_child_reveal_required": { "const": true },
+            "keyboard_and_touch_children_required": { "const": true }
+          }
+        },
+        "ui_secondary_information": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_ids", "owner", "placement_decision_required",
+            "separate_panel_justification_required", "accessible_disclosure_required",
+            "consequential_state_remains_visible", "metadata_source_meaning_required"
+          ],
+          "properties": {
+            "rule_ids": {
+              "type": "array",
+              "prefixItems": [{ "const": "UI-RESP-001" }, { "const": "UI-DENSITY-001" }],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "owner": { "const": "GDL-051" },
+            "placement_decision_required": { "const": true },
+            "separate_panel_justification_required": { "const": true },
+            "accessible_disclosure_required": { "const": true },
+            "consequential_state_remains_visible": { "const": true },
+            "metadata_source_meaning_required": { "const": true }
+          }
+        },
+        "ui_operational_composition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_ids",
+            "default_state_visibility",
+            "first_phone_viewport",
+            "scoped_navigation",
+            "realtime_recovery",
+            "subscription_authorization_matrix_required"
+          ],
+          "properties": {
+            "rule_ids": {
+              "type": "array",
+              "prefixItems": [
+                { "const": "UI-COLLECTION-001" },
+                { "const": "UI-RESP-001" },
+                { "const": "UI-AUDIENCE-001" },
+                { "const": "UI-STATE-001" }
+              ],
+              "items": false,
+              "minItems": 4,
+              "maxItems": 4
+            },
+            "default_state_visibility": { "const": "exceptions-first" },
+            "first_phone_viewport": { "const": "primary-task-first" },
+            "scoped_navigation": { "const": "persistent-and-explicit" },
+            "realtime_recovery": { "const": "reconnect-reauthorize-resubscribe-refetch" },
+            "subscription_authorization_matrix_required": { "const": true }
           }
         },
         "verification_scope": {

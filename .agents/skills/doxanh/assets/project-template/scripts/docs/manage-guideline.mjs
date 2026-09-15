@@ -178,6 +178,45 @@ function validateManifestShape() {
   ) {
     errors.push('critical_contracts.ui_audience_projection differs from the fixed contract')
   }
+  const expectedSidebar = {
+    profile: 'nuxt-web',
+    applicability: 'shell-with-sidebar-navigation',
+    component_family: 'shadcn-vue/sidebar',
+    task_based_grouping_required: true,
+    authorized_children_required: true,
+    active_child_reveal_required: true,
+    keyboard_and_touch_children_required: true,
+  }
+  if (JSON.stringify(manifest.critical_contracts?.ui_sidebar) !== JSON.stringify(expectedSidebar)) {
+    errors.push('critical_contracts.ui_sidebar differs from the fixed contract')
+  }
+  const expectedSecondaryInformation = {
+    rule_ids: ['UI-RESP-001', 'UI-DENSITY-001'],
+    owner: 'GDL-051',
+    placement_decision_required: true,
+    separate_panel_justification_required: true,
+    accessible_disclosure_required: true,
+    consequential_state_remains_visible: true,
+    metadata_source_meaning_required: true,
+  }
+  if (JSON.stringify(manifest.critical_contracts?.ui_secondary_information)
+    !== JSON.stringify(expectedSecondaryInformation)) {
+    errors.push('critical_contracts.ui_secondary_information differs from the fixed contract')
+  }
+  const expectedUiOperationalComposition = {
+    rule_ids: ['UI-COLLECTION-001', 'UI-RESP-001', 'UI-AUDIENCE-001', 'UI-STATE-001'],
+    default_state_visibility: 'exceptions-first',
+    first_phone_viewport: 'primary-task-first',
+    scoped_navigation: 'persistent-and-explicit',
+    realtime_recovery: 'reconnect-reauthorize-resubscribe-refetch',
+    subscription_authorization_matrix_required: true,
+  }
+  if (
+    JSON.stringify(manifest.critical_contracts?.ui_operational_composition)
+    !== JSON.stringify(expectedUiOperationalComposition)
+  ) {
+    errors.push('critical_contracts.ui_operational_composition differs from the fixed contract')
+  }
   const expectedVerificationScope = {
     rule_id: 'VERIFY-SCOPE-001',
     default_mode: 'risk-scoped',
@@ -312,7 +351,7 @@ if (!isRecord(manifest.task_reading?.rules)) manifestErrors.push('task_reading.r
 if (!isRecord(manifest.task_reading?.profile_rules)) manifestErrors.push('task_reading.profile_rules must be an object')
 if (!isRecord(manifest.task_reading?.dependencies)) manifestErrors.push('task_reading.dependencies must be an object')
 const uiRequired = ['UI-VISUAL-001', 'UI-DENSITY-001', 'UI-RESP-001', 'UI-ACTION-001',
-  'UI-COPY-001', 'UI-CONTROL-001', 'UI-STATE-001', 'UI-ACCESS-001']
+  'UI-COPY-001', 'UI-CONTROL-001', 'UI-COLLECTION-001', 'UI-STATE-001', 'UI-ACCESS-001']
 if (JSON.stringify(manifest.task_reading?.ui_required) !== JSON.stringify(uiRequired)) {
   manifestErrors.push('task_reading.ui_required must retain the mandatory composition rules')
 }

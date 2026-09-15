@@ -3,6 +3,49 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [5.2.0] - 2026-09-15
+
+### Changed
+
+- Required the official shadcn-vue Sidebar family for web sidebars, with
+  task-based child navigation, authorized groups, active-child revelation,
+  and keyboard/touch access in collapsed and phone modes. Added the reviewed
+  `npx skills add unovue/shadcn-vue` setup guidance without automatic reinstalls.
+- Extended `UI-RESP-001` and `UI-DENSITY-001` in their existing layout owner:
+  secondary facts must be omitted, integrated, disclosed accessibly, or placed
+  in a separate panel justified by a distinct user task or comparison.
+- Kept consequential state and required actions in the task flow. Added source
+  meaning for counts, update times, and versions, without inventing history or
+  timestamp capabilities and without imposing a universal card limit.
+- Extended the generated screen contract and the existing named visual-review
+  criteria. Verification exports remain schema 3 with UI schema 1; applications
+  need contract/review adoption, not another evidence format migration.
+- Added planner tampering and completion fixtures for missing region decisions,
+  failed/pending metadata reviews, stale placement evidence, and legitimate
+  integrated summaries and comparison panels. These validate the gate, not
+  subjective design quality or any consuming application's UI.
+- Updated release and adoption guidance. Includes the reviewed 5.1.0 changes
+  below; consumer locks, application code, and deployments are unchanged.
+
+## [5.1.0] - 2026-09-15
+
+### Changed
+
+- Made `UI-COLLECTION-001` part of every applicable UI plan and required
+  ordinary healthy states to remain implicit unless comparison, audit, or
+  ambiguity makes them useful.
+- Required the first phone viewport to prioritize the primary task after
+  necessary scope and safety context, without repeated default status or
+  low-priority explanation displacing the work.
+- Required entity-scoped workspaces to preserve an obvious hub, authorized
+  sibling tasks, and explicit parent exit across child routes and responsive
+  modes.
+- Strengthened realtime recovery and authorization: labels must match the
+  implemented recovery operation, and every active subscription consumer needs
+  actor/channel/resource allow-and-deny proof.
+- Added behavioral policy coverage and a fixed operational-composition contract
+  so these requirements fail closed instead of remaining optional review advice.
+
 ## [5.0.1] - 2026-09-14
 
 ### Fixed

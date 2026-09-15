@@ -3,7 +3,8 @@ import { lstat, readFile, realpath } from 'node:fs/promises'
 import { resolve, relative, dirname } from 'node:path'
 
 export const UI_RULES = ['UI-VISUAL-001', 'UI-DENSITY-001', 'UI-RESP-001',
-  'UI-ACTION-001', 'UI-COPY-001', 'UI-CONTROL-001', 'UI-STATE-001', 'UI-ACCESS-001']
+  'UI-ACTION-001', 'UI-COPY-001', 'UI-CONTROL-001', 'UI-COLLECTION-001',
+  'UI-STATE-001', 'UI-ACCESS-001']
 const text = value => typeof value === 'string' && value.trim().length > 0
 const hash = value => createHash('sha256').update(value).digest('hex')
 const digest = value => hash(JSON.stringify(value))

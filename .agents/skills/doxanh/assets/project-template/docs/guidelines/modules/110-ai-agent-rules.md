@@ -69,6 +69,24 @@ versions and edits; a normal feature task does not authorize a global skill
 refresh. If a required tool cannot be substituted, complete independent work
 and state the exact dependent step that remains blocked.
 
+#### shadcn-vue skill setup
+
+For web component implementation or review, check that the current agent can
+read the `shadcn-vue` skill. The reviewed upstream installation command is:
+
+```bash
+npx skills add unovue/shadcn-vue
+```
+
+Select the intended agent and local/user installation scope deliberately.
+Reuse a valid existing installation; do not reinstall it for every UI task.
+If it is missing, report the gap and install when setup is authorized under the
+rule above, then read its `SKILL.md` and relevant component rules. This command
+installs AI guidance, not application components. Component installation uses
+the project's package runner and shadcn-vue CLI, after inspecting
+`components.json` and the existing generated source. Section 8.7.1 owns the
+mandatory Sidebar composition for web shells with sidebar navigation.
+
 #### Playwright automation setup
 
 Before authoring or restructuring automated browser/API tests, check for and

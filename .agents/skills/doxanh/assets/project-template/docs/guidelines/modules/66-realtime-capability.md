@@ -94,6 +94,11 @@ loss/recovery semantics apply to either live transport.
 - Recheck authorization for every subscription and durable command. Define how
   role change, membership removal, logout, session revocation, and tenant
   suspension close or reduce an existing connection.
+- Maintain an explicit subscription-authorization matrix for every active
+  client consumer. For each actor and channel/resource kind, name the trusted
+  scope source, required capability, resource-ownership lookup, allowed event
+  classes, and revocation behavior. Reusing a shared realtime client never
+  grants every actor every subscription shape.
 - Apply origin allowlisting to browser upgrades, rate-limit ticket issue and
   redemption, and cap connections/subscriptions per actor, tenant tier, IP
   representation, and device as privacy and abuse policy permit.
@@ -169,6 +174,12 @@ loss/recovery semantics apply to either live transport.
 - After reconnect: obtain/redeem a fresh ticket when required, reauthenticate,
   resubscribe, and refetch authoritative snapshots for active workflows before
   trusting further deltas.
+- Name recovery actions truthfully. `Reconnect` performs the complete
+  reconnect, reauthentication, resubscription, and authoritative refetch
+  sequence. `Refresh` only refetches through the normal API and must not imply
+  that live delivery was restored. A rejected subscription keeps enough
+  intended scope for a deliberate authorized reconnect attempt after identity,
+  permission, or configuration changes; it must not enter a blind retry loop.
 - Reconcile by resource revision. Ignore known duplicates/stale revisions;
   refetch on a gap, unknown state, permission change, or protocol mismatch.
 - Preserve useful pending UI state, but never treat unsent or unacknowledged
@@ -179,6 +190,9 @@ loss/recovery semantics apply to either live transport.
   on notification open or app resume.
 - Expose explicit connecting, live, reconnecting, stale/offline, and
   permission-lost UI states only where they change the user's next action.
+  Keep the healthy default state quiet when the current data and available
+  actions already make it clear. Distinguish permission loss from network
+  failure and do not offer a recovery action that cannot resolve that state.
 
 #### 10.8.7 Backpressure, security, and proof
 
@@ -198,3 +212,8 @@ loss/recovery semantics apply to either live transport.
 - Prove horizontal delivery across at least two gateway replicas, authorization
   revocation, reconnect/refetch recovery, and API autoscaling independence
   before calling realtime production-ready.
+- Exercise every row of the active subscription-authorization matrix with a
+  permitted actor/resource case and an equivalent cross-scope or missing-
+  capability denial. Client recovery proof must show that the rendered action
+  performs the named operation and returns to authoritative state without a
+  retry storm.

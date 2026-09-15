@@ -58,6 +58,17 @@ before editing. Reuse their shell, components, density and action placement.
 Remove any helper text that does not help the user decide, act or recover;
 `CardDescription` is optional, never a reason to narrate implementation. Inspect
 the affected rendered screen in its relevant states before calling it complete.
+Treat ordinary healthy/default states as implicit in homogeneous actionable
+collections and show the exceptions that change meaning or action. Budget the
+first phone viewport for the primary task, preserve deliberate entity-workspace
+navigation, and ensure realtime recovery labels perform the complete operation
+they name.
+For secondary facts, apply GDL-051 Section 8.8.5: choose omission, integration,
+accessible disclosure, or a justified separate region. Do not spend another
+card on metadata by default or hide required decisions to reduce clutter.
+Web sidebars use the shadcn-vue Sidebar family and task-based child navigation
+under GDL-051 Section 8.7.1. GDL-110 Section 17.1 owns discovery and the
+`npx skills add unovue/shadcn-vue` setup command; reuse an installed skill.
 This applies automatically to UI implementation, changes and reviews in adopted
 projects, even without another `$doxanh` mention. Use the source-backed UI plan
 and completion guard in GDL-080 Section 13.6.1: affected shared consumers,
@@ -87,11 +98,12 @@ when source/dependency analysis reveals another affected boundary.
 | Changed surface | Mandatory reminder | Owning modules |
 | --- | --- | --- |
 | Verification, completion, release | `VERIFY-SCOPE-001`, `VERIFY-CLAIM-001`: exact scope, evidence reuse, named live target, honest result. | GDL-080 |
-| Web UI | `UI-VISUAL-001`, `UI-DENSITY-001`, `UI-RESP-001`, `UI-ACCESS-001`: default shadcn-vue, layout-only Tailwind, compact and touch-safe, mobile-first, bounded scrolling, themes and accessibility. Load applicable Vue, shadcn-vue and UI/UX skills. | GDL-050, GDL-051, GDL-052 |
+| Web UI | `UI-VISUAL-001`, `UI-DENSITY-001`, `UI-RESP-001`, `UI-COLLECTION-001`, `UI-ACCESS-001`: default shadcn-vue, layout-only Tailwind, compact and touch-safe, mobile-first primary-task composition, exceptions-first collections, persistent scoped navigation, bounded scrolling, themes and accessibility. Load applicable Vue, shadcn-vue and UI/UX skills. | GDL-050, GDL-051, GDL-052 |
 | Flutter UI and lifecycle | The same applicable UI rule IDs route to native widgets, adaptive design, localization, loading, navigation, platform lifecycle and focused native proof. Use Flutter/Dart tools and skills; browser automation cannot prove native behavior. | GDL-053 |
 | Copy, labels, choices | `UI-COPY-001`: canonical actor/scope/entity vocabulary, all locales, no raw keys or implementation narration. `UI-CONTROL-001`: long/remote/searchable catalogs use Combobox. | GDL-021, GDL-052 |
 | Forms, overlays, actionable feedback | `UI-ACTION-001`, `UI-STATE-001`: readable icon/content, separate action region, consistent cancel/commit order, real handlers, confirmation before writes, failure/conflict recovery. | GDL-030, GDL-051, GDL-052 |
-| Records, filters, options, counts, exports | `UI-AUDIENCE-001`: the server authorizes the whole observable surface; hiding a control is not isolation. | GDL-051, GDL-052, GDL-070 |
+| Records, filters, options, counts, exports | `UI-AUDIENCE-001`: the server authorizes the whole observable surface; hiding a control is not isolation. `UI-COLLECTION-001`: keep ordinary states implicit unless comparison, audit, or ambiguity requires them; surface actionable exceptions. | GDL-051, GDL-052, GDL-070 |
+| Realtime clients and recovery | Maintain an actor/channel/resource authorization matrix. A reconnect action reauthenticates, resubscribes, and refetches; a refresh action only refetches. Prove direct allow/deny and recovery behavior for affected consumers. | GDL-066, GDL-070, GDL-080 |
 | Dates/times in UI, email, exports, print or input | `TIME-PRESENTATION-001`: shared Day.js boundary for the web/server profile, authoritative scope/system format and IANA zone, strict input conversion, no raw display fallback. | GDL-042 |
 | API, identity, permissions | Fixed `success/code/message/data/request_id` envelope; only `data` varies by endpoint; Zod; server-resolved scoped actor, authorization and safe logging. | GDL-060, GDL-070, GDL-071 |
 | Mutation or referenced data | `DATA-CONCURRENCY-001`, `DATA-REFERENCE-001`: owned API enforces atomic scope/state/revision and effects; client profiles implement the documented confirmation, stale/reference recovery and outcome contract without claiming external internals. | API: GDL-063, GDL-071; web/native: profile owners plus GDL-060 |

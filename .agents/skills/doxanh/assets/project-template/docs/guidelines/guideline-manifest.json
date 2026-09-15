@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "7d48465a7dbbe00b83a51d6b0d3d9fc322e578f00c4fa6bb206fdfb33f5c4931",
-    "bytes": 602790,
-    "lines": 10359,
-    "meaning": "Doxanh 5.0.1 retains the 5.0.0 composition and readability contracts and clarifies bounded shared-region evidence in GDL-080: each source root requires matching coverage, and dialog evidence cannot certify an unrelated page or full review. Semantic diff reviewed 2026-09-14; user approved the focused correction and release."
+    "sha256": "513102d60fc52515c1e898f039d15cab7b3c8c79b047d671d7f7ce88b30f5a8e",
+    "bytes": 616307,
+    "lines": 10571,
+    "meaning": "Doxanh 5.2.0 adds deliberate secondary-information placement, truthful metadata, accessible disclosure, and required shadcn-vue sidebar composition and grouping. Includes the approved 5.1.0 operational UI and realtime rules. Semantic diff reviewed 2026-09-15 against the user's approved generic changes; existing project exceptions and risk-scoped verification remain intact."
   },
   "profiles": {
     "required": [
@@ -38,7 +38,7 @@
     ]
   },
   "task_reading": {
-    "ui_required": ["UI-VISUAL-001", "UI-DENSITY-001", "UI-RESP-001", "UI-ACTION-001", "UI-COPY-001", "UI-CONTROL-001", "UI-STATE-001", "UI-ACCESS-001"],
+    "ui_required": ["UI-VISUAL-001", "UI-DENSITY-001", "UI-RESP-001", "UI-ACTION-001", "UI-COPY-001", "UI-CONTROL-001", "UI-COLLECTION-001", "UI-STATE-001", "UI-ACCESS-001"],
     "always": [
       "GDL-000",
       "GDL-080"
@@ -273,6 +273,32 @@
       "counts_and_facets_scope_projected": true,
       "cross_boundary_identity_default": "redacted",
       "direct_request_no_leak_tests": true
+    },
+    "ui_sidebar": {
+      "profile": "nuxt-web",
+      "applicability": "shell-with-sidebar-navigation",
+      "component_family": "shadcn-vue/sidebar",
+      "task_based_grouping_required": true,
+      "authorized_children_required": true,
+      "active_child_reveal_required": true,
+      "keyboard_and_touch_children_required": true
+    },
+    "ui_secondary_information": {
+      "rule_ids": ["UI-RESP-001", "UI-DENSITY-001"],
+      "owner": "GDL-051",
+      "placement_decision_required": true,
+      "separate_panel_justification_required": true,
+      "accessible_disclosure_required": true,
+      "consequential_state_remains_visible": true,
+      "metadata_source_meaning_required": true
+    },
+    "ui_operational_composition": {
+      "rule_ids": ["UI-COLLECTION-001", "UI-RESP-001", "UI-AUDIENCE-001", "UI-STATE-001"],
+      "default_state_visibility": "exceptions-first",
+      "first_phone_viewport": "primary-task-first",
+      "scoped_navigation": "persistent-and-explicit",
+      "realtime_recovery": "reconnect-reauthorize-resubscribe-refetch",
+      "subscription_authorization_matrix_required": true
     },
     "verification_scope": {
       "rule_id": "VERIFY-SCOPE-001",
