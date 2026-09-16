@@ -42,11 +42,20 @@ do not generate an extra frontend/backend to fill the gap.
    objective full-regression trigger. “Continue,” “test carefully,” commit,
    push, deploy and release are not triggers by themselves. A release label
    alone is not a full-regression trigger.
+   Tests must be independently selectable by affected boundary. A broad wrapper
+   must declare its real child checks and is forbidden in focused dispatch when
+   any child is unrelated or otherwise unselected. Split the runner instead of
+   accepting unrelated work as the price of one relevant check.
 5. **Reuse current evidence.** Never rerun a changed-scope suite solely because verified files were committed.
    Recheck complete maintained-content and relevant environment/configuration
    fingerprints, not just `HEAD`. For a release, add only missing
    candidate/image/target/deployment-bound gates and the phase-aware universal
-   release baseline. Local-only evidence cannot satisfy a production claim:
+   release baseline. A release dispatch must name its phase. After deployment,
+   never repeat predeployment or local suites: require their reusable evidence
+   and run only deployed identity, live smoke, and affected live workflows.
+   A changed fingerprint, command/context change, failed/stale result, or newly
+   demonstrated risk must return to the applicable earlier phase with the exact
+   invalidation reason. Local-only evidence cannot satisfy a production claim:
    prove the changed workflow on the named target.
 6. **Mandatory means mandatory when applicable, not every check on every task.**
    Use the table below before implementation and at final review. Missing
@@ -171,6 +180,11 @@ all application tests; GDL-080 still owns test dispatch.
   the actual-worktree rule plan, execute only selected missing checks and live
   evidence, then run the freshness/aggregate gate. A relevant failure reopens
   only the affected slice unless investigation proves wider impact.
+- Treat commit, push, tag and deployment as transitions, not automatic retest
+  triggers. Preserve content-identical changed-scope evidence across commit and
+  push. After deploying the exact verified candidate, dispatch only postdeploy
+  checks. Repeating an earlier phase requires a recorded evidence invalidation;
+  do not rerun it for ceremony or confidence.
 - For completion/readiness/`100%` questions, `VERIFY-CLAIM-001` requires an
   unambiguous `Yes` or `No` first. `Yes` means the declared finite scope passed
   on the named candidate/environment with zero open boundaries, never zero

@@ -7,7 +7,7 @@ import test from 'node:test'
 import { planVerification } from '../.agents/skills/doxanh/scripts/verification-policy.mjs'
 
 const skill = resolve('.agents/skills/doxanh')
-const check = (id, kind = 'runtime', extra = {}) => ({ id, kind, command: ['node', `${id}.mjs`], binding: 'content', phase: 'verify', browser_runs: [], ...extra })
+const check = (id, kind = 'runtime', extra = {}) => ({ id, kind, command: ['node', `${id}.mjs`], binding: 'content', phase: 'verify', browser_runs: [], expands_to: [], ...extra })
 const checks = [check('book', 'documentation'), check('unit'), check('api'), check('chrome'), check('unrelated'), check('all', 'runtime', { full_only: true })]
 function fixture(runtime = false) {
   return {
@@ -64,6 +64,18 @@ test('documentation cannot smuggle runtime tests through a prerequisite', () => 
   const input = fixture()
   input.checks[0].depends_on = ['api']
   assert.throws(() => planVerification(input), /documentation cannot select runtime check api/)
+})
+
+test('focused dispatch rejects aggregates that hide unrelated checks', () => {
+  const input = fixture(true)
+  input.checks.push(check('focused-wrapper', 'runtime', { expands_to: ['unit', 'api', 'unrelated'] }))
+  input.impacts[1].checks.push('focused-wrapper')
+  assert.throws(() => planVerification(input), /aggregate includes unrelated or unselected checks: unrelated/)
+
+  input.checks.at(-1).expands_to.pop()
+  assert.doesNotThrow(() => planVerification(input))
+  input.checks.at(-1).expands_to = ['focused-wrapper']
+  assert.throws(() => planVerification(input), /aggregate cannot include itself|aggregate cycle/)
 })
 
 test('unknown paths, missing command mappings and cyclic dependencies fail closed', () => {
@@ -144,6 +156,25 @@ test('predeployment dispatch does not require running postdeployment checks earl
   assert.doesNotThrow(() => planVerification(input))
   input.requested_checks.push('live-smoke')
   assert.throws(() => planVerification(input), /another deployment phase/)
+})
+
+test('postdeployment dispatch reuses predeployment proof and cannot repeat it', () => {
+  const input = releaseFixture()
+  const plan = planVerification(input)
+  input.dispatch_phase = 'postdeploy'
+  input.requested_checks = plan.selected.filter(row => row.phase === 'postdeploy').map(row => row.id)
+  assert.throws(() => planVerification(input), /requires reusable predeployment evidence; do not rerun after deployment/)
+
+  input.evidence = evidenceFor({ selected: plan.selected.filter(row => row.phase !== 'postdeploy') }, input.bindings)
+  const postdeploy = planVerification(input)
+  assert.deepEqual(postdeploy.selected.filter(row => row.action === 'run').map(row => row.id), ['deployed-identity', 'live-smoke'])
+  assert.ok(postdeploy.selected.filter(row => row.phase !== 'postdeploy').every(row => row.action === 'reuse'))
+
+  input.requested_checks.push('candidate-integrity')
+  assert.throws(() => planVerification(input), /another deployment phase/)
+  input.requested_checks.pop()
+  delete input.dispatch_phase
+  assert.throws(() => planVerification(input), /requires an explicit predeploy or postdeploy phase/)
 })
 
 test('proposed command dispatch rejects unrelated tests, omitted proof and redundant reruns', () => {

@@ -3,12 +3,14 @@
 The workflow is called the **Doxanh skill**. Invoke it with `$doxanh` in Codex, `/doxanh`
 in Claude Code, or “use the doxanh skill” in any adopted project.
 
-The current release is **6.0.0**, published as `v6.0.0`.
+The current release is **6.0.1**, published as `v6.0.1`.
 
-The 6.x standard keeps the mandatory UI composition gate and corrects shared
-action-footer placement: primary above Cancel on phones and primary at the
-logical inline end on desktop. It retains verification export schema 3 and UI
-schema 1. Existing projects keep their approved locks; see
+The 6.x standard keeps the mandatory UI composition gate, corrects shared
+action-footer placement, and enforces non-repeating release phases. Primary is
+above Cancel on phones and at the logical inline end on desktop. Commit/push
+transitions preserve current content-identical evidence; postdeployment runs
+only deployment-bound and affected live checks. It retains verification export
+schema 3 and UI schema 1. Existing projects keep their approved locks; see
 [the adoption procedure](#adopt-the-500-ui-composition-gate).
 
 Doxanh Project Standards is the reusable engineering and product-delivery
@@ -76,7 +78,7 @@ set -eu
 
 DOXANH_PROJECT_ROOT="${DOXANH_PROJECT_ROOT:-$PWD}"
 DOXANH_REPO_ROOT="${DOXANH_REPO_ROOT:-$(git -C "$DOXANH_PROJECT_ROOT" rev-parse --show-toplevel)}"
-DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v6.0.0}"
+DOXANH_STANDARDS_REF="${DOXANH_STANDARDS_REF:-v6.0.1}"
 DOXANH_AGENTS="${DOXANH_AGENTS:-both}" # codex, claude, or both
 DOXANH_BOOTSTRAP_DIR="$(mktemp -d)"
 
@@ -411,7 +413,7 @@ an installed skill can enforce an application without integration. Existing
 projects remain on their approved locks until that migration is authorized.
 
 1. Select the approved release checkout and run `make check`. The bootstrap
-   above selects `v6.0.0`; do not upgrade an existing project without approval.
+   above selects `v6.0.1`; do not upgrade an existing project without approval.
 2. Follow the existing `make sync`, `installed-check`, and `skill-resolve`
    commands for the authorized project. Preserve its root instructions and
    project book. Reconcile `AGENTS.template.md` with the existing instructions
@@ -496,6 +498,25 @@ authorized `make sync`, update the existing shared form, `Dialog`,
 5. Run focused component and Chromium evidence for a representative form and
    confirmation at phone and desktop widths. Check actual action positions,
    touch targets, keyboard order, cancellation, and one confirmed request.
+
+### Adopt the 6.0.1 release-phase correction
+
+This compatible workflow correction does not change application runtime code.
+After an authorized `make sync`, keep the project's existing changed-path and
+release adapters, then confirm they export explicit release dispatch phases.
+
+1. Preserve passing content-bound changed-scope evidence across a commit or push
+   when maintained content and relevant context are identical.
+2. Dispatch missing candidate/image/target checks in `predeploy`; do not replay
+   the already-passing application slice.
+3. Dispatch `postdeploy` only after all selected earlier checks are reusable.
+   Run deployed identity, live smoke, and affected live workflows only.
+4. Make the adapter reject earlier-phase commands in a postdeployment request
+   and reject a postdeployment request when predeployment proof is missing.
+5. Register every aggregate runner's actual direct child checks. Split any
+   wrapper that would force unrelated leaves into a focused dispatch.
+6. Run the adapter's isolated policy fixtures. Do not run consumer application
+   or production suites merely to adopt this workflow correction.
 
 ## Repository layout
 

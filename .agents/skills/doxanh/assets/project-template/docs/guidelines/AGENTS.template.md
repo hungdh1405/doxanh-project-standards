@@ -75,6 +75,10 @@ adapter is an adoption gap, not permission to run every test. After the selected
 checks pass, stop testing and continue to the authorized outcome. A new user
 message, commit or push does not invalidate identical-content evidence. Only a
 changed boundary, relevant failure, stale proof or objective trigger reopens it.
+Every routine suite must be independently selectable at the affected boundary.
+Register the real expansion of Make/package/CI wrappers; a focused plan must
+reject a wrapper that includes any child check not selected on its own. Split a
+monolithic runner instead of accepting unrelated tests.
 
 During implementation:
 
@@ -141,6 +145,15 @@ the report. Candidate release evidence still requires the exact Git revision,
 content fingerprint, immutable candidate image, and target environment. Promote
 content-identical evidence after commit instead of rerunning it, then execute
 only missing revision-, image-, deployment-, and live-target gates.
+
+Release dispatch is phase-explicit. Predeployment consumes current changed-scope
+proof and runs only missing candidate/image/target gates. Commit, push and tag do
+not trigger another run when maintained content and relevant context are
+identical. After deploying that exact candidate, postdeployment may run only
+deployed-identity, live-smoke and affected live-workflow checks; it must fail if
+required predeployment evidence is missing instead of rerunning those commands.
+Return to an earlier phase only for a recorded content/context/command change,
+failed or stale result, or newly demonstrated affected boundary.
 
 Release verification is always required, but the release label alone is not a
 full-regression trigger. Compare the accepted or deployed base revision with

@@ -6,10 +6,10 @@
   "entry_template_path": "docs/guidelines/entry-template.md",
   "agent_instructions_template_path": "docs/guidelines/AGENTS.template.md",
   "semantic_baseline": {
-    "sha256": "24859574372433f8a7f8fae1dacc96dec6f52ceb13527ee81004717e9b29925a",
-    "bytes": 617942,
-    "lines": 10593,
-    "meaning": "Doxanh 6.0.0 corrects the shared web action footer so safe source and keyboard order renders with primary above Cancel on phones and primary at the logical inline end on desktop. It also permits a continuous long single-task form when splitting harms the task, with compact grouping, bounded scrolling, and focused evidence. Semantic diff reviewed 2026-09-16 against the user's approved generic changes; existing project exceptions and risk-scoped verification remain intact."
+    "sha256": "3fb21e828a3336f700ebc1b91409aa760e6fb3cb56942282fd184cf77a1d1b2f",
+    "bytes": 620540,
+    "lines": 10628,
+    "meaning": "Doxanh 6.0.1 preserves the 6.0.0 shared web action-footer contract and makes release dispatch strictly phase-aware. Content-identical evidence survives commit and push; postdeployment dispatch requires reusable predeployment proof and selects only deployment-bound and affected live checks. Semantic diff reviewed 2026-09-16 against the user's approved generic verification correction; existing project exceptions and risk-scoped scope selection remain intact."
   },
   "profiles": {
     "required": [
@@ -326,6 +326,12 @@
       "release_target_environment_required": true,
       "release_predeployment_baseline_required": true,
       "release_postdeployment_baseline_required": true,
+      "release_dispatch_phase_required": true,
+      "postdeployment_requires_reusable_predeployment_evidence": true,
+      "postdeployment_replays_predeployment_checks": false,
+      "postdeployment_scope": "deployed-identity-live-smoke-and-affected-live-workflows",
+      "aggregate_expansion_required": true,
+      "focused_aggregate_allows_unselected_children": false,
       "release_unrelated_suites_forbidden": true,
       "full_regression_triggers": [
         "explicit-request",

@@ -249,6 +249,12 @@ function validateManifestShape() {
     release_target_environment_required: true,
     release_predeployment_baseline_required: true,
     release_postdeployment_baseline_required: true,
+    release_dispatch_phase_required: true,
+    postdeployment_requires_reusable_predeployment_evidence: true,
+    postdeployment_replays_predeployment_checks: false,
+    postdeployment_scope: 'deployed-identity-live-smoke-and-affected-live-workflows',
+    aggregate_expansion_required: true,
+    focused_aggregate_allows_unselected_children: false,
     release_unrelated_suites_forbidden: true,
     full_regression_triggers: [
       'explicit-request',

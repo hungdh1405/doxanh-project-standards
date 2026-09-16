@@ -3,6 +3,24 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [6.0.1] - 2026-09-16
+
+### Fixed
+
+- Made release dispatch explicitly phase-bound. A release command request must
+  identify `predeploy` or `postdeploy`; ambiguous all-phase dispatch is rejected.
+- Made postdeployment dispatch fail when any selected changed-scope or
+  predeployment proof is missing, rather than allowing earlier commands to be
+  replayed after deployment.
+- Clarified the mandatory no-repeat sequence: reuse content-identical evidence
+  across commit/push, run only missing candidate-bound checks before deployment,
+  then run only deployed identity, live smoke, and affected live workflows.
+- Added behavioral fixtures for valid phase promotion, blocked missing proof,
+  forbidden earlier-phase requests, and missing release phase metadata.
+- Required aggregate runners to declare their real child checks. Focused
+  selection now rejects a wrapper that would execute any unrelated or
+  independently unselected child, with cycle and self-expansion protection.
+
 ## [6.0.0] - 2026-09-16
 
 ### Breaking adoption change

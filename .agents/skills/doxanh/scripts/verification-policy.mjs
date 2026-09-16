@@ -62,6 +62,7 @@ export function planVerification(input) {
     requireThat(Object.hasOwn(bindings, check.binding), `${check.id}: invalid binding`)
     requireThat(['verify', 'predeploy', 'postdeploy'].includes(check.phase), `${check.id}: invalid phase`)
     strings(check.depends_on ?? [], `${check.id}.depends_on`)
+    strings(check.expands_to ?? [], `${check.id}.expands_to`)
     requireThat(Array.isArray(check.browser_runs), `${check.id}: browser_runs must be an array (empty for non-browser commands)`)
     const projects = new Set()
     for (const run of check.browser_runs) {
@@ -103,6 +104,22 @@ export function planVerification(input) {
     visited.add(id)
   }
   checks.forEach(check => visit(check.id))
+
+  const expanded = new Map()
+  function expand(id, chain = []) {
+    requireThat(checks.has(id), `unknown expanded check ${id}`)
+    requireThat(!chain.includes(id), `aggregate cycle: ${[...chain, id].join(' -> ')}`)
+    if (expanded.has(id)) return expanded.get(id)
+    const result = new Set()
+    for (const child of checks.get(id).expands_to ?? []) {
+      requireThat(child !== id, `${id}: aggregate cannot include itself`)
+      result.add(child)
+      for (const nested of expand(child, [...chain, id])) result.add(nested)
+    }
+    expanded.set(id, result)
+    return result
+  }
+  checks.forEach(check => expand(check.id))
 
   const selected = new Map()
   function select(id, reason, originKind) {
@@ -165,6 +182,11 @@ export function planVerification(input) {
     }
   }
 
+  for (const id of selected.keys()) {
+    const missing = [...expanded.get(id)].filter(child => !selected.has(child))
+    requireThat(missing.length === 0, `${id}: aggregate includes unrelated or unselected checks: ${missing.join(', ')}; split the runner or select each affected leaf independently`)
+  }
+
   const evidence = input.evidence ?? []
   requireThat(Array.isArray(evidence), 'evidence must be an array')
   const planned = [...selected].map(([id, reasons]) => {
@@ -182,9 +204,14 @@ export function planVerification(input) {
   if (input.requested_checks !== undefined) {
     const requested = strings(input.requested_checks, 'requested_checks')
     requireThat(input.dispatch_phase === undefined || ['verify', 'predeploy', 'postdeploy'].includes(input.dispatch_phase), 'invalid dispatch_phase')
+    requireThat(!input.release || ['predeploy', 'postdeploy'].includes(input.dispatch_phase), 'release command dispatch requires an explicit predeploy or postdeploy phase')
     const inPhase = check => input.dispatch_phase === undefined
       || check.phase === input.dispatch_phase
       || (input.dispatch_phase === 'predeploy' && check.phase === 'verify')
+    if (input.dispatch_phase === 'postdeploy') {
+      const missingPredeployment = planned.filter(check => check.phase !== 'postdeploy' && check.action === 'run')
+      requireThat(missingPredeployment.length === 0, `postdeploy dispatch requires reusable predeployment evidence; do not rerun after deployment: ${missingPredeployment.map(check => check.id).join(', ')}`)
+    }
     const dispatchable = planned.filter(check => inPhase(check) && check.action === 'run')
     requireThat(requested.every(id => selected.has(id)), 'requested command is unrelated to the reviewed impact plan')
     requireThat(requested.every(id => inPhase(checks.get(id))), 'requested command belongs to another deployment phase')

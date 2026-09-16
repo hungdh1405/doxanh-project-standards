@@ -604,6 +604,29 @@ that boundary. Full-regression mode runs the complete active command set that
 is eligible under Section 13.3's browser policy; it does not enable unapproved
 secondary-browser functional commands.
 
+Release phases are strict, non-overlapping dispatch boundaries:
+
+1. During implementation, run the selected content-bound changed-scope checks
+   once. When a commit, push, or tag contains exactly those maintained bytes and
+   the relevant command/context fingerprint is unchanged, carry that evidence
+   forward; do not rerun it.
+2. Before deployment, run only missing candidate-, image-, target-, or other
+   predeployment-bound gates. Promoting content-identical proof to the exact
+   candidate must not replay the application suite that produced it.
+3. Deploy the exact verified candidate.
+4. After deployment, run only the postdeployment baseline and affected live
+   workflows that require the named deployment. Do not repeat local,
+   changed-scope, build, preflight, or predeployment suites.
+
+A postdeployment dispatch must refuse to start while required predeployment
+evidence is missing; it must not repair that gap by rerunning earlier-phase
+commands after deployment. Return to the applicable earlier phase only when a
+maintained-content, command, relevant context, candidate, image, target, or
+evidence-status change invalidates its proof, or a focused failure reveals a
+new affected boundary. Record that reason. A check with the same command in two
+phases is invalid unless the postdeployment form asserts a distinct live-target
+property that cannot be proven before deployment.
+
 #### 13.7.1 Executable rule and completion contract
 
 Normative prose is not an enforcement mechanism by itself. Every generated
@@ -897,6 +920,7 @@ Do not hand-pick changed paths or invent a passing evidence record. Export:
 | `changed_paths`, `unmatched_paths` | Complete maintained task diff or release base-to-candidate diff; unresolved paths block dispatch. |
 | `impacts` | Rows with `path`, `kind`, `reason`, and `checks` IDs. Kinds: `documentation`, `static`, `tooling`, `runtime`. Every changed path needs an explained mapping. |
 | `checks` | Complete active command catalog, not only wanted tests: unique `id`, argument-array `command`, `kind`, `phase` (`verify`, `predeploy`, `postdeploy`), `binding` (`content`, `candidate`, `deployment`), and optional `depends_on`, `full_only`, `baseline_purpose`. Dependencies are ordered, cycle-checked and phase-local. Classify aggregate commands by their expanded commands: a script wrapping all browser/API tests is not a documentation/static check. |
+| `checks[].expands_to` | Required for every aggregate wrapper and empty for a leaf command. List the registered direct child check IDs that the real script invokes. The guard follows them transitively, rejects cycles, and rejects a selected aggregate when any expanded leaf was not independently selected by affected scope. The project adapter must compare this declaration with actual package/Make/CI command expansion. |
 | `checks[].browser_runs` | Required array for every command, including aggregates; `[]` when no browser runs. Each row names `project`, `engine` (`chromium`, `firefox`, `webkit`) and `coverage` (`functional`, `ui-ux`). Expand real wrapper/config behavior; do not infer coverage from a suite name or omit hidden child runs. Browser checks use `kind: runtime`. |
 | `browser_policy` | Required when the catalog has browser runs: `functional_project` names the one Chrome/Chromium functional project. Optional `additional_functional` rows name `project`, `trigger` (`explicit-request`, `browser-specific-risk`, `observed-browser-failure`), concrete `reason`, and exact `checks` IDs. A full-regression trigger alone cannot duplicate functional tests across browsers. |
 | `bindings` | Complete maintained `content` fingerprint and relevant toolchain/configuration/fixture `context` fingerprint. Candidate evidence also binds `revision`, immutable `image`, `environment`; deployment evidence also binds the deployment identity in `deployment`. The legacy `image` field is the deployable artifact digest: container image for a container service, signed package for native distribution. It never requires a native app to build Docker. Never store secret values. |
@@ -918,6 +942,13 @@ plan, installed/distributed build identity, and focused device smoke under
 Sections 9 and 14.4. A container smoke or browser screenshot cannot satisfy
 those native purposes.
 
+When `requested_checks` is supplied for a release, `dispatch_phase` is required
+and must be `predeploy` or `postdeploy`. A postdeployment dispatch is valid only
+when every selected `verify` and `predeploy` check already has current reusable
+evidence. It selects only missing `postdeploy` checks and rejects any attempt to
+include an earlier-phase command. This turns the phase boundary into executable
+policy rather than relying on an agent to remember the prose.
+
 For example, one documentation edit maps only its documentation check:
 
 ```json
@@ -929,7 +960,7 @@ For example, one documentation edit maps only its documentation check:
   "changed_paths": ["docs/product-spec.md"],
   "unmatched_paths": [],
   "impacts": [{"path": "docs/product-spec.md", "kind": "documentation", "reason": "Clarify existing wording; no runtime contract change", "checks": ["book"]}],
-  "checks": [{"id": "book", "command": ["pnpm", "docs:check"], "kind": "documentation", "phase": "verify", "binding": "content", "browser_runs": []}],
+  "checks": [{"id": "book", "command": ["pnpm", "docs:check"], "kind": "documentation", "phase": "verify", "binding": "content", "expands_to": [], "browser_runs": []}],
   "bindings": {"content": "computed-complete-content-digest", "context": "computed-documentation-toolchain-digest"},
   "evidence": []
 }
@@ -945,9 +976,13 @@ Fixture requirements for package releases and each consuming adapter:
   changed source, commands or relevant environment invalidate affected proof
 - release adds the pre/post baseline and affected slices, not full regression;
   another target or deployment cannot reuse live evidence
+- release dispatch requires an explicit phase; postdeployment fails when
+  predeployment proof is missing and cannot request or replay earlier commands
 - explicit justified full regression works; a release label without a trigger
   cannot dispatch a full-only command
 - the exact proposed command list rejects unrelated tests and redundant reruns
+- aggregate wrappers declare their real child checks and fail when a focused
+  plan would execute any child that was not independently selected
 - Chrome functional plus selected secondary UI/UX checks passes; secondary
   functional commands, including hidden aggregate runs, fail without their own
   browser-specific trigger; full mode preserves that division
